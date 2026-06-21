@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1400년의 기다림</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ── Screen 1: API Key ── -->
+  <div id="screen-apikey" class="screen">
+    <div class="modal-box">
+      <h2>봉황의 기억에 접속하려면</h2>
+      <p>Anthropic API 키가 필요합니다<br>이 장치에만 저장됩니다</p>
+      <input
+        type="password"
+        id="api-key-input"
+        placeholder="sk-ant-..."
+        autocomplete="off"
+        spellcheck="false"
+      >
+      <button class="btn" id="btn-start">시작하기</button>
+    </div>
+  </div>
+
+  <!-- ── Screen 2: Main ── -->
+  <div id="screen-main" class="screen" style="cursor: pointer;">
+    <div class="phoenix-wrap">
+      <svg class="phoenix-svg" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Body -->
+        <ellipse cx="60" cy="68" rx="14" ry="20" fill="#B8860B" opacity="0.85"/>
+        <!-- Neck -->
+        <path d="M54 52 Q60 38 66 52" stroke="#B8860B" stroke-width="3" fill="none" opacity="0.9"/>
+        <!-- Head -->
+        <circle cx="60" cy="34" r="8" fill="#B8860B" opacity="0.9"/>
+        <!-- Crest -->
+        <path d="M56 28 Q60 16 64 28" stroke="#D4A017" stroke-width="2" fill="none"/>
+        <path d="M60 26 Q60 12 60 24" stroke="#D4A017" stroke-width="2" fill="none"/>
+        <!-- Eye -->
+        <circle cx="62" cy="32" r="2" fill="#0a0a0a"/>
+        <circle cx="62.6" cy="31.4" r="0.7" fill="#D4A017"/>
+        <!-- Beak -->
+        <path d="M65 36 L70 38 L65 39 Z" fill="#D4A017"/>
+        <!-- Left Wing -->
+        <path d="M46 60 Q20 44 18 70 Q26 64 38 72 Q30 56 46 60 Z" fill="#B8860B" opacity="0.8"/>
+        <path d="M46 64 Q22 52 20 76" stroke="#D4A017" stroke-width="1" fill="none" opacity="0.5"/>
+        <path d="M46 68 Q24 58 22 80" stroke="#D4A017" stroke-width="1" fill="none" opacity="0.4"/>
+        <!-- Right Wing -->
+        <path d="M74 60 Q100 44 102 70 Q94 64 82 72 Q90 56 74 60 Z" fill="#B8860B" opacity="0.8"/>
+        <path d="M74 64 Q98 52 100 76" stroke="#D4A017" stroke-width="1" fill="none" opacity="0.5"/>
+        <path d="M74 68 Q96 58 98 80" stroke="#D4A017" stroke-width="1" fill="none" opacity="0.4"/>
+        <!-- Tail feathers -->
+        <path d="M52 86 Q46 100 42 108" stroke="#B8860B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M58 88 Q56 104 54 112" stroke="#B8860B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M64 88 Q66 104 68 112" stroke="#B8860B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M70 86 Q76 100 80 108" stroke="#B8860B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- Tail tips -->
+        <circle cx="42" cy="108" r="2.5" fill="#D4A017" opacity="0.8"/>
+        <circle cx="54" cy="112" r="2.5" fill="#D4A017" opacity="0.8"/>
+        <circle cx="68" cy="112" r="2.5" fill="#D4A017" opacity="0.8"/>
+        <circle cx="80" cy="108" r="2.5" fill="#D4A017" opacity="0.8"/>
+        <!-- Legs -->
+        <path d="M55 86 L52 96 M52 96 L48 100 M52 96 L54 100" stroke="#B8860B" stroke-width="1.5" fill="none"/>
+        <path d="M65 86 L68 96 M68 96 L72 100 M68 96 L66 100" stroke="#B8860B" stroke-width="1.5" fill="none"/>
+      </svg>
+    </div>
+    <p class="main-title">봉황의 눈이 당신을 보고 있습니다</p>
+    <p class="main-sub">손을 가져다 대세요</p>
+  </div>
+
+  <!-- ── Screen 3: Scenes ── -->
+  <div id="screen-scenes" class="screen">
+    <button class="nav-back" id="btn-back-scenes">← 처음으로</button>
+    <div class="scenes-header">
+      <h2>손을 고르세요</h2>
+    </div>
+    <ul class="scene-list" id="scene-list"></ul>
+  </div>
+
+  <!-- ── Screen 4: Docent ── -->
+  <div id="screen-docent" class="screen">
+    <button class="nav-back" id="btn-back-docent">← 손 목록</button>
+    <div class="docent-inner">
+      <div class="docent-meta">
+        <span class="docent-year" id="docent-year"></span>
+        <span class="docent-name" id="docent-name"></span>
+      </div>
+      <p class="docent-texture" id="docent-texture"></p>
+      <div class="docent-response" id="docent-response"></div>
+      <div class="docent-actions">
+        <button class="btn" id="btn-ask">봉황에게 묻다</button>
+        <button class="btn-ghost" id="btn-next" style="display:none;">다른 손으로</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Screen 5: Ending ── -->
+  <div id="screen-ending" class="screen">
+    <p class="ending-text" id="ending-text">
+      아픔이 쌓여야 — 비로소 날 수 있다
+    </p>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
