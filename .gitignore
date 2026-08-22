@@ -1,4 +1,57 @@
-.DS_Store
+# ⚠ 개인정보 하드룰 — 이 규칙을 절대 완화하지 마세요
+# 카톡 원문 · 건강 zip · 사진 · 메모 본문은 개인정보입니다.
+# 깃허브에도, 드라이브에도, 프로젝트 지식에도 올리지 않습니다.
+# 각자 로컬 gyeol_kit/data/ 안에만 둡니다.
+
+# 원본 데이터 — 전면 차단
+data/
+raw/
+**/data/
+*_raw_*
+out/
+
+# 내보내기 파일
+*.zip
+*.tar
+*.tar.gz
+Takeout*/
+KakaoTalk*
+*카카오톡*
+*카톡*
+삼성헬스*
+SamsungHealth*
+apple_health*
+export.xml
+conversations.json
+
+# 생성 결과물 (사람마다 다름 — 공유 대상 아님)
+gyeol_data.json
+mined_data.json
+*_report_*.html
+*_wall_*.html
+gyeol_report.html
+gyeol_wall.html
+
+# 사진
+*.jpg
+*.jpeg
+*.png
+*.heic
+*.HEIC
+*.mp4
+*.mov
+!docs/assets/*.png
+
+# 파이썬
+__pycache__/
+*.pyc
+.venv/
+venv/
 .env
-*.env
-node_modules/
+
+# OS / 에디터
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
