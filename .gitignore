@@ -55,3 +55,20 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# 웹앱 (MineD, web/) 관련
+node_modules/
+dist/
+.pytest_cache/
+web/public/pyodide/
+web/public/models/
+web/test-results/
+web/playwright-report/
+
+# 필터 시험셋 원본(AI 생성 PNG, 재생성 가능)
+web/lab/testset/raw/
+web/dist-lab/
+web/dist-cli/
+
+# 합성 인물 산출물(재생성: core/.venv/bin/python synth/make_persona.py)
+synth/out/

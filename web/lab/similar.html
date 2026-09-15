@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>비슷한 사진 묶기 시험</title>
+    <style>
+      body { font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif; margin: 24px; color: #16151a; background: #fbfaf8; }
+      h1 { font-size: 20px; font-weight: 600; }
+      #status { color: #5d5966; margin: 8px 0 16px; }
+    </style>
+  </head>
+  <body>
+    <h1>비슷한 사진 묶기 시험 (기기 안에서만 실행)</h1>
+    <input id="files" type="file" multiple accept="image/*" />
+    <div id="status">사진을 고르면 흔한 변형을 만들어 원본과 묶이는지, 서로 다른 사진이 잘못 묶이는지 잽니다.</div>
+    <script type="module" src="/src/lab/similarLab.ts"></script>
+  </body>
+</html>
