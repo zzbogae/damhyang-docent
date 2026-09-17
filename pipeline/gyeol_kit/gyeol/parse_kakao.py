@@ -62,7 +62,7 @@ def _h24(mer: str, h: int) -> int:
 RE_A_DATE = re.compile(r'^-+\s*(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일.*-+\s*$')
 RE_A_MSG = re.compile(r'^\[(.+?)\]\s*\[(오전|오후)\s*(\d{1,2}):(\d{2})\]\s*(.*)$')
 
-# ── B) 안드로이드·맥 ────────────────────────────────────────
+# ── B) 안드로이드 / 맥 ──────────────────────────────────────
 RE_B = re.compile(
     r'^(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일\s*(오전|오후)\s*(\d{1,2}):(\d{2}),\s*(.+?)\s*:\s?(.*)$')
 
@@ -70,7 +70,7 @@ RE_B = re.compile(
 RE_C = re.compile(
     r'^(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\.\s*(오전|오후)\s*(\d{1,2}):(\d{2}),\s*(.+?)\s*:\s?(.*)$')
 
-# 영어 UI
+# 영문 UI
 RE_EN = re.compile(
     r'^(\w{3,9}) (\d{1,2}), (\d{4}) at (\d{1,2}):(\d{2})\s*(AM|PM), (.+?) : (.*)$')
 _EN_MONTH = {m: i + 1 for i, m in enumerate(
@@ -119,7 +119,7 @@ def parse_kakao_txt(path: str) -> list[Message]:
                     hit = (int(y), _EN_MONTH[mon], int(d), mer, int(h), int(mi), sender, text)
 
         if hit is None:
-            # 앞 메시지의 여러 줄째 이어붙임
+            # 앞 메시지의 이어지는 줄
             if msgs:
                 msgs[-1].text += '\n' + line
             continue
@@ -172,9 +172,9 @@ def list_senders(msgs: list[Message]) -> dict:
 
 def guess_my_name(msgs: list[Message], hint: str | None = None) -> str | None:
     """
-    내 이름 찾기. hint가 있으면 완전 일치나 부분 일치로 먼저 찾고,
-    없으면 2명 대화방에서 발신자 이름 중 걸 스스로 고르게 하는 건 None을 돌려준다.
-    (호출 측에서 상호작용으로 알려주든 통계로 판단하든 넘기는 쪽)
+    내 이름 추정. hint가 있으면 부분일치로 찾고,
+    없으면 2인 대화방에서 발화 수가 많은 쪽을 고르지 않고 None을 돌려준다.
+    (틀린 추측으로 조용히 잘못된 분석을 하느니 물어보는 편이 낫다)
     """
     senders = list_senders(msgs)
     if hint:
@@ -185,7 +185,7 @@ def guess_my_name(msgs: list[Message], hint: str | None = None) -> str | None:
 
 
 def extract_my_messages(all_messages: list[Message], my_name: str) -> list[dict]:
-    """내 메시지만. 상대방 메시지에는 답장 지연 계산에 필요한 정보를 남겨서 넘긴다."""
+    """내 발화만. 상대방 메시지는 답장 지연 계산에만 쓰고 내용은 버린다."""
     my_msgs = []
     last_other_dt = None
     for msg in all_messages:
@@ -209,13 +209,13 @@ def extract_my_messages(all_messages: list[Message], my_name: str) -> list[dict]
 
 def load_many(paths: list[str], my_name: str | None):
     """
-    여러 대화방 파일을 한꺼번에. 이름을 못 알아내면 (None, 후보목록)을 돌려준다.
+    여러 대화방 파일을 한꺼번에. 이름을 못 찾으면 (None, 진단정보)를 돌려준다.
     """
     all_msgs, per_file = [], []
     for p in paths:
         try:
             m = parse_kakao(p)
-        except Exception as e:                                     # noqa: BLE001
+        except Exception as e:                       # noqa: BLE001
             per_file.append((os.path.basename(p), 0, f'읽기 실패: {e}'))
             continue
         per_file.append((os.path.basename(p), len(m), None))

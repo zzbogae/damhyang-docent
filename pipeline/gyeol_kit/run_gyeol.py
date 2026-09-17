@@ -20,7 +20,7 @@ if sys.version_info < PY_MIN:
     sys.stderr.write(
         f"\n이 키트는 파이썬 {PY_MIN[0]}.{PY_MIN[1]} 이상이 필요합니다.\n"
         f"지금 쓰시는 건 {sys.version.split()[0]} 입니다.\n"
-        f"python.org/downloads 에서 최신 버글 받으시면 됩니다.\n\n")
+        f"python.org/downloads 에서 최신 버전을 받으시면 됩니다.\n\n")
     raise SystemExit(1)
 
 import argparse
@@ -130,13 +130,13 @@ def load_all(found, my_name_hint, interactive):
                 if days < 400:
                     for it in info:
                         if it['key'] == 'youtube':
-                            it['warn'] = (f'{days // 30}개월치뿐입니다 - 구글 계정의 '
-                                          f'"활동 기록" 화면이 아닐 수 있습니다')
+                            it['warn'] = (f'{days // 30}개월치뿐입니다 — 구글 계정의 '
+                                          f'"활동 자동 삭제"가 켜져 있을 수 있습니다')
 
     # 3) AI 대화 (별도 conversations.json)
     paths = found.get('ai_chat') or []
     if paths:
-        log('▸ AI 대화 기록 찾는 중…')
+        log('▸ AI 대화 기록 읽는 중…')
         recs, vend = parse_ai.load_ai_chats(paths)
         if recs:
             W = defaultdict(lambda: [0, 0])
@@ -158,20 +158,20 @@ def load_all(found, my_name_hint, interactive):
                                  end=recs[-1]['dt'].date(), weeks=len(prev),
                                  files=' + '.join(f'{k} {v:,}건' for k, v in vend.items()),
                                  gives_actual=['ai_count', 'ai_night_ratio'],
-                                 warn='벤더가 둘 이상 섞여 있으면 시각적 흐름은 유지하되 정확도가 떨어질 수 있습니다'))
+                                 warn='내용은 읽지 않았습니다. 시각과 횟수만 셌습니다.'))
                 log(f'  {len(recs):,}건 · {len(prev)}주')
 
     # 3-b) 메모
     paths = found.get('notes') or []
     if paths:
-        log('▸ 메모 기록 있는 곳 찾는 중…')
+        log('▸ 메모 기록 읽는 중…')
         rows = []
         for p_ in paths:
             rows += parse_notes.load_notes_csv(p_)
         before = len(rows)
-        rows = parse_notes.dedupe(rows)      # 포맷 다른 두 번 내보내기 겹칠 수도 있어 방어
+        rows = parse_notes.dedupe(rows)      # 파일이 여러 개면 합친 뒤 다시 한 번
         if before != len(rows):
-            log(f'  {before - len(rows):,}건 중복 제거 (같은 메모를 두 번 내보냄)')
+            log(f'  중복 {before - len(rows):,}개 제거 (같은 메모를 두 번 내보낸 파일)')
         if rows:
             wk = parse_notes.weekly_notes(rows)
             weekly['notes'] = wk
@@ -182,14 +182,14 @@ def load_all(found, my_name_hint, interactive):
                              weeks=len(wk),
                              files=', '.join(os.path.basename(x) for x in paths),
                              gives_actual=gives,
-                             warn=None if n_len else '거의 모두 짧아서 글자수 집계에는 정확도가 떨어질 수 있습니다 - 감성 분석엔 영향 없음'))
-            log(f'  {len(rows):,}건 · {len(wk)}주'
-                + ('' if n_len else '  (거의 짧은 메모)'))
+                             warn=None if n_len else '글자 수를 못 가져왔습니다 — 작성 시각만으로 셉니다'))
+            log(f'  {len(rows):,}개 · {len(wk)}주'
+                + ('' if n_len else '  (글자 수 없음)'))
 
     # 3-c) 사진
     paths = found.get('photo') or []
     if paths:
-        log('▸ 사진 촬영 기록 있는 곳 찾는 중…')
+        log('▸ 사진 촬영 기록 읽는 중…')
         rows = []
         for p_ in paths:
             rows += parse_photos.load_photos_csv(p_)
@@ -205,32 +205,33 @@ def load_all(found, my_name_hint, interactive):
                              weeks=len(wk),
                              files=' · '.join(f'{k} {v:,}' for k, v in sorted(kinds.items())),
                              gives_actual=gives,
-                             warn='사진 촬영 시각을 씁니다. 촬영 시각 정보가 없으면 정확도가 떨어집니다.'))
+                             warn='사진을 열지 않았습니다. 촬영 시각과 종류만 셌습니다.'))
             log(f'  {len(rows):,}장 · {len(wk)}주  ({kinds})')
 
     # 4) 카카오톡
     paths = found.get('kakao') or []
     if paths:
-        log('▸ 카카오톡 기록 있는 곳 찾는 중…')
+        log('▸ 카카오톡 읽는 중…')
         msgs, senders, resolved, per_file = parse_kakao.load_many(paths, my_name_hint)
         for fn, n, err in per_file:
-            log(f'  {fn}: {n:,}건' + (f'  ⚠ {err}' if err else ''))
+            log(f'  {fn}: {n:,}줄' + (f'  ⚠ {err}' if err else ''))
 
         if not resolved and senders:
             top = list(senders.items())[:12]
-            log('\n  이 대화방 참가자들:')
+            log('\n  이 대화방의 참가자:')
             for i, (s, n) in enumerate(top, 1):
                 log(f'    {i}. {s}  ({n:,}건)')
             if interactive:
                 try:
-                    ans = input('\n  이 중 본인은 몇 번인가요? (해당 없으면, 건너뛰려면 Enter) ').strip()
+                    ans = input('\n  이 중 본인은 몇 번입니까? (숫자 입력, 건너뛰려면 Enter) ').strip()
                     if ans.isdigit() and 1 <= int(ans) <= len(top):
                         resolved = top[int(ans) - 1][0]
                 except (EOFError, KeyboardInterrupt):
                     pass
             if not resolved:
-                log('  ⚠ 본인 이름을 못 찾았습니다. 카카오톡 분석은 건너뜁니다. '
-                    '다시 시도하려면  python3 run_gyeol.py --name "홍길동"  으로 실행해주세요.')
+                log('  ⚠ 본인 이름을 못 찾아 카톡을 건너뜁니다. '
+                    '다시 실행할 때  python3 run_gyeol.py --name "표시되는이름"  으로 알려주세요.')
+
         if resolved:
             my = parse_kakao.extract_my_messages(msgs, resolved)
             text_msgs = [m for m in my if not m['is_attachment']]
@@ -252,7 +253,7 @@ def load_all(found, my_name_hint, interactive):
     return weekly, info, health_rows
 
 
-# ── 병합 · 판정 ─────────────────────────────────────────────
+# ── 병합 · 판정 ──────────────────────────────────────────────
 
 def merge_weekly(weekly_by_channel):
     merged = defaultdict(dict)
@@ -265,16 +266,16 @@ def merge_weekly(weekly_by_channel):
 
 
 def main():
-    ap = argparse.ArgumentParser(description='「결」 — 내 데이터로 필요한 번「')
-    ap.add_argument('--name', default=None, help='카톡에 톜시롘뤤는 본인 이름')
+    ap = argparse.ArgumentParser(description='「결」 — 내 데이터로 한 번 돌려보기')
+    ap.add_argument('--name', default=None, help='카톡에 표시되는 본인 이름')
     ap.add_argument('--data', default=os.path.join(HERE, 'data'))
     ap.add_argument('--out', default=os.path.join(HERE, 'out'))
-    ap.add_argument('--who', default='', help='리포트에 적을 이놑 (선택)')
-    ap.add_argument('--yes', action='store_true', help='물어보지 않고 쥸행')
+    ap.add_argument('--who', default='', help='리포트에 적을 이름 (선택)')
+    ap.add_argument('--yes', action='store_true', help='물어보지 않고 진행')
     ap.add_argument('--exclude', action='append', default=[],
-                    metavar='시작:―çtype문간',
-                    help='되돌려받고 싶지 알지 기간. 예: --exclude 2024-09-01:2024-10-31 '
-                         '(여러 번 쓸 수 있으Ꙍ)')
+                    metavar='시작:끝',
+                    help='되돌려받고 싶지 않은 기간. 예: --exclude 2024-09-01:2024-10-31 '
+                         '(여러 번 쓸 수 있습니다)')
     args = ap.parse_args()
 
     user_ranges = []
@@ -283,7 +284,7 @@ def main():
             a, b = r.split(':')
             user_ranges.append((a.strip(), b.strip()))
         except ValueError:
-            log(f'⚠ --exclude 형식이 얘못됐습니다: {r}  (예: 2024-09-01:2024-10-31)')
+            log(f'⚠ --exclude 형식이 잘못됐습니다: {r}  (예: 2024-09-01:2024-10-31)')
             return 1
 
     os.makedirs(args.out, exist_ok=True)
@@ -294,8 +295,8 @@ def main():
 
     found = detect.scan(args.data)
     if not found or set(found) == {'_unknown'}:
-        log(f'\n data/ 폴더에 알아볼 수 있는 파일이 없습니다.\n   경읜: {args.data}')
-        log('   START_HERE.html 퀄으세어일 소었에 보은 없정리습니다.')
+        log(f'\n data/ 폴더에 알아볼 수 있는 파일이 없습니다.\n   경로: {args.data}')
+        log('   START_HERE.html 을 열어 채널 하나만이라도 받아서 넣어주세요.')
         return 1
 
     for ch, ps in found.items():
