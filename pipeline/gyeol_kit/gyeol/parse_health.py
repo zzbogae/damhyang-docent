@@ -24,6 +24,33 @@ def _week_key(d) -> str:
     return f"{iso[0]}-W{iso[1]:02d}"
 
 
+def merge_daily_rows(rows_by_source: list[tuple[str, list[dict]]]) -> list[dict]:
+    """여러 건강 소스(애플/삼성/직접 CSV)의 일 단위 행을 날짜·필드 단위로 합친다.
+
+    `rows_by_source`는 [(소스 키, rows), ...] 로, **앞에 올수록 우선순위가 높다**
+    (기기 자동 기록인 애플/삼성이 사람이 직접 만든 CSV보다 우선). 같은 날짜에 여러
+    소스가 값을 갖고 있으면, 필드(steps/sleep_hours) 단위로 우선순위가 높은 소스의
+    값을 쓰고, 그 소스에 그 필드가 없을 때만 다음 소스로 넘어간다.
+
+    이렇게 날짜·필드 단위로 합치는 이유: 이전에는 소스별로 주 단위 평균을 각각 낸 뒤
+    `merge_weekly`가 채널 순서대로(마지막이 health_csv) 그냥 덮어썼다. 그 결과 애플
+    건강에 이미 있는 주라도 CSV에 그 주 값이 하나라도 있으면 애플 쪽 수면 기록이
+    통째로 CSV 값으로 바뀌어 버렸다(쉼 축 커버리지 저하의 원인 후보 — 팀 문서
+    `docs/team_spec_sync_260913.md` §1-6 참고). 날짜·필드 단위로 먼저 합쳐두면
+    이런 소스 간 통째 덮어쓰기가 생기지 않는다.
+    """
+    by_date: dict = {}
+    for _source, rows in rows_by_source:
+        for r in rows:
+            d = r['date']
+            slot = by_date.setdefault(d, {'date': d, 'steps': None, 'sleep_hours': None})
+            if slot['steps'] is None and r.get('steps') is not None:
+                slot['steps'] = r['steps']
+            if slot['sleep_hours'] is None and r.get('sleep_hours') is not None:
+                slot['sleep_hours'] = r['sleep_hours']
+    return [by_date[d] for d in sorted(by_date)]
+
+
 def compute_weekly_health(rows: list[dict]) -> dict:
     weekly = defaultdict(lambda: {'steps': [], 'sleep': []})
     for r in rows:

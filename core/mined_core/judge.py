@@ -241,5 +241,169 @@ def axes_for(w: int, P: dict[str, dict]) -> dict:
     return out
 
 
+# ══════════════════════════════════════════════════════════════════════════
+# 축별 robust z-score 엔진 — docs/team_spec_sync_260913.md §1 확정값 이식
+#
+# 아래 함수들은 드라이브에서 확정된 새 판정 설계(백분위+배지 대신 축 단위 z-score)의
+# **통계 계산 부분만** 구현한다. 위쪽의 rolling_percentile/make_badges/mineral_shape 와
+# run.py 의 배지·에피소드·교차검증·널모델 로직은 아직 그대로 percentile 방식을 쓴다 —
+# 둘을 실제로 연결하는 작업(run.py 재작성)은 범위가 커서 이번에는 하지 않기로 했다.
+# 이유: (1) run.py 전체가 지표별 percentile+배지 구조에 얽혀 있어 파급 범위가 크고,
+# (2) 다지표 축(화면·기록)을 지표별 z에서 축 단위 z 하나로 합치는 방법이
+# team_spec_sync_260913.md 에 명시돼 있지 않다 — 팀 문서는 실제 파이프라인 지표
+# (avg_steps, yt_total 등 이미 단일 값)를 전제로 τ를 확정했지, 이 저장소처럼 한 축에
+# 여러 지표(예: screen = yt_watch + yt_search + ai_msg + ...)가 있을 때 어떻게 합칠지는
+# 다루지 않는다. 개인 건강 판정 로직이라 이 부분을 어설프게 임의로 정해서 조용히 틀린 채로
+# 넘어가는 위험을 피하려고, 아래 함수는 "지표 하나짜리 축"(steps·sleep)에 바로 쓸 수 있는
+# 형태로 구현하고, 다지표 축(screen·record) 합성 방식은 팀 확인이 온 뒤 연결하기로 한다.
+#
+# 이 저장소의 축 코드 ↔ team_spec_sync 문서의 축 코드: steps=move, sleep=rest,
+# screen=watch, record=leave (코드명만 다르고 같은 축이다 — indicators.py AXES 참고).
+
+AXIS_TAU = {
+    # 직전 52주 대비 robust z 절댓값 상위 7.5% 지점(팀 800주 캘리브레이션, 2026-09-11 확정).
+    # 고정 z=2 문턱은 실패로 확인됨 — 개인 시계열은 꼬리가 두꺼워 z=2가 상위 5%보다 훨씬
+    # 흔하게 나온다. 반드시 이 percentile 기반 값을 쓴다.
+    "steps": 3.03,   # move
+    "sleep": 2.36,   # rest
+    "screen": 1.99,  # watch
+    "record": 2.16,  # leave
+}
+AXIS_TAU_RATIO = 0.6  # 형석 조건의 "다른 축 하나가 |z| ≥ 0.6×τ"
+
+# 건수형·꼬리가 긴 지표는 z 계산 전에 log1p 를 먼저 씌운다(§1-1). 팀 문서의 원래 지표명
+# (yt_total·yt_search·notes_count·photo_count·ai_count·avg_reply_delay_min)을 이
+# 저장소의 지표 id로 옮긴 것 — 이게 없으면 보기(screen) 축에 판정이 쏠린다(멘토 조언,
+# 2026-09-11). steps·sleep 은 건수가 아니라 하루 평균 수준값이라 log1p 대상이 아니다.
+LOG1P_INDICATORS = {"yt_watch", "yt_search", "memo_n", "photo_n", "ai_msg", "kakao_delay"}
+
+D_SPEC = {  # 확인 등급 스펙 D 확정(§1-3)
+    "sustain": 4,     # 재진입 후 이만큼 연속으로 밴드 안이면 held
+    "wait_cap": 4,    # 이탈 후 이 창 안에 재진입해야 '복귀'로 인정
+    "min_history": 12,  # 이력 12주 미만인 축은 항상 "기록 없음"
+}
+
+
+def robust_z(v: np.ndarray, window: int = 52, min_history: int = 12, log1p: bool = False):
+    """직전 window 주 대비 median·MAD 기반 robust z (team_spec_sync §1-1, §1-5).
+
+    - `log1p=True`면 값·기준 양쪽에 log1p를 먼저 씌운다(건수형 지표의 두꺼운 꼬리 보정).
+    - 기준 주가 `min_history`보다 적으면 "기록 없음"(NaN, reason="baseline_short").
+    - 표준 스케일링 상수 1.4826(MAD→σ, 정규분포 가정 하의 관례적 보정값)을 쓴다. 이 값은
+      team_spec_sync 문서에 직접 적혀 있지 않지만, 문서가 명시한 대체 상수 1.2533
+      (평균절대편차→σ 보정값)과 같은 종류의 보정이라 표준값을 그대로 썼다.
+    - MAD==0 이면 **평균절대편차(mean absolute deviation) × 1.2533**으로 대체(§1-5 확정).
+      그것도 0이면 "기록 없음"(reason="no_spread") — 억지로 큰 수를 만들지 않는다.
+
+    반환: (z: np.ndarray, reason: list[str|None])  # reason: 'missing'|'baseline_short'|'no_spread'|None
+    """
+    n = len(v)
+    z = np.full(n, np.nan)
+    reason: list[str | None] = [None] * n
+    x = np.log1p(v) if log1p else v.astype(float)
+    for w in range(n):
+        cur = x[w]
+        if np.isnan(cur):
+            reason[w] = "missing"
+            continue
+        s = max(0, w - window)
+        base = x[s:w]
+        base = base[~np.isnan(base)]
+        if len(base) < min_history:
+            reason[w] = "baseline_short"
+            continue
+        med = float(np.median(base))
+        mad = float(np.median(np.abs(base - med)))
+        if mad > 0:
+            sigma = 1.4826 * mad
+        else:
+            meanad = float(np.mean(np.abs(base - med)))
+            sigma = 1.2533 * meanad if meanad > 0 else 0.0
+        if sigma == 0:
+            reason[w] = "no_spread"
+            continue
+        z[w] = (cur - med) / sigma
+    return z, reason
+
+
+def axis_extreme(z: float, axis: str, ratio: float = 1.0) -> bool:
+    """그 축의 |z| 가 τ(또는 ratio 배)를 넘는지. NaN이면 항상 False."""
+    if z is None or np.isnan(z):
+        return False
+    return abs(z) >= AXIS_TAU[axis] * ratio
+
+
+def hyeongseok_condition(axis_z: dict[str, float], axis_families: dict[str, set]) -> dict:
+    """형석(교차검증) 계단식 조건 (team_spec_sync §1-2).
+
+        최대 축의 |z| ≥ τ
+        AND 다른 축 하나가 |z| ≥ 0.6 × τ
+        AND 그 두 축을 채운 계열이 서로 다른 출처 2종 이상
+
+    ⚠ 문서에 "0.6×τ"의 τ가 최대 축 것인지 그 다른 축 자신 것인지 명시가 없다(축마다
+    τ가 1.99~3.03로 다르다). 두 절이 "그 축의 |z| ≥ (계수)×그 축의 τ" 형태로 병렬 구조인
+    점에 근거해 **그 다른 축 자신의 τ**로 구현했다 — 반대로 읽으면 어느 축이 최대냐에 따라
+    같은 축 쌍의 판정이 뒤바뀌는 비대칭이 생겨서다. **팀 확인 필요.**
+
+    `axis_z`: {축: 그 주 z} (결측 축은 키를 빼거나 NaN으로). `record`(남기기)처럼 지표가
+    여러 개인 축은 호출하기 전에 이미 하나의 축 z로 합쳐져 있어야 한다(위 큰 주석 참고 —
+    이 합성 방법은 아직 팀 확인 전이라 여기서 정하지 않음). `axis_families`: {축: 그 축을
+    채운 지표들의 family 집합}(indicators.py의 family) — 교차검증엔 "다른 출처"가 필요하므로.
+    캘린더(`cal_events`)는 처음부터 이 dict에 넣지 않는다(§1-2: 형석 판단에서 제외).
+
+    반환: {"holds": bool, "max_axis", "second_axis", "reason"}
+    """
+    valid = {a: z for a, z in axis_z.items() if z is not None and not np.isnan(z)}
+    if not valid:
+        return {"holds": False, "max_axis": None, "second_axis": None, "reason": "no_data"}
+    max_axis = max(valid, key=lambda a: abs(valid[a]))
+    if not axis_extreme(valid[max_axis], max_axis):
+        return {"holds": False, "max_axis": max_axis, "second_axis": None, "reason": "max_axis_below_tau"}
+    # "다른 축 하나가 |z| ≥ 0.6×τ" — 두 절이 "그 축의 |z| ≥ (계수)×그 축의 τ" 형태로
+    # 병렬 구조라, 0.6배는 '최대 축'의 τ가 아니라 **그 다른 축 자신의 τ**에 곱한다
+    # (그렇지 않으면 τ가 축마다 달라서(1.99~3.03) 어느 축이 최대냐에 따라 같은 축 쌍의
+    # 판정이 뒤바뀌는 비대칭이 생긴다).
+    candidates = sorted((a for a in valid if a != max_axis and axis_extreme(valid[a], a, AXIS_TAU_RATIO)),
+                        key=lambda a: -abs(valid[a]))
+    if not candidates:
+        return {"holds": False, "max_axis": max_axis, "second_axis": None, "reason": "no_second_axis"}
+    fams_max = axis_families.get(max_axis, set())
+    for a in candidates:
+        if len(fams_max | axis_families.get(a, set())) >= 2:
+            return {"holds": True, "max_axis": max_axis, "second_axis": a, "reason": "ok"}
+    return {"holds": False, "max_axis": max_axis, "second_axis": candidates[0], "reason": "same_source_only"}
+
+
+def grade_d(band_ok: list[bool | None], sustain: int = 4, wait_cap: int = 4) -> str:
+    """확인 등급 스펙 D (team_spec_sync §1-3, 화면 문구는 gyeol/axes.py GRADE_TEXT 정본).
+
+    `band_ok`: 이탈 다음 주부터(0번 인덱스) 관찰된 주들이 '평소 범위'(밴드) 안인지.
+    True=밴드 안, False=밴드 밖(다시 이탈), None=그 주 기록 없음(결측 — 확인 불가).
+    길이는 최소 `wait_cap`, 지속 확인까지 보려면 `wait_cap + sustain - 1` 이상 필요.
+
+    - 관찰 구간 전체가 결측(None)이면 `insufficient`("기록이 비어 말할 수 없습니다").
+    - `wait_cap` 주 안에서 처음 True 가 나온 주부터 `sustain` 주 연속이 **전부 확인된 True**
+      면 `held`("그 뒤 4주는 평소 범위였습니다").
+    - 복귀(True)는 확인됐지만 지속 구간에 False 나 None(아직 관찰 전 포함)이 섞이면
+      `returned`("돌아왔지만 그 뒤는 확인되지 않았습니다") — "복귀 확신"과 "지속 확신"을
+      분리해서, 지속이 아직 확인 안 됐다고 복귀 자체를 취소하지 않는다.
+    - `wait_cap` 안에 True 가 전혀 없으면(전부 False, 또는 False·None 섞임) `open`
+      ("이 주 뒤는 아직 확인되지 않았습니다") — "복귀 안 했다"고 단정하지 않고, 아직 확인된
+      것이 없다고만 말한다(원칙: 확인되지 않은 것을 확인되었다고 말하지 않는다).
+    """
+    window = band_ok[:wait_cap]
+    if all(b is None for b in window):
+        return "insufficient"
+    return_idx = next((i for i, b in enumerate(window) if b is True), None)
+    if return_idx is None:
+        return "open"
+    sustain_slice = band_ok[return_idx:return_idx + sustain]
+    if len(sustain_slice) == sustain and all(b is True for b in sustain_slice):
+        return "held"
+    return "returned"
+
+
 __all__ = ["DEFAULT_CONFIG", "rolling_percentile", "make_badges", "sentence_for", "mineral_shape", "axes_for",
-           "rank_phrase", "AXIS_LABEL"]
+           "rank_phrase", "AXIS_LABEL",
+           "AXIS_TAU", "AXIS_TAU_RATIO", "LOG1P_INDICATORS", "D_SPEC",
+           "robust_z", "axis_extreme", "hyeongseok_condition", "grade_d"]

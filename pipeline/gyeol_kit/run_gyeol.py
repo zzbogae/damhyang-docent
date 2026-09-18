@@ -66,6 +66,13 @@ def load_all(found, my_name_hint, interactive):
     weekly, info, health_rows = {}, [], None
 
     # 1) 건강
+    # 애플/삼성/직접 CSV 세 소스는 같은 두 필드(steps, sleep_hours)를 채운다.
+    # 예전에는 소스별로 주 평균을 따로 낸 뒤 merge_weekly가 채널 순서대로(마지막이
+    # health_csv) 그냥 덮어써서, 애플 건강에 이미 있던 주의 수면 기록이 CSV 쪽 값으로
+    # 통째로 바뀔 수 있었다(쉼 축 커버리지 저하 후보 원인 — team_spec_sync_260913.md
+    # §1-6). 지금은 날짜·필드 단위로 먼저 합친 뒤(parse_health.merge_daily_rows,
+    # 애플·삼성이 CSV보다 우선) 주 평균을 한 번만 낸다.
+    health_by_source = []
     for key in ('health_apple', 'health_samsung', 'health_csv'):
         paths = found.get(key) or []
         if not paths:
@@ -80,19 +87,27 @@ def load_all(found, my_name_hint, interactive):
         if not rows:
             continue
         health_rows = (health_rows or []) + rows
-        w = parse_health.compute_weekly_health(rows)
-        weekly[key] = {k: {kk: vv for kk, vv in v.items() if vv is not None}
-                       for k, v in w.items()}
+        health_by_source.append((key, rows))
         n_step = sum(1 for r in rows if r.get('steps') is not None)
         n_sleep = sum(1 for r in rows if r.get('sleep_hours') is not None)
         gives = (['avg_steps'] if n_step else []) + (['avg_sleep'] if n_sleep else [])
         s, en = min(r['date'] for r in rows), max(r['date'] for r in rows)
         info.append(dict(key=key, label=BY_KEY[key]['label'], n=len(rows),
-                         start=s, end=en, weeks=len(weekly[key]),
+                         start=s, end=en, weeks=None,  # 아래 병합 후 채움
                          files=', '.join(os.path.basename(p) for p in paths),
                          gives_actual=gives,
                          warn=None if n_sleep else '수면 기록이 없습니다 — 걸음수만으로 판정합니다'))
-        log(f'  걸음 {n_step:,}일 · 수면 {n_sleep:,}일 · {len(weekly[key])}주')
+        log(f'  걸음 {n_step:,}일 · 수면 {n_sleep:,}일')
+
+    if health_by_source:
+        merged_rows = parse_health.merge_daily_rows(health_by_source)
+        w = parse_health.compute_weekly_health(merged_rows)
+        weekly['health'] = {k: {kk: vv for kk, vv in v.items() if vv is not None}
+                            for k, v in w.items()}
+        for it in info:
+            if it['key'] in ('health_apple', 'health_samsung', 'health_csv'):
+                it['weeks'] = len(weekly['health'])
+        log(f"  합쳐서 {len(weekly['health'])}주")
 
     # 2) Takeout (유튜브 + 캘린더 + Gemini)
     paths = found.get('takeout') or []
