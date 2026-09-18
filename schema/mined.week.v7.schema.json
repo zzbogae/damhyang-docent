@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mined.week/7",
+  "title": "Mine D 주 레코드 v7",
+  "type": "object",
+  "required": ["schema", "week", "date_start", "date_end", "candidate", "coverage", "ind", "axes", "badges", "evidence", "tier", "tier_history", "access", "era", "mineral", "shape", "similar", "sentence"],
+  "properties": {
+    "schema": { "const": "mined.week/7" },
+    "week": { "type": "string", "pattern": "^\\d{4}-W\\d{2}$" },
+    "date_start": { "type": "string", "format": "date" },
+    "date_end": { "type": "string", "format": "date" },
+    "candidate": { "type": "boolean" },
+    "coverage": {
+      "type": "object",
+      "propertyNames": { "enum": ["health", "memo", "photo", "yt", "cal", "kakao", "sns", "ai"] },
+      "additionalProperties": { "enum": ["observed", "structural_missing", "partial"] }
+    },
+    "ind": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["v", "pr", "n_base", "rank_low", "rank_high", "why"],
+        "properties": {
+          "v": { "type": ["number", "null"] },
+          "pr": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+          "n_base": { "type": "integer", "minimum": 0 },
+          "rank_low": { "type": ["integer", "null"], "minimum": 1 },
+          "rank_high": { "type": ["integer", "null"], "minimum": 1 },
+          "why": { "enum": [null, "missing", "baseline_short", "no_denominator"] }
+        }
+      }
+    },
+    "axes": {
+      "type": "object",
+      "required": ["steps", "sleep", "screen", "record"],
+      "additionalProperties": {
+        "oneOf": [
+          { "type": "null" },
+          { "type": "object", "required": ["pr", "n_base"], "properties": { "pr": { "type": "number" }, "n_base": { "type": "integer" } } }
+        ]
+      }
+    },
+    "badges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["indicator", "label", "family", "axis", "direction", "pr", "rank", "n_base", "extreme"],
+        "properties": {
+          "direction": { "enum": ["up", "down"] },
+          "rank": { "type": "integer", "minimum": 1 },
+          "extreme": { "enum": [0, 1, 2] }
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["families", "independent", "cross_validated"],
+      "properties": {
+        "families": { "type": "array", "items": { "type": "string" } },
+        "independent": { "type": "integer", "minimum": 0 },
+        "cross_validated": { "type": "boolean" },
+        "linked": { "type": "array", "items": { "type": "object", "required": ["a", "b", "rho"] } }
+      }
+    },
+    "tier": { "enum": [null, "recovered", "passed", "observed"] },
+    "tier_history": {
+      "type": "array",
+      "items": { "type": "object", "required": ["as_of", "tier"], "properties": { "tier": { "enum": ["recovered", "passed", "observed"] } } }
+    },
+    "recovered_after": { "type": ["integer", "null"] },
+    "access": { "enum": ["auto", "confirm"] },
+    "era": { "type": ["string", "null"] },
+    "episode": { "type": ["string", "null"] },
+    "mineral": { "enum": [null, "호박", "청금석", "자수정", "흑요석"] },
+    "shape": { "enum": [null, "angular", "round", "diamond"] },
+    "similar": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["week", "distance", "shared_families", "same_direction"],
+        "properties": { "same_direction": { "type": "array", "items": { "type": "string", "pattern": "^[a-z_]+:(up|down)$" } } }
+      }
+    },
+    "sentence": { "type": ["string", "null"] }
+  }
+}

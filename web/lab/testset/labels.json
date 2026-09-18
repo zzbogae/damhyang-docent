@@ -1,0 +1,314 @@
+[
+ {
+  "file": "ai_selfie.jpg",
+  "hide": true,
+  "reason": "face",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "ai_group_dinner.jpg",
+  "hide": true,
+  "reason": "face",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "ai_park_far.jpg",
+  "hide": true,
+  "reason": "face",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "15m 거리 작은 얼굴",
+  "hard": true
+ },
+ {
+  "file": "ai_profile_sea.jpg",
+  "hide": true,
+  "reason": "face",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "옆얼굴",
+  "hard": true
+ },
+ {
+  "file": "ai_birthday.jpg",
+  "hide": true,
+  "reason": "face",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "ai_hiking_two.jpg",
+  "hide": true,
+  "reason": "face",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "ai_mirror_selfie.jpg",
+  "hide": true,
+  "reason": "face",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "폰이 얼굴 일부를 가림",
+  "hard": false
+ },
+ {
+  "file": "ai_concert_crowd.jpg",
+  "hide": true,
+  "reason": "face",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "관객 얼굴이 아주 작음",
+  "hard": true
+ },
+ {
+  "file": "ai_doc_desk.jpg",
+  "hide": true,
+  "reason": "text",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "ai_receipt.jpg",
+  "hide": true,
+  "reason": "text",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "ai_whiteboard.jpg",
+  "hide": true,
+  "reason": "text",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "ai_laptop_sheet.jpg",
+  "hide": true,
+  "reason": "text",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "화면 속 표",
+  "hard": false
+ },
+ {
+  "file": "ai_notebook.jpg",
+  "hide": true,
+  "reason": "text",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "손글씨 일기",
+  "hard": false
+ },
+ {
+  "file": "ai_mountain.jpg",
+  "hide": false,
+  "reason": "",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "ai_bibimbap.jpg",
+  "hide": false,
+  "reason": "",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "ai_cat_sofa.jpg",
+  "hide": false,
+  "reason": "",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "ai_neon_street.jpg",
+  "hide": false,
+  "reason": "",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "멀리 간판 글자",
+  "hard": false
+ },
+ {
+  "file": "ai_beach_sunset.jpg",
+  "hide": false,
+  "reason": "",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "ai_flowers.jpg",
+  "hide": false,
+  "reason": "",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "ai_bookshelf.jpg",
+  "hide": false,
+  "reason": "",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "책등 글자",
+  "hard": false
+ },
+ {
+  "file": "ai_skyline.jpg",
+  "hide": false,
+  "reason": "",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "ai_latte.jpg",
+  "hide": false,
+  "reason": "",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "ai_dog_park.jpg",
+  "hide": false,
+  "reason": "",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "ai_backs.jpg",
+  "hide": false,
+  "reason": "",
+  "source": "AI 생성(OpenRouter gemini-3.1-flash-image-preview), 가상 인물",
+  "note": "뒷모습만",
+  "hard": false
+ },
+ {
+  "file": "mp_portrait.jpg",
+  "hide": true,
+  "reason": "face",
+  "source": "MediaPipe 공개 시험 이미지(storage.googleapis.com/mediapipe-assets, Apache-2.0)",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "mp_portrait_rotated.jpg",
+  "hide": true,
+  "reason": "face",
+  "source": "MediaPipe 공개 시험 이미지(storage.googleapis.com/mediapipe-assets, Apache-2.0)",
+  "note": "픽셀 자체가 90도 돌아간 사진",
+  "hard": true
+ },
+ {
+  "file": "mp_pose.jpg",
+  "hide": true,
+  "reason": "face",
+  "source": "MediaPipe 공개 시험 이미지(storage.googleapis.com/mediapipe-assets, Apache-2.0)",
+  "note": "작은 옆얼굴",
+  "hard": true
+ },
+ {
+  "file": "mp_cats_and_dogs.jpg",
+  "hide": false,
+  "reason": "",
+  "source": "MediaPipe 공개 시험 이미지(storage.googleapis.com/mediapipe-assets, Apache-2.0)",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "mp_burger.jpg",
+  "hide": false,
+  "reason": "",
+  "source": "MediaPipe 공개 시험 이미지(storage.googleapis.com/mediapipe-assets, Apache-2.0)",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "exif_rot_selfie.jpg",
+  "hide": true,
+  "reason": "face",
+  "source": "ai_selfie 를 눕히고 EXIF Orientation=6",
+  "note": "브라우저가 EXIF 방향을 적용해야 얼굴이 섬",
+  "hard": false
+ },
+ {
+  "file": "pil_doc_desk.jpg",
+  "hide": true,
+  "reason": "text",
+  "source": "PIL 렌더링 가상 문서",
+  "note": "책상 위 기울어진 A4",
+  "hard": false
+ },
+ {
+  "file": "pil_receipt.jpg",
+  "hide": true,
+  "reason": "text",
+  "source": "PIL 렌더링 가상 영수증",
+  "note": "",
+  "hard": false
+ },
+ {
+  "file": "pil_fake_card.jpg",
+  "hide": true,
+  "reason": "text",
+  "source": "PIL 렌더링 가짜 회원증 + AI 가상 인물 얼굴",
+  "note": "얼굴과 글자가 함께 있음",
+  "hard": false
+ },
+ {
+  "file": "스크린샷 2025-10-03 오후 3.12.45.png",
+  "hide": true,
+  "reason": "screenshot",
+  "source": "PIL 렌더링 가상 대화 화면",
+  "note": "PNG·EXIF 없음·이름",
+  "hard": false
+ },
+ {
+  "file": "Screenshot_20251003-151245.png",
+  "hide": true,
+  "reason": "screenshot",
+  "source": "PIL 렌더링 가상 대화 화면",
+  "note": "PNG·EXIF 없음·이름",
+  "hard": false
+ },
+ {
+  "file": "IMG_4821.jpg",
+  "hide": true,
+  "reason": "text",
+  "source": "PIL 렌더링 가상 대화 화면(JPEG, EXIF 없음, 평범한 이름)",
+  "note": "화면 캡처 규칙은 못 잡고 글자 검출이 잡아야 함",
+  "hard": false
+ },
+ {
+  "file": "KakaoTalk_20251003_landscape.png",
+  "hide": false,
+  "reason": "",
+  "source": "ai_mountain 을 EXIF 없는 PNG 로 저장",
+  "note": "규칙상 화면 캡처로 숨겨지는 알려진 오탐",
+  "hard": false
+ },
+ {
+  "file": "ai_mountain.heic",
+  "hide": false,
+  "reason": "",
+  "source": "ai_mountain.jpg 를 sips 로 HEIC 변환",
+  "note": "HEIC 해독 경로",
+  "hard": false
+ },
+ {
+  "file": "ai_selfie.heic",
+  "hide": true,
+  "reason": "face",
+  "source": "ai_selfie.jpg 를 sips 로 HEIC 변환",
+  "note": "HEIC 해독 경로",
+  "hard": false
+ }
+]

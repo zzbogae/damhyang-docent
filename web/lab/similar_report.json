@@ -1,0 +1,89 @@
+{
+ "n_images": 37,
+ "n_pairs": 666,
+ "thresholds": {
+  "near": 14,
+  "same": 4,
+  "color": 28
+ },
+ "recall_near": {
+  "crop": 0.7027027027027027,
+  "shift": 1,
+  "bright": 1,
+  "rotate": 0.7297297297297297,
+  "burst": 0.918918918918919,
+  "jpeg": 1
+ },
+ "variant_hamming_max": {
+  "crop": 24,
+  "shift": 14,
+  "bright": 12,
+  "rotate": 18,
+  "burst": 19,
+  "jpeg": 8
+ },
+ "distinct_pairs_hamming": {
+  "min": 0,
+  "p10": 25,
+  "median": 32
+ },
+ "false_merge_near": {
+  "n": 7,
+  "rate": 0.010510510510510511,
+  "pairs": [
+   "IMG_4821.jpg ~ Screenshot_20251003-151245.png (6, 색 1)",
+   "IMG_4821.jpg ~ 스크린샷 2025-10-03 오후 3.12.45.png (8, 색 2)",
+   "KakaoTalk_20251003_landscape.png ~ ai_mountain.jpg (0, 색 0)",
+   "Screenshot_20251003-151245.png ~ 스크린샷 2025-10-03 오후 3.12.45.png (8, 색 1)",
+   "ai_doc_desk.jpg ~ pil_doc_desk.jpg (14, 색 12)",
+   "ai_selfie.jpg ~ exif_rot_selfie.jpg (0, 색 0)",
+   "pil_doc_desk.jpg ~ pil_receipt.jpg (14, 색 22)"
+  ]
+ },
+ "false_merge_same": {
+  "n": 2,
+  "rate": 0.003003003003003003
+ },
+ "sweep": [
+  {
+   "near": 8,
+   "recall_mean": 0.6306306306306307,
+   "false_pairs": 5,
+   "pairs": []
+  },
+  {
+   "near": 10,
+   "recall_mean": 0.7387387387387387,
+   "false_pairs": 5,
+   "pairs": []
+  },
+  {
+   "near": 12,
+   "recall_mean": 0.8063063063063063,
+   "false_pairs": 5,
+   "pairs": []
+  },
+  {
+   "near": 14,
+   "recall_mean": 0.891891891891892,
+   "false_pairs": 7,
+   "pairs": []
+  },
+  {
+   "near": 16,
+   "recall_mean": 0.936936936936937,
+   "false_pairs": 8,
+   "pairs": [
+    "ai_doc_desk.jpg ~ pil_receipt.jpg (16)"
+   ]
+  },
+  {
+   "near": 18,
+   "recall_mean": 0.963963963963964,
+   "false_pairs": 8,
+   "pairs": [
+    "ai_doc_desk.jpg ~ pil_receipt.jpg (16)"
+   ]
+  }
+ ]
+}

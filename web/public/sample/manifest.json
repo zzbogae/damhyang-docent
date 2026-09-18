@@ -1,0 +1,62 @@
+{
+ "persona": "short",
+ "notice": "공유용 합성 데이터입니다. 가상 인물의 기록이며 실제 개인 기록이 아닙니다.",
+ "files": [
+  {
+   "url": "data-2026-09-01-claude.zip",
+   "name": "data-2026-09-01-claude.zip",
+   "path": "data-2026-09-01-claude.zip",
+   "type": "application/zip",
+   "size": 85050
+  },
+  {
+   "url": "instagram-doyun_short-2026-09-01.zip",
+   "name": "instagram-doyun_short-2026-09-01.zip",
+   "path": "instagram-doyun_short-2026-09-01.zip",
+   "type": "application/zip",
+   "size": 51409
+  },
+  {
+   "url": "KakaoTalk_20260901_1015_%EC%97%84%EB%A7%88.txt",
+   "name": "KakaoTalk_20260901_1015_엄마.txt",
+   "path": "kakao/KakaoTalk_20260901_1015_엄마.txt",
+   "type": "text/plain",
+   "size": 268687
+  },
+  {
+   "url": "KakaoTalk_20260901_1015_%EC%9C%A4%ED%95%98%EB%9E%8C.txt",
+   "name": "KakaoTalk_20260901_1015_윤하람.txt",
+   "path": "kakao/KakaoTalk_20260901_1015_윤하람.txt",
+   "type": "text/plain",
+   "size": 260189
+  },
+  {
+   "url": "KakaoTalk_20260901_1015_%ED%8C%80%20%EC%B1%84%ED%8C%85.txt",
+   "name": "KakaoTalk_20260901_1015_팀 채팅.txt",
+   "path": "kakao/KakaoTalk_20260901_1015_팀 채팅.txt",
+   "type": "text/plain",
+   "size": 253659
+  },
+  {
+   "url": "photos.zip",
+   "name": "photos.zip",
+   "path": "photos.zip",
+   "type": "application/zip",
+   "size": 809848
+  },
+  {
+   "url": "samsunghealth.zip",
+   "name": "samsunghealth.zip",
+   "path": "samsunghealth.zip",
+   "type": "application/zip",
+   "size": 48857
+  },
+  {
+   "url": "takeout-20260901T011500Z-001.zip",
+   "name": "takeout-20260901T011500Z-001.zip",
+   "path": "takeout-20260901T011500Z-001.zip",
+   "type": "application/zip",
+   "size": 240036
+  }
+ ]
+}

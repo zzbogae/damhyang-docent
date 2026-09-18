@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>사진 안전 필터 시험</title>
+    <style>
+      body { font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif; margin: 24px; color: #16151a; background: #fbfaf8; }
+      h1 { font-size: 20px; font-weight: 600; }
+      #status { color: #5d5966; margin: 8px 0 16px; }
+      #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+      figure { margin: 0; background: #fff; border: 1px solid #dcd8d2; border-radius: 6px; padding: 8px; }
+      figure img { width: 100%; height: 150px; object-fit: cover; border-radius: 4px; background: #eee; }
+      .noimg { height: 150px; border-radius: 4px; background: #f3f1ed; color: #5d5966; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+      figcaption { font-size: 12px; line-height: 1.5; margin-top: 6px; word-break: break-all; }
+      .hidden { color: #a94f38; font-weight: 600; } .ok { color: #2f6b52; font-weight: 600; } .error { color: #7a3d99; font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <h1>사진 안전 필터 시험 (기기 안에서만 실행)</h1>
+    <input id="files" type="file" multiple accept="image/*,.heic" />
+    <div id="status">사진을 고르면 화면 캡처 규칙, 글자 영역, 얼굴 순서로 검사합니다. 주소에 ?prod 를 붙이면 앱 기본값으로 검사합니다.</div>
+    <div id="grid"></div>
+    <script type="module" src="/src/lab/filterLab.ts"></script>
+  </body>
+</html>
