@@ -1,5 +1,6 @@
 // 광물 지하(드라이브 8/22 랜딩 3번 화면을 실제 판정값으로): 화면 전체가 지층이다.
-// 위에 하늘·지표, 아래로 물결 지층 8겹, 가운데 위 민디 눈과 큰 연도(‹ ›), 왼쪽 연도 목록, 오른쪽 아래 민디·로고.
+// 맨 위가 하늘·지표이고, 아래로 스크롤할수록 한 해씩 더 오래된 지층(Team Art Assets 연도별 지층 그림)이 나온다.
+// 가운데 위 민디 눈과 큰 연도는 지금 화면 한가운데 있는 지층의 해를 따라가고, ‹ ›·왼쪽 연도 목록은 그 지층으로 내려가거나 올라간다.
 // 원본은 연도별 무작위 위치·무작위 광물이었지만, 여기서는 광물이 나온 주만 놓는다.
 // 가로 = 그 주가 한 해 중 어디인지(1~53주), 세로 = 광물을 정한 축(걸음·쉼·화면·기록, 깊을수록 아래), 크기 = 서로 다른 근거 수. 난수는 쓰지 않는다.
 // 광물을 곡괭이로 세 번 치면(1·2번은 금이 가고 3번째에 깨짐) 기록 조각 카드가 뜨고, 「상세 페이지에서 이어보기」로 그 주를 연다.
@@ -32,8 +33,7 @@ function Ore({ w, i, onMined }: { w: WeekRecord; i: number; onMined: (w: WeekRec
   const [hit, setHit] = useState(0);
   const wk = Number(w.week.split('-W')[1]);
   const x = 16 + ((wk - 1) / 52) * 66;
-  let y = 45 + (ROW[w.mineral!] ?? 1.5) * 11;
-  if (x > 70 && y > 66) y = 62;
+  const y = 30 + (ROW[w.mineral!] ?? 1.5) * 13;
   const size = 40 + Math.min(3, w.evidence.independent ?? 1) * 8;
   const m = w.mineral as Mineral;
   const click = (e: React.MouseEvent) => {
@@ -42,7 +42,7 @@ function Ore({ w, i, onMined }: { w: WeekRecord; i: number; onMined: (w: WeekRec
     setHits(n); setHit((k) => k + 1);
     if (n === 3) {
       if (settings.sound) playCue('mined');
-      const r = (e.currentTarget as HTMLElement).closest('.minefield')!.getBoundingClientRect();
+      const r = (e.currentTarget as HTMLElement).closest('.mf-content')!.getBoundingClientRect();
       setTimeout(() => { onMined(w, e.clientX - r.left, e.clientY - r.top); setHits(0); }, 260);
     }
   };
@@ -71,61 +71,85 @@ export function MineField() {
     }
     return m;
   }, [weeks]);
-  const years = useMemo(() => [...byYear.keys()].sort((a, b) => b - a), [byYear]);
+  const years = useMemo(() => [...byYear.keys()].sort((a, b) => b - a), [byYear]); // 위가 최근, 아래로 오래됨
   const [year, setYear] = useState<number>();
-  const [pulse, setPulse] = useState(0);
   const [card, setCard] = useState<{ w: WeekRecord; x: number; y: number }>();
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (year === undefined && years.length) setYear(years.find((y) => (byYear.get(y)?.length ?? 0) > 0) ?? years[0]);
-  }, [years, byYear, year]);
-  if (year === undefined) return null;
-  const go = (y: number) => { setYear(y); setPulse((k) => k + 1); setCard(undefined); };
-  const i = years.indexOf(year);
-  const ores = byYear.get(year) ?? [];
-  const W = ref.current?.clientWidth ?? 1200, H = ref.current?.clientHeight ?? 800;
-  const cardPos = card && { left: card.x + 22 + 300 > W ? card.x - 322 : card.x + 22, top: Math.max(10, Math.min(card.y - 30, H - 170)) };
+  const scroller = useRef<HTMLDivElement>(null);
+  const content = useRef<HTMLDivElement>(null);
+  // 화면 한가운데 걸친 지층의 해를 큰 연도로 보여 준다
+  const sync = () => {
+    const sc = scroller.current; if (!sc) return;
+    const mid = sc.getBoundingClientRect().top + sc.clientHeight * 0.55;
+    let cur = years[0];
+    sc.querySelectorAll<HTMLElement>('.mf-layer').forEach((el) => { if (el.getBoundingClientRect().top <= mid) cur = Number(el.dataset.year); });
+    setYear(cur);
+  };
+  useEffect(() => { sync(); }, [years]); // eslint-disable-line react-hooks/exhaustive-deps
+  const go = (y: number | undefined) => {
+    if (y === undefined) return;
+    const el = scroller.current?.querySelector<HTMLElement>(`.mf-layer[data-year="${y}"]`);
+    if (el && scroller.current) scroller.current.scrollTo({ top: el.offsetTop - scroller.current.clientHeight * 0.3, behavior: 'smooth' });
+    setCard(undefined);
+  };
+  const cur = year ?? years[0];
+  const i = years.indexOf(cur);
+  const W = content.current?.clientWidth ?? 1200;
+  const cardPos = card && { left: card.x + 22 + 300 > W ? card.x - 322 : card.x + 22, top: Math.max(10, card.y - 30) };
   return (
-    <div className="minefield" ref={ref} role="region" aria-label="광물 지하">
-      <svg className="mf-strata" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
-        <defs><linearGradient id="mfSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#cfe0e6" /><stop offset="55%" stopColor="#8a8f92" /><stop offset="100%" stopColor="#4b4a4d" /></linearGradient></defs>
-        <rect x="0" y="0" width="1000" height="210" fill="url(#mfSky)" />
-        {LAYERS.map((L) => <path key={L.y} d={`${wave(L.y, L.amp, L.phase)} L1000,1000 L0,1000 Z`} fill={L.color} />)}
-        {LAYERS.map((L) => <path key={`l${L.y}`} d={wave(L.y, L.amp, L.phase)} fill="none" stroke="rgba(255,255,255,.05)" strokeWidth="2" />)}
-      </svg>
+    <div className="minefield" role="region" aria-label="광물 지하">
+      <div className="mf-scroll" ref={scroller} onScroll={sync}>
+        <div className="mf-content" ref={content}>
+          <div className="mf-sky">
+            <svg className="mf-strata" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+              <defs><linearGradient id="mfSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#cfe0e6" /><stop offset="55%" stopColor="#8a8f92" /><stop offset="100%" stopColor="#4b4a4d" /></linearGradient></defs>
+              <rect x="0" y="0" width="1000" height="560" fill="url(#mfSky)" />
+              {LAYERS.slice(0, 5).map((L) => <path key={L.y} d={`${wave(L.y * 2 + 120, L.amp, L.phase)} L1000,1000 L0,1000 Z`} fill={L.color} />)}
+            </svg>
+          </div>
+          {years.map((y, k) => {
+            const st = stratumFor(y);
+            const ores = byYear.get(y) ?? [];
+            return (
+              <section key={y} className="mf-layer" data-year={y} aria-label={`${y}년 지층 · 광물 ${ores.length}개`} style={{ filter: `brightness(${Math.max(0.55, 1 - k * 0.04)})` }}>
+                <img className="mf-band" src={st.src} alt="" />
+                <span className="mf-layer-year" aria-hidden="true">{y}</span>
+                {!st.own && <span className="mf-band-note">이 해의 지층 그림은 아직 없어 다른 해 그림을 씁니다</span>}
+                {ores.map((w, n) => <Ore key={w.week} w={w} i={n} onMined={(ww, x, yy) => setCard({ w: ww, x, y: yy })} />)}
+                {!ores.length && <p className="mf-empty">{y}년에는 평소를 벗어난 주가 없습니다.</p>}
+              </section>
+            );
+          })}
+          <div className="mf-bedrock" aria-hidden="true" />
+          {card && cardPos && (
+            <div className="mf-card" style={cardPos} role="dialog" aria-label="기록 조각">
+              <button className="mf-card-x" onClick={() => setCard(undefined)} aria-label="닫기">✕</button>
+              <div className="mf-card-eyebrow">{rangeLabel(card.w)} · {card.w.mineral}</div>
+              <p className="mf-card-line">{card.w.sentence_plain ?? card.w.sentence}</p>
+              <button className="mf-card-next" onClick={() => select(card.w.week)}>상세 페이지에서 이어보기 →</button>
+            </div>
+          )}
+        </div>
+      </div>
       <div className="mf-scanner" aria-hidden="true"><i /><i /></div>
       <div className="mf-picker">
-        <button className="mf-chev" onClick={() => go(years[i + 1])} disabled={i >= years.length - 1} aria-label="이전 해">‹</button>
-        <h2 className="mf-year" key={pulse}>{year}</h2>
-        <button className="mf-chev" onClick={() => go(years[i - 1])} disabled={i <= 0} aria-label="다음 해">›</button>
+        <button className="mf-chev" onClick={() => go(years[i - 1])} disabled={i <= 0} aria-label="다음 해(위로)">‹</button>
+        <h2 className="mf-year" key={cur}>{cur}</h2>
+        <button className="mf-chev" onClick={() => go(years[i + 1])} disabled={i >= years.length - 1} aria-label="이전 해(아래로)">›</button>
       </div>
       <nav className="mf-years" aria-label="연도">
         {years.map((y) => (
-          <button key={y} className={`mf-yr${y === year ? ' on' : ''}`} onClick={() => go(y)} aria-current={y === year ? 'true' : undefined}>
+          <button key={y} className={`mf-yr${y === cur ? ' on' : ''}`} onClick={() => go(y)} aria-current={y === cur ? 'true' : undefined}>
             <span className="arrow">▶</span>{y}{(byYear.get(y)?.length ?? 0) > 0 && <small> · {byYear.get(y)!.length}</small>}
           </button>
         ))}
       </nav>
-      {(() => { const st = stratumFor(year); return <><img className="mf-band" key={`b${year}`} src={st.src} alt="" />{!st.own && <span className="mf-band-note">{year}년 지층 그림은 아직 없어 다른 해 그림을 씁니다</span>}</>; })()}
-      <div className="mf-field" key={year}>
-        {ores.map((w, k) => <Ore key={w.week} w={w} i={k} onMined={(ww, x, y) => setCard({ w: ww, x, y })} />)}
-        {!ores.length && <p className="mf-empty">{year}년에는 평소를 벗어난 주가 없습니다.</p>}
-      </div>
-      {card && cardPos && (
-        <div className="mf-card" style={cardPos} role="dialog" aria-label="기록 조각">
-          <button className="mf-card-x" onClick={() => setCard(undefined)} aria-label="닫기">✕</button>
-          <div className="mf-card-eyebrow">{rangeLabel(card.w)} · {card.w.mineral}</div>
-          <p className="mf-card-line">{card.w.sentence_plain ?? card.w.sentence}</p>
-          <button className="mf-card-next" onClick={() => select(card.w.week)}>상세 페이지에서 이어보기 →</button>
-        </div>
-      )}
       {!greeted && <div className="mf-greet"><MindiGreeting /></div>}
       <div className="mf-brand" aria-hidden="true">
         <img className="mindy" src={ART.mindiCharacter} alt="" />
         <img className="logo" src={ART.logoLight} alt="" />
         <div className="tagline">Your Mind In Your Mine D</div>
       </div>
-      <p className="mf-hint">광물을 곡괭이로 세 번 치면 그 주의 기록 조각이 나옵니다. 가로는 한 해의 시기, 깊이는 광물을 정한 축(걸음·쉼·화면·기록)입니다.</p>
+      <p className="mf-hint">아래로 내려갈수록 오래된 해입니다. 광물을 곡괭이로 세 번 치면 그 주의 기록 조각이 나옵니다.</p>
     </div>
   );
 }

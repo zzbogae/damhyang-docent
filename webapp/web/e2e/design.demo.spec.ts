@@ -51,12 +51,16 @@ test('작동 영상', async ({ page }) => {
   await cap(page, '광물 지하입니다. 깊을수록 지층이 어두워지고, 평소를 벗어난 주가 광물로 묻혀 있습니다.', 4800);
   await cap(page, '민디는 한 번만 먼저 인사합니다. 이번 주와 닮은 주를 찾을지는 사용자가 정합니다.', 4000);
   await page.getByRole('button', { name: '다음에' }).click();
-  await page.getByRole('button', { name: '이전 해' }).click();
+  await page.mouse.move(640, 420);
+  await cap(page, '지층이라서 아래로 내려갈수록 오래된 해가 나옵니다.', 2500);
+  for (let k = 0; k < 10; k++) { await page.mouse.wheel(0, 140); await page.waitForTimeout(160); }
+  await page.waitForTimeout(800);
+  await cap(page, '가운데 큰 연도는 지금 보고 있는 지층의 해를 따라갑니다. 가로는 그해의 시기, 깊이는 광물을 정한 축입니다.', 5000);
+  await page.locator('.mf-yr', { hasText: '2025' }).click();
   await page.waitForTimeout(1500);
-  await cap(page, '연도를 넘깁니다. 가로는 한 해의 시기, 깊이는 광물을 정한 축입니다. 걸음이 많으면 호박입니다.', 5000);
 
   // 4. 세 번 쳐서 캐기 → 기록 조각 → 상세
-  const ores = page.locator('.mf-ore');
+  const ores = page.locator('.mf-layer[data-year="2025"] .mf-ore');
   const labels = await ores.evaluateAll((els) => els.map((e) => e.getAttribute('aria-label') ?? ''));
   const pick = Math.max(0, labels.findIndex((l) => l.includes('호박')));
   const ore = ores.nth(pick);

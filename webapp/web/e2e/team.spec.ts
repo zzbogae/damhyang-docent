@@ -19,8 +19,8 @@ test('광물 지하: 연도를 넘기고, 광물을 세 번 쳐서 캐면 기록
   await expect(page.locator('.strata')).toHaveCount(0); // 기본 화면에는 주 격자가 없다
   await page.getByRole('button', { name: '다음에' }).click();
   const year = await page.locator('.mf-year').textContent();
-  if (await page.getByRole('button', { name: '이전 해' }).isEnabled()) {
-    await page.getByRole('button', { name: '이전 해' }).click();
+  if (await page.getByRole('button', { name: '이전 해(아래로)' }).isEnabled()) {
+    await page.getByRole('button', { name: '이전 해(아래로)' }).click();
     await expect(page.locator('.mf-year')).not.toHaveText(year!);
   }
   const ore = page.locator('.mf-ore').first();
@@ -33,7 +33,7 @@ test('광물 지하: 연도를 넘기고, 광물을 세 번 쳐서 캐면 기록
   const card = page.getByRole('dialog', { name: '기록 조각' });
   await expect(card).toBeVisible();
   const a11y = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
-  expect(a11y.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => v.id)).toEqual([]);
+  expect(a11y.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => `${v.id} ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
   await card.getByRole('button', { name: '상세 페이지에서 이어보기 →' }).click();
   await expect(page.locator('.team-detail')).toBeVisible();
   await expect(page.locator('.td-date')).toBeVisible();

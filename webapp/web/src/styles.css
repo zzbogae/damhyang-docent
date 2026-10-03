@@ -597,10 +597,8 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 .app.team { grid-template-rows: auto 1fr auto; }
 .app.team.on-field { grid-template-rows: 1fr auto; } /* 머리가 지층 위에 떠 있어서 칸을 차지하지 않는다 */
 .app.team.on-field .top { position: absolute; left: 0; right: 0; top: 0; background: transparent; border-bottom: 0; backdrop-filter: none; z-index: 8; }
-.app.team.on-field .top .promise { color: #3a4650; }
-.app.team.on-field .top .btn.quiet { color: #26323b; }
-.app.team.on-field .top .btn.quiet:hover { background: rgba(255, 255, 255, .3); }
-.app.team.on-field .wordmark img { content: url('./assets/design/logo_dark.webp'); }
+.app.team.on-field .top { background: linear-gradient(180deg, rgba(16, 15, 20, .82), rgba(16, 15, 20, 0)); padding-bottom: 22px; }
+/* 지층을 내려가도 머리 글자가 보이도록 어두운 띠 위에 밝은 글자 */
 .team-main { position: relative; min-height: 0; overflow: auto; }
 .minefield { position: relative; width: 100%; height: 100%; min-height: 620px; overflow: hidden; background: #0b0a0e; color: #eee9e2; }
 .mf-strata { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
@@ -614,8 +612,8 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 .mf-year { font-size: clamp(40px, 5.6vw, 72px); font-weight: 800; letter-spacing: .01em; color: #d99a3f; text-shadow: 0 4px 22px rgba(217, 154, 63, .35); min-width: 3.6em; text-align: center; animation: mf-year-pulse .35s ease; }
 @keyframes mf-year-pulse { 0% { opacity: .3; transform: scale(.94); } 100% { opacity: 1; transform: scale(1); } }
 .mf-years { position: absolute; left: 3.2%; top: 34%; bottom: 14%; z-index: 6; display: flex; flex-direction: column; gap: 14px; overflow: auto; padding-right: 8px; }
-.mf-yr { display: flex; align-items: center; gap: 8px; border: 0; background: none; padding: 0; font: inherit; font-size: 15px; color: rgba(238, 233, 226, .6); cursor: pointer; text-align: left; transition: color .25s; }
-.mf-yr small { font-size: 12px; opacity: .8; }
+.mf-yr { display: flex; align-items: center; gap: 8px; border: 0; background: none; padding: 2px 8px 2px 0; font: inherit; font-size: 15px; color: rgba(238, 233, 226, .75); text-shadow: 0 1px 3px rgba(0, 0, 0, .8); cursor: pointer; text-align: left; transition: color .25s; }
+.mf-yr small { font-size: 12px; }
 .mf-yr:hover { color: rgba(238, 233, 226, .85); }
 .mf-yr .arrow { opacity: 0; color: #d99a3f; font-size: 12px; transition: opacity .25s; }
 .mf-yr.on { color: #f2c374; font-weight: 700; font-size: 17px; }
@@ -680,3 +678,21 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 .mf-core { filter: drop-shadow(0 6px 12px rgba(0, 0, 0, .55)); }
 .mf-ore:not(.breaking) .mf-core { animation: mined-gem-breathe 3.4s ease-in-out infinite; }
 @keyframes mined-gem-breathe { 0%, 100% { opacity: 1; } 50% { opacity: .82; } }
+
+/* 아래로 스크롤하면 한 해씩 깊어지는 지층 */
+.mf-scroll { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; z-index: 2; scrollbar-width: none; }
+.mf-scroll::-webkit-scrollbar { display: none; }
+.mf-content { position: relative; background: linear-gradient(180deg, #26232a 0%, #19151b 30%, #100d15 70%, #08070b 100%); }
+.mf-sky { position: relative; height: 44vh; min-height: 300px; }
+.mf-sky .mf-strata { position: absolute; inset: 0; }
+.mf-layer { position: relative; height: max(300px, 42vh); }
+.mf-layer .mf-band { top: 8%; height: 84%; animation: none; }
+.mf-layer .mf-ore { z-index: 4; }
+.mf-layer-year { position: absolute; left: 16%; top: 6%; z-index: 4; font-size: 13px; letter-spacing: .1em; color: rgba(238, 233, 226, .55); font-family: var(--mined-mono); }
+.mf-layer .mf-band-note { top: 6%; right: 16%; }
+.mf-layer .mf-empty { top: 46%; }
+.mf-bedrock { height: 28vh; }
+.mf-scanner { z-index: 7; } .mf-picker { z-index: 7; top: 18%; } .mf-years { z-index: 7; } .mf-brand { z-index: 7; } .mf-hint { z-index: 7; } .mf-greet { z-index: 8; }
+.mf-picker, .mf-years, .mf-brand, .mf-hint { pointer-events: none; }
+.mf-picker button, .mf-years button { pointer-events: auto; }
+.mf-picker::before { content: ''; position: absolute; inset: -14px -40px; border-radius: 40px; background: radial-gradient(ellipse at center, rgba(11, 10, 14, .55), transparent 70%); z-index: -1; }
