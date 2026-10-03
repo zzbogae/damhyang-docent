@@ -516,24 +516,6 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 .mindi .say { font-size: 18px; }
 .mindi .say .dk, .ask .bubble .dk { color: var(--mined-core-light); }
 
-/* 입장 인트로(8/22 랜딩 1번) */
-.entry { position: relative; height: min(78vh, 720px); min-height: 460px; overflow: hidden; display: grid; place-items: center; background: #c9e2e6; }
-.entry-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.entry-scrim { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 42%, rgba(27, 22, 32, 0) 30%, rgba(27, 22, 32, .35) 75%, rgba(27, 22, 32, .9) 100%); }
-.entry-copy { position: relative; text-align: center; color: #fff; margin-top: -4%; }
-.entry-name { font-size: clamp(48px, 7vw, 76px); font-weight: 300; letter-spacing: .02em; line-height: 1.05; text-shadow: 0 2px 30px rgba(0, 0, 0, .35); }
-.entry-kr { font-size: 15px; letter-spacing: .5em; margin-top: 8px; opacity: .85; }
-.entry-line { margin-top: 18px; font-size: 16px; text-shadow: 0 1px 12px rgba(0, 0, 0, .45); }
-.entry-go { margin-top: 22px; border-radius: 4px; background: rgba(255, 255, 255, .12); border-color: rgba(255, 255, 255, .7); color: #fff; letter-spacing: .3em; padding: 0 26px; }
-.entry-go:hover { background: rgba(255, 255, 255, .22); }
-.entry-logo { position: absolute; bottom: 7%; left: 50%; transform: translateX(-50%); width: min(240px, 46vw); opacity: .9; }
-.mindi-intro { display: flex; align-items: center; justify-content: center; gap: 28px; padding: 48px 28px 8px;
-  background: radial-gradient(ellipse at 50% 40%, rgba(242, 170, 85, .12), transparent 60%); }
-.mindi-intro img { width: 132px; height: auto; filter: drop-shadow(0 10px 30px rgba(242, 170, 85, .2)); }
-.mindi-intro-name { color: var(--mined-amber); font-size: 13px; letter-spacing: .3em; }
-.mindi-intro-say { font-size: 20px; line-height: 1.6; margin-top: 6px; }
-.importer { margin-top: 32px; }
-
 /* 광물 채굴(UI 시트 6) */
 .dig { display: grid; justify-items: center; gap: 6px; padding: 10px 0 18px; background: radial-gradient(ellipse at 50% 55%, rgba(242, 170, 85, .14), transparent 62%); }
 .dig-ore { position: relative; border: 0; background: none; padding: 0; cursor: url('./assets/design/pick_cursor.webp') 30 30, pointer; width: 170px; height: 150px; display: grid; place-items: center; }
@@ -547,7 +529,6 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 @keyframes dig-swing { 0% { transform: rotate(-12deg); } 40% { transform: rotate(-48deg); } 100% { transform: rotate(-12deg); } }
 @keyframes dig-crack { 0% { transform: scale(1); } 40% { transform: scale(1.12); filter: drop-shadow(0 0 26px rgba(255, 212, 138, .9)) brightness(1.3); } 100% { transform: scale(1.04); filter: drop-shadow(0 0 18px rgba(255, 212, 138, .6)) brightness(1.1); } }
 @media (prefers-reduced-motion: reduce) { .dig-ore img, .dig-pick { animation: none !important; } }
-@media (max-width: 760px) { .entry { height: 64vh; } .mindi-intro { gap: 16px; padding-top: 32px; } .mindi-intro img { width: 92px; } .mindi-intro-say { font-size: 17px; } }
 
 /* 광물 지하(8/22 랜딩 3번) */
 .yearmine { margin-bottom: 22px; }
@@ -566,5 +547,48 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 .ym-ore.thin { opacity: .6; }
 .ym-empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--mined-ink-mute); font-size: 15px; }
 .ym-mindi { position: absolute; right: 14px; bottom: 12px; }
-.entry-kr, .entry-line { text-shadow: 0 1px 2px rgba(0, 0, 0, .55), 0 0 18px rgba(0, 0, 0, .45); }
-.entry-kr { opacity: 1; }
+
+/* 입장 인트로·민디 소개(8/22 랜딩 1·2번): 전체 화면, 한 장씩 넘어간다 */
+.intro { position: fixed; inset: 0; z-index: 100; background: #0b0e10; transition: opacity .7s ease; }
+.intro.leaving { opacity: 0; pointer-events: none; }
+.intro-screen { position: absolute; inset: 0; overflow: hidden; opacity: 0; pointer-events: none; transition: opacity .8s ease; }
+.intro-screen.on { opacity: 1; pointer-events: auto; }
+.intro-entry { background: #c9dbe0; }
+.intro-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 46%; }
+.intro-scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom, rgba(10, 14, 16, .22) 0%, rgba(10, 14, 16, 0) 20%), linear-gradient(to top, rgba(10, 14, 16, .30) 0%, rgba(10, 14, 16, 0) 26%); }
+.intro-logo { position: absolute; top: 9%; left: 50%; width: min(46vw, 300px); transform: translateX(-50%) translateY(6px); opacity: 0; filter: drop-shadow(0 6px 18px rgba(0, 0, 0, .18)); }
+.intro-logo.play { animation: intro-logo-rise 1.2s cubic-bezier(.19, 1, .22, 1) forwards, intro-logo-shine 2.4s ease-in-out .2s 1; }
+@keyframes intro-logo-rise { from { opacity: 0; transform: translateX(-50%) translateY(6px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@keyframes intro-logo-shine { 0%, 100% { filter: drop-shadow(0 6px 18px rgba(0, 0, 0, .18)) brightness(1); } 50% { filter: drop-shadow(0 6px 24px rgba(242, 195, 116, .35)) brightness(1.08); } }
+.intro-enter { position: absolute; left: 50%; bottom: 9%; transform: translateX(-50%) translateY(22px); opacity: 0; }
+.intro-enter.play { animation: intro-btn-rise .9s cubic-bezier(.19, 1, .22, 1) forwards; }
+@keyframes intro-btn-rise { from { opacity: 0; transform: translateX(-50%) translateY(22px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+.intro-enter-btn { appearance: none; cursor: pointer; font-family: var(--font); font-size: 19.5px; font-weight: 500; letter-spacing: .1em; padding: 15px 38px 15px 34px; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 10px; color: #26323b; background: rgba(255, 255, 255, .30); backdrop-filter: blur(10px) saturate(140%); -webkit-backdrop-filter: blur(10px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, .65); box-shadow: 0 4px 24px rgba(20, 30, 35, .18), inset 0 1px 0 rgba(255, 255, 255, .5); transition: transform .25s ease, box-shadow .35s ease, letter-spacing .25s ease, background .25s; }
+.intro-enter-btn:hover { transform: translateY(-2px); letter-spacing: .14em; background: rgba(255, 255, 255, .42); box-shadow: 0 6px 30px rgba(20, 30, 35, .22), 0 0 0 6px rgba(255, 255, 255, .12); }
+.intro-enter-btn .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(38, 50, 59, .55); }
+.intro-mindi { background: radial-gradient(ellipse 70% 55% at 50% 40%, #201c26 0%, #17151d 46%, #100f14 100%); color: #eee9e2; }
+.intro-mindi::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .5; background-image: radial-gradient(rgba(255, 255, 255, .035) 1px, transparent 1px), radial-gradient(rgba(255, 255, 255, .02) 1px, transparent 1px); background-size: 64px 64px, 37px 37px; background-position: 0 0, 20px 30px; }
+.intro-glow { position: absolute; left: 50%; top: 47%; width: 340px; height: 340px; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(242, 195, 116, .30) 0%, rgba(242, 195, 116, .10) 40%, transparent 70%); filter: blur(2px); animation: intro-glow 4.2s ease-in-out infinite; }
+@keyframes intro-glow { 0%, 100% { opacity: .75; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); } }
+.intro-mindy { position: absolute; left: 50%; top: 8%; width: min(44vw, 268px); transform: translateX(-50%); filter: drop-shadow(0 18px 26px rgba(0, 0, 0, .45)); animation: intro-mindy 3.6s ease-in-out infinite; }
+@keyframes intro-mindy { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-7px); } }
+.intro-skip { position: absolute; top: 20px; right: 22px; z-index: 5; background: transparent; border: 0; color: #b3aabb; font-family: var(--font); font-size: 13px; letter-spacing: .05em; cursor: pointer; padding: 8px; }
+.intro-skip:hover { color: #eee9e2; }
+.intro-tut { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; padding: 0 24px 8.5%; text-align: center; }
+.intro-dots { display: flex; gap: 6px; margin-bottom: 18px; }
+.intro-dots span { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, .22); transition: background .3s, transform .3s; }
+.intro-dots span.on { background: #f2c374; transform: scale(1.25); }
+.intro-text { min-height: 112px; display: flex; flex-direction: column; align-items: center; animation: intro-text-in .45s ease both; }
+@keyframes intro-text-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.intro-eyebrow { font-size: 12px; letter-spacing: .16em; color: #f2c374; margin-bottom: 12px; }
+.intro-line { font-weight: 600; font-size: 21px; line-height: 1.6; margin: 0 0 26px; max-width: 420px; }
+.intro-next { appearance: none; cursor: pointer; font-family: var(--font); padding: 14px 38px; border-radius: 999px; font-size: 15px; letter-spacing: .06em; font-weight: 500;
+  background: rgba(217, 154, 63, .14); border: 1px solid #d99a3f; color: #f2c374; transition: background .25s, transform .2s, letter-spacing .2s; }
+.intro-next:hover { background: rgba(217, 154, 63, .24); transform: translateY(-2px); letter-spacing: .09em; }
+@media (max-width: 720px) { .intro-logo { top: 7%; width: 58vw; } .intro-enter { bottom: 11%; } .intro-enter-btn { font-size: 17.5px; padding: 14px 30px 14px 28px; }
+  .intro-mindy { top: 6%; width: 56vw; } .intro-glow { width: 260px; height: 260px; top: 44%; } .intro-line { font-size: 18px; max-width: 320px; } .intro-tut { padding: 0 22px 9%; } }
+@media (min-width: 1400px) { .intro-mindy { width: 300px; } }
+@media (prefers-reduced-motion: reduce) { .intro-glow, .intro-mindy, .intro-text { animation: none; } }

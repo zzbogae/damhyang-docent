@@ -3,6 +3,7 @@
 import introFog from '../assets/design/intro_fog.webm';
 import introPoster from '../assets/design/intro_fog_poster.webp';
 import logoLight from '../assets/design/logo_light.webp';
+import logoDark from '../assets/design/logo_dark.webp';
 import mindiCharacter from '../assets/design/mindi_character.webp';
 import pickaxe from '../assets/design/pickaxe.webp';
 import amber from '../assets/design/mineral_amber.webp';
@@ -16,7 +17,7 @@ import garnet from '../assets/design/mineral_garnet.webp';
 import fluorite from '../assets/design/mineral_fluorite.webp';
 import type { Mineral } from './minerals';
 
-export const ART = { introFog, introPoster, logoLight, mindiCharacter, pickaxe };
+export const ART = { introFog, introPoster, logoLight, logoDark, mindiCharacter, pickaxe };
 
 /**
  * 광물 9종 그림. 8/22 랜딩의 광물 12종(무작위 배치용, 이름 없음) 가운데 색이 가장 가까운 것을 골랐다.

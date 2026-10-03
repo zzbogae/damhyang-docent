@@ -3,8 +3,8 @@
 // 실행: cd web && npx playwright test -c playwright.demo.config.ts -g "작동 영상"
 import { expect, test, type Page } from '@playwright/test';
 
-async function cap(page: Page, text: string, ms = 3000) {
-  await page.evaluate((t) => {
+async function cap(page: Page, text: string, ms = 3000, top = false) {
+  await page.evaluate(([t, onTop]) => {
     let el = document.getElementById('demo-cap');
     if (!el) {
       el = document.createElement('div');
@@ -18,28 +18,30 @@ async function cap(page: Page, text: string, ms = 3000) {
       ].join(';');
       document.body.appendChild(el);
     }
-    el.textContent = t;
+    el.textContent = t as string;
+    el.style.top = onTop ? '40%' : 'auto';
+    el.style.bottom = onTop ? 'auto' : '40px';
     el.style.opacity = '1';
-  }, text);
+  }, [text, top] as const);
   await page.waitForTimeout(ms);
   await page.evaluate(() => { const el = document.getElementById('demo-cap'); if (el) el.style.opacity = '0'; });
 }
 
 test('작동 영상', async ({ page }) => {
   test.setTimeout(600000);
-  await page.goto('/');
-  await page.waitForTimeout(1500);
-  await cap(page, 'Mine D(마인디). 폰에 이미 쌓인 기록에서, 평소와 달랐던 주를 광물로 캐냅니다.', 4500);
-  await cap(page, '기록은 이 브라우저 밖으로 나가지 않습니다.', 3000);
-
-  // 1. 입장 → 민디 소개
+  // 0~1. 입장 인트로 → 민디 소개(한 화면씩 넘어간다). 자동 실행에서는 인트로가 꺼져 있어 ?intro 로 연다
+  await page.goto('/?intro');
+  await page.waitForTimeout(4800);
+  await cap(page, 'Mine D(마인디). 폰에 이미 쌓인 기록에서, 평소와 달랐던 주를 광물로 캐냅니다.', 4000, true);
   await page.getByRole('button', { name: '입장하기' }).click();
   await page.waitForTimeout(1200);
-  await page.locator('.mindi-intro').scrollIntoViewIfNeeded();
-  await cap(page, '민디가 안내합니다. 민디는 「언제」까지만 알고, 「왜」는 모른다고 말합니다.', 4000);
+  await cap(page, '민디가 안내합니다. 민디는 「언제」까지만 알고, 「왜」는 모른다고 말합니다.', 3500, true);
+  for (let i = 0; i < 3; i++) { await page.getByRole('button', { name: '다음' }).click(); await page.waitForTimeout(1600); }
+  await page.getByRole('button', { name: '시작하기' }).click();
+  await page.waitForTimeout(1200);
+  await cap(page, '기록은 이 브라우저 밖으로 나가지 않습니다.', 3000);
 
   // 2. 가져오기
-  await page.locator('.drop').scrollIntoViewIfNeeded();
   await cap(page, '구글·건강·카카오톡·인스타그램·AI 대화·사진 내보내기 파일을 이 기기 안에서 읽습니다. 여기서는 가짜 샘플 2년치로 보여 드립니다.', 5000);
   await page.getByRole('button', { name: '가짜 샘플 기록으로 먼저 보기' }).click();
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });

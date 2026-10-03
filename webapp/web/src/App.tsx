@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { StoreProvider, useStore } from './state/store';
 import { Strata } from './ui/Strata';
 import { YearMine } from './ui/YearMine';
+import { Intro } from './ui/Intro';
 import { Summary } from './ui/Summary';
 import { WeekDetail } from './ui/WeekDetail';
 import { Overview } from './ui/Overview';
@@ -175,6 +176,16 @@ function Shell() {
   );
 }
 
+// 입장 인트로는 이 탭에서 처음 열 때 한 번. 자동 시험(webdriver)에서는 건너뛰고, 주소에 ?intro 를 붙이면 언제든 다시 본다.
+function useIntro() {
+  const force = FLAGS.has('intro');
+  const auto = typeof navigator !== 'undefined' && navigator.webdriver;
+  const seen = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('mined.entered') === '1';
+  const [show, setShow] = useState(force || (!auto && !seen));
+  return [show, () => { sessionStorage.setItem('mined.entered', '1'); setShow(false); }] as const;
+}
+
 export default function App() {
-  return <StoreProvider><Shell /></StoreProvider>;
+  const [intro, done] = useIntro();
+  return <StoreProvider><Shell />{intro && <Intro onDone={done} />}</StoreProvider>;
 }

@@ -22,7 +22,7 @@ KAIST CT×AI 콘텐츠 마이크로디그리 캡스톤 · 팀 HERIZON(1조) · T
 | | 상태 | 위치 |
 |---|---|---|
 | 판정 파이프라인 (데이터 → 4축 → 주간 판정) | 실데이터 800주로 캘리브레이션 완료 | `pipeline/gyeol_kit/` |
-| 브라우저 앱 (입장 → 민디 소개 → 가져오기 → 광물 지하·지층 → 주 상세·채굴 → 민디 → 편지·나의 방) | 동작함 · 합성 데이터 검증 · 9/23 확정 규칙(스키마 v8) · 드라이브 디자인(UI 시트·8/22 랜딩) 적용 | `webapp/` · 화면 대응 [`webapp/docs/design_from_drive.md`](webapp/docs/design_from_drive.md) |
+| 브라우저 앱 (입장 인트로 → 민디 소개(한 화면씩) → 가져오기 → 광물 지하·지층 → 주 상세·채굴 → 민디 → 편지·나의 방) | 동작함 · 합성 데이터 검증 · 9/23 확정 규칙(스키마 v8) · 드라이브 디자인(UI 시트·8/22 랜딩) 적용 | `webapp/` · 화면 대응 [`webapp/docs/design_from_drive.md`](webapp/docs/design_from_drive.md) |
 | 3개 지층 탐사 시연 | 캡스톤-06 발표용 | `app/strata_explorer_v5/` |
 | XR Blocks 광석 공간 | 데스크톱 시뮬레이터 검증 | `app/xrblocks_v2/` |
 | 섬 (지상 · 나만의 공간) | 설계 확정, 데모 영상 키프레임 | `docs/world/…island…`, `docs/assets/` |
