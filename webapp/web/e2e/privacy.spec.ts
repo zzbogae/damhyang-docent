@@ -10,7 +10,7 @@ test('가져오기·판정·사진 거르기 동안 외부 요청이 없다', as
   });
   // 외부로 나가는 요청은 막아서, 막혀도 앱이 도는지 함께 본다(오프라인 시연)
   await page.route((url) => !url.href.startsWith(origin), (route) => route.abort());
-  await page.goto('/');
+  await page.goto('/?grid');
   await page.getByRole('button', { name: '가짜 샘플 기록으로 먼저 보기' }).click();
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
   await page.getByRole('button', { name: '다음에' }).click();

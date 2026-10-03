@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { StoreProvider, useStore } from './state/store';
 import { Strata } from './ui/Strata';
-import { YearMine } from './ui/YearMine';
+import { MineField } from './ui/MineField';
 import { Intro } from './ui/Intro';
 import { Summary } from './ui/Summary';
 import { WeekDetail } from './ui/WeekDetail';
@@ -29,6 +29,8 @@ export const SHOW_EVAL = FLAGS.has('eval');
 export const SHOW_ISLANDS = FLAGS.has('islands');
 // 전시용(?kiosk 또는 ?kiosk=초): 샘플 자동 불러오기, 쉬는 시간 뒤 초기화, 다시 가져오기 숨김
 export const KIOSK = FLAGS.has('kiosk');
+// 기본 화면은 드라이브 디자인(광물 지하 → 상세). ?grid 는 이전 두 칸 화면(주 격자 + 상세): 모든 주를 격자로 훑거나 키보드로 옮겨 다닐 때, 시험용
+export const GRID = FLAGS.has('grid');
 const KIOSK_IDLE = Math.max(5, Number(FLAGS.get('kiosk')) || 90);
 
 const Room = lazy(() => import('./room/Room'));
@@ -150,12 +152,29 @@ function Shell() {
       </div>
     );
   }
+  if (!GRID) {
+    // 드라이브 디자인: 광물 지하 한 화면 → 광물을 캐면 상세 한 화면. 나머지 화면도 가운데 한 줄로 연다.
+    const back = <button className="btn quiet back" onClick={() => { select(undefined); setPanel('week'); }}>← 지층으로</button>;
+    const page = panel === 'settings' ? <Settings />
+      : panel === 'eras' ? <Suspense fallback={null}><Eras /></Suspense>
+      : panel === 'letters' ? <Letters onChange={refreshLetters} />
+      : panel === 'collect' && collectOf ? <Collect axis={collectOf.axis} dir={collectOf.dir} onClose={() => setPanel('week')} />
+      : w ? <WeekDetail w={w} key={w.week} team /> : null;
+    return (
+      <div className={`app team${page ? '' : ' on-field'}`}>
+        {header}
+        <main className="team-main" ref={rightRef}>
+          {page ? <div className="team-page">{back}{page}</div> : <MineField />}
+        </main>
+        {door}
+      </div>
+    );
+  }
   return (
     <div className="app">
       {header}
       <main className="main">
         <div className="col left">
-          <YearMine />
           <Strata />
           {/* 9/12 회의 5번: 숫자가 많은 요약은 접어 둔다 */}
           <details className="why summary-fold" open={!!(result?.summary as { imported_v6?: boolean } | undefined)?.imported_v6}>

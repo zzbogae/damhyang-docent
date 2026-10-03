@@ -11,7 +11,7 @@ async function scan(page: Page, name: string) {
 }
 
 test('주요 화면 접근성 검사', async ({ page }) => {
-  await page.goto('/?dev');
+  await page.goto('/?grid&dev');
   await scan(page, '가져오기');
   await page.getByRole('button', { name: '합성 판정 입력(개발용)' }).click();
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
@@ -38,7 +38,7 @@ test('주요 화면 접근성 검사', async ({ page }) => {
 });
 
 test('키보드만으로 지층 칸을 옮겨 주를 연다', async ({ page }) => {
-  await page.goto('/?dev');
+  await page.goto('/?grid&dev');
   await page.getByRole('button', { name: '합성 판정 입력(개발용)' }).click();
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
   await page.getByRole('button', { name: '다음에' }).click();

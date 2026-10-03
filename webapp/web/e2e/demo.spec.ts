@@ -43,7 +43,7 @@ test('시연 영상', async ({ page }) => {
   const BEFORE = process.env.BEFORE_URL;
   if (BEFORE) {
     const fixture = async (base: string) => {
-      await page.goto(`${base}/?dev`);
+      await page.goto(`${base}/?grid&dev`);
       await page.getByRole('button', { name: '합성 판정 입력(개발용)' }).click();
       await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
       await page.getByRole('button', { name: '다음에' }).click();
@@ -74,7 +74,7 @@ test('시연 영상', async ({ page }) => {
     await page.getByRole('button', { name: '정말 지웁니다' }).click();
   }
 
-  await page.goto('/');
+  await page.goto('/?grid');
   await cap(page, 'Mine D 입니다. 이미 있는 기록만 쓰고, 파일은 이 브라우저 밖으로 나가지 않습니다.', 4000);
 
   // 1. 가져오기와 판정
@@ -174,19 +174,19 @@ test('시연 영상', async ({ page }) => {
   await cap(page, '방에는 편지 받침대 다섯 개가 놓입니다. 편지 수만 보이고, 열릴 날짜는 보이지 않습니다.', 4000);
 
   // 8. 영어 자막과 전시용 키오스크
-  await page.goto('/?en');
+  await page.goto('/?en&grid');
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 60000 });
   const hit = await page.locator('.strata .wk.hit').last().getAttribute('data-week');
   const g3 = page.getByRole('button', { name: '다음에' });
   if (await g3.isVisible()) await g3.click();
   await page.locator(`[data-week="${hit}"]`).click();
   await cap(page, '영어 자막을 켜면 주 문장과 민디의 답 아래에 영어가 함께 나옵니다. 번역기가 아니라 같은 계산 값에서 만든 문장입니다.', 5500);
-  await page.goto('/?kiosk=8');
+  await page.goto('/?kiosk=8&grid');
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 60000 });
   await cap(page, '전시용 키오스크 모드입니다. 아무도 만지지 않으면 관람객이 남긴 것을 지우고 처음 화면으로 돌아갑니다.', 4000);
   await expect(page.getByText('처음 화면을 준비하고 있습니다.')).toBeVisible({ timeout: 20000 });
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
-  await page.goto('/');
+  await page.goto('/?grid');
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 60000 });
 
   // 9. 마무리

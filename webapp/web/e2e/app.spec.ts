@@ -10,7 +10,7 @@ import fs from 'node:fs';
 
 test('합성 입력으로 판정하고 주 상세를 연다', async ({ page }) => {
   fs.mkdirSync('../out/shots', { recursive: true });
-  await page.goto('/?dev');
+  await page.goto('/?grid&dev');
   await page.getByRole('button', { name: '합성 판정 입력(개발용)' }).click();
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
   await expect(page.locator('.strata .wk.hit').first()).toBeVisible();
@@ -56,7 +56,7 @@ test('합성 입력으로 판정하고 주 상세를 연다', async ({ page }) =
 
 test('좁은 화면에서도 지층과 상세가 세로로 이어진다', async ({ page }) => {
   await page.setViewportSize({ width: 430, height: 900 });
-  await page.goto('/?dev');
+  await page.goto('/?grid&dev');
   await page.getByRole('button', { name: '합성 판정 입력(개발용)' }).click();
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
   await page.screenshot({ path: '../out/shots/app-narrow.png', fullPage: true });
@@ -66,7 +66,7 @@ test('좁은 화면에서도 지층과 상세가 세로로 이어진다', async 
 });
 
 test('주 상세 윗부분(문장·게이지)', async ({ page }) => {
-  await page.goto('/?dev');
+  await page.goto('/?grid&dev');
   await page.getByRole('button', { name: '합성 판정 입력(개발용)' }).click();
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
   await page.getByRole('button', { name: '다음에' }).click();
@@ -80,7 +80,7 @@ test('주 상세 윗부분(문장·게이지)', async ({ page }) => {
 });
 
 test('가짜 샘플 원천 파일을 가져와 판정하고 사진을 거른다', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?grid');
   await page.getByRole('button', { name: '가짜 샘플 기록으로 먼저 보기' }).click();
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
   const n = await page.locator('.strata .wk.hit').count();
@@ -124,7 +124,7 @@ test('가짜 샘플 원천 파일을 가져와 판정하고 사진을 거른다'
 });
 
 test('같은 이름을 다섯 주에 붙이면 나의 방이 열린다', async ({ page }) => {
-  await page.goto('/?dev');
+  await page.goto('/?grid&dev');
   await page.getByRole('button', { name: '합성 판정 입력(개발용)' }).click();
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
   await page.getByRole('button', { name: '다음에' }).click();
@@ -149,7 +149,7 @@ test('같은 이름을 다섯 주에 붙이면 나의 방이 열린다', async (
 });
 
 test('민디에게 묻기와 시기 페이지', async ({ page }) => {
-  await page.goto('/?dev');
+  await page.goto('/?grid&dev');
   await page.getByRole('button', { name: '합성 판정 입력(개발용)' }).click();
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
   await page.getByRole('button', { name: '다음에' }).click();
@@ -186,7 +186,7 @@ test('민디에게 묻기와 시기 페이지', async ({ page }) => {
 });
 
 test('팀 v6 판정 JSON 을 불러와 지층에 보여 주고 다시 내려받는다', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?grid');
   await page.getByLabel('팀 v6 판정 JSON').setInputFiles('e2e/fixtures_v6_sample.json');
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 60000 });
   await expect(page.getByText(/팀 v6 판정 JSON 에서 불러온 결과/)).toBeVisible();
@@ -204,7 +204,7 @@ test('팀 v6 판정 JSON 을 불러와 지층에 보여 주고 다시 내려받�
 });
 
 test('두 기간 비교', async ({ page }) => {
-  await page.goto('/?dev');
+  await page.goto('/?grid&dev');
   await page.getByRole('button', { name: '합성 판정 입력(개발용)' }).click();
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
   await page.getByRole('button', { name: '다음에' }).click();
@@ -219,7 +219,7 @@ test('두 기간 비교', async ({ page }) => {
 
 test('편지: 받침대에 두고, 열 때가 오면 다음에 들어왔을 때 찾는다', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-10-03T10:00:00') });
-  await page.goto('/?dev');
+  await page.goto('/?grid&dev');
   await page.getByRole('button', { name: '합성 판정 입력(개발용)' }).click();
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
   await page.getByRole('button', { name: '편지', exact: true }).click();
@@ -247,7 +247,7 @@ test('기록 더하기: 스크린타임 캡처를 기기 안에서 읽고 깃 �
     <div style="font-size:17px;font-weight:600;text-align:center">스크린 타임</div><div style="margin-top:22px;font-size:13px;color:#6e6e73">일일 평균</div>
     <div style="font-size:34px;font-weight:700">4시간 23분</div><div style="font-size:15px;margin-top:40px">YouTube 1시간 50분</div></div></body>`);
   const shot = await page.locator('body > div').screenshot();
-  await page.goto('/?dev');
+  await page.goto('/?grid&dev');
   await page.getByRole('button', { name: '합성 판정 입력(개발용)' }).click();
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
   await page.getByRole('button', { name: '다시 가져오기' }).click();
@@ -280,7 +280,7 @@ test('민디 소리: 켜면 사건마다 기기 안에서 음절을 합성하고
   });
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(String(e)));
-  await page.goto('/?dev');
+  await page.goto('/?grid&dev');
   await page.getByRole('button', { name: '합성 판정 입력(개발용)' }).click();
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
   await page.getByRole('button', { name: '다음에' }).click();
@@ -298,7 +298,7 @@ test('민디 소리: 켜면 사건마다 기기 안에서 음절을 합성하고
 });
 
 test('전시용 키오스크: 샘플을 저절로 불러오고, 쉬는 시간이 지나면 관람객이 남긴 것을 지우고 처음으로 돌아간다', async ({ page }) => {
-  await page.goto('/?kiosk=8');
+  await page.goto('/?kiosk=8&grid');
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
   await expect(page.getByRole('button', { name: '다시 가져오기' })).toHaveCount(0);
   await page.getByRole('button', { name: '다음에' }).click();
@@ -315,7 +315,7 @@ test('전시용 키오스크: 샘플을 저절로 불러오고, 쉬는 시간이
 });
 
 test('영어 자막: 판정 문장·민디 답·도움 안내 아래에 영어가 함께 나온다', async ({ page }) => {
-  await page.goto('/?dev&en');
+  await page.goto('/?grid&dev&en');
   await page.getByRole('button', { name: '합성 판정 입력(개발용)' }).click();
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
   await expect(page.locator('.mindi .sub-en')).toContainText('Shall we look for the week');
@@ -331,7 +331,7 @@ test('영어 자막: 판정 문장·민디 답·도움 안내 아래에 영어�
 });
 
 test('9/12 회의 반영: 최근 기록으로 열고, 순위는 접고, 한 번 더 묻지 않고, 토글로 고르고, 연구 참여는 설정 안에', async ({ page }) => {
-  await page.goto('/?dev');
+  await page.goto('/?grid&dev');
   // 가져오기: 켜면 그 기록을 내보내는 방법이 열리는 토글
   await page.getByRole('switch', { name: /건강.*가져오기/ }).check();
   await expect(page.getByText('모든 건강 데이터 내보내기', { exact: false })).toBeVisible();

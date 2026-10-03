@@ -323,7 +323,7 @@ function MineralDig({ mineral, sound }: { mineral: keyof typeof MINERAL_IMG; sou
   );
 }
 
-export function WeekDetail({ w }: { w: WeekRecord }) {
+export function WeekDetail({ w, team = false }: { w: WeekRecord; team?: boolean }) {
   const { unlocked, unlock, settings } = useStore();
   const en = useEn();
   // 9/12 회의 5번: 주 단위 「한 번 더 묻기」는 없앴다. 위기 표현이 걸린 글만 하나씩 가려 두고 누르면 연다(Memos)
@@ -332,8 +332,20 @@ export function WeekDetail({ w }: { w: WeekRecord }) {
   const fam = w.evidence.families.map((f) => CHANNEL_LABEL[f as keyof typeof CHANNEL_LABEL] ?? f);
   const lead = w.candidate ? (w.sentence_plain ?? w.sentence) : null;
   return (
-    <article className="stack" aria-labelledby="wk-title">
-      <header>
+    <article className={`stack${team ? ' team-detail' : ''}`} aria-labelledby="wk-title">
+      {team && (
+        <header className="td-head">
+          {w.mineral && w.mineral in MINERAL_IMG && <img className="td-core" src={MINERAL_IMG[w.mineral as keyof typeof MINERAL_IMG]} alt={w.mineral} />}
+          <h2 id="wk-title" className="td-date">{rangeLabel(w)}</h2>
+          <div className="td-tag">{[w.grade ? gradeText(w) : '', w.mineral].filter(Boolean).join(' · ')}</div>
+          <div className="td-gauges"><div className="td-legend" aria-hidden="true"><span>적음</span><span>평소</span><span>많음</span></div><Gauges w={w} /></div>
+          {lead ? <p className="sentence">{lead}</p> : <p className="sentence muted">평소와 크게 다르지 않았던 주입니다. 그때 남은 기록을 그대로 보여 드립니다.</p>}
+          {en && lead && <p className="sub-en" lang="en">{weekSentenceEn(w)}</p>}
+          {w.candidate && <p className="td-evidence">{w.evidence.cross_validated ? `근거: ${fam.join('·')} · 서로 다른 기록 ${w.evidence.independent}종이 함께 가리킴` : `근거: ${fam.join('·')} · 기록 한 종류에서만 나와 근거가 얇습니다`}</p>}
+          {lead && <ScreenReadButton text={lead} />}
+        </header>
+      )}
+      {!team && <header>
         {w.mineral && w.mineral in MINERAL_IMG && <MineralDig mineral={w.mineral as keyof typeof MINERAL_IMG} sound={!!settings.sound} />}
         <div className="week-head">
           <h2 id="wk-title">{rangeLabel(w)}</h2>
@@ -350,7 +362,7 @@ export function WeekDetail({ w }: { w: WeekRecord }) {
         ) : (
           <p className="sentence muted">평소와 크게 다르지 않았던 주입니다. 그때 남은 기록을 그대로 보여 드립니다.</p>
         )}
-      </header>
+      </header>}
 
       <section id="wk-memos"><h3 className="h3">그때 쓴 글</h3><Memos w={w} locked={locked} /></section>
       <section><h3 className="h3">그때 찍은 사진</h3><Photos w={w} locked={locked} /></section>

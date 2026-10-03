@@ -592,3 +592,83 @@ html { scrollbar-color: var(--mined-slate) transparent; }
   .intro-mindy { top: 6%; width: 56vw; } .intro-glow { width: 260px; height: 260px; top: 44%; } .intro-line { font-size: 18px; max-width: 320px; } .intro-tut { padding: 0 22px 9%; } }
 @media (min-width: 1400px) { .intro-mindy { width: 300px; } }
 @media (prefers-reduced-motion: reduce) { .intro-glow, .intro-mindy, .intro-text { animation: none; } }
+
+/* ===== 광물 지하(8/22 랜딩 3번) — 기본 화면 ===== */
+.app.team { grid-template-rows: auto 1fr auto; }
+.app.team.on-field { grid-template-rows: 1fr auto; } /* 머리가 지층 위에 떠 있어서 칸을 차지하지 않는다 */
+.app.team.on-field .top { position: absolute; left: 0; right: 0; top: 0; background: transparent; border-bottom: 0; backdrop-filter: none; z-index: 8; }
+.app.team.on-field .top .promise { color: #3a4650; }
+.app.team.on-field .top .btn.quiet { color: #26323b; }
+.app.team.on-field .top .btn.quiet:hover { background: rgba(255, 255, 255, .3); }
+.app.team.on-field .wordmark img { content: url('./assets/design/logo_dark.webp'); }
+.team-main { position: relative; min-height: 0; overflow: auto; }
+.minefield { position: relative; width: 100%; height: 100%; min-height: 620px; overflow: hidden; background: #0b0a0e; color: #eee9e2; }
+.mf-strata { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.mf-scanner { position: absolute; top: 12%; left: 50%; transform: translateX(-50%); width: 52px; height: 52px; border-radius: 16px; background: #15171b; z-index: 6;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .4), 0 0 0 1px rgba(255, 255, 255, .06); display: flex; align-items: center; justify-content: center; gap: 7px; }
+.mf-scanner i { width: 8px; height: 8px; border-radius: 50%; background: #f2c374; box-shadow: 0 0 6px 1px rgba(242, 195, 116, .7); animation: mindi-blink 4.6s ease-in-out infinite; }
+.mf-picker { position: absolute; top: 19%; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 22px; z-index: 6; }
+.mf-chev { appearance: none; background: transparent; border: 0; cursor: pointer; font-size: 26px; color: #d99a3f; opacity: .85; padding: 6px 10px; transition: opacity .2s, transform .2s; }
+.mf-chev:hover:not(:disabled) { opacity: 1; transform: scale(1.1); }
+.mf-chev:disabled { opacity: .25; cursor: default; }
+.mf-year { font-size: clamp(40px, 5.6vw, 72px); font-weight: 800; letter-spacing: .01em; color: #d99a3f; text-shadow: 0 4px 22px rgba(217, 154, 63, .35); min-width: 3.6em; text-align: center; animation: mf-year-pulse .35s ease; }
+@keyframes mf-year-pulse { 0% { opacity: .3; transform: scale(.94); } 100% { opacity: 1; transform: scale(1); } }
+.mf-years { position: absolute; left: 3.2%; top: 34%; bottom: 14%; z-index: 6; display: flex; flex-direction: column; gap: 14px; overflow: auto; padding-right: 8px; }
+.mf-yr { display: flex; align-items: center; gap: 8px; border: 0; background: none; padding: 0; font: inherit; font-size: 15px; color: rgba(238, 233, 226, .6); cursor: pointer; text-align: left; transition: color .25s; }
+.mf-yr small { font-size: 12px; opacity: .8; }
+.mf-yr:hover { color: rgba(238, 233, 226, .85); }
+.mf-yr .arrow { opacity: 0; color: #d99a3f; font-size: 12px; transition: opacity .25s; }
+.mf-yr.on { color: #f2c374; font-weight: 700; font-size: 17px; }
+.mf-yr.on .arrow { opacity: 1; }
+.mf-field { position: absolute; inset: 0; z-index: 4; }
+.mf-ore { position: absolute; transform: translate(-50%, -50%); border: 0; background: none; padding: 0; cursor: url('./assets/design/pick_cursor.webp') 37 29, pointer;
+  transition: transform .25s cubic-bezier(.34, 1.56, .64, 1); animation: mf-in .5s ease both; }
+.mf-ore:hover, .mf-ore:focus-visible { transform: translate(-50%, -50%) scale(1.12); }
+.mf-ore.thin .mf-core { opacity: .7; }
+.mf-glow { position: absolute; inset: -40%; border-radius: 50%; pointer-events: none; opacity: .6; }
+.mf-core { position: relative; display: block; width: 100%; height: auto; pointer-events: none; filter: drop-shadow(0 8px 12px rgba(0, 0, 0, .5)); }
+.mf-crack { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.mf-crack path { opacity: 0; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke: #151015; stroke-width: 2.5; filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, .9)); transition: opacity .15s; vector-effect: non-scaling-stroke; }
+.mf-ore.crack-1 .c1 { opacity: .8; } .mf-ore.crack-2 .c1 { opacity: .95; } .mf-ore.crack-2 .c2 { opacity: .85; }
+.mf-ore.crack-1 .mf-core, .mf-ore.crack-2 .mf-core { animation: mf-shake .22s ease-out; }
+.mf-ore.breaking { pointer-events: none; }
+.mf-ore.breaking .mf-core, .mf-ore.breaking .mf-crack, .mf-ore.breaking .mf-glow { animation: mf-break .3s ease-out forwards; }
+@keyframes mf-in { from { opacity: 0; transform: translate(-50%, -50%) scale(.4); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+@keyframes mf-shake { 0% { transform: scale(1) rotate(0); } 30% { transform: scale(1.16) rotate(-8deg); } 60% { transform: scale(.94) rotate(6deg); } 100% { transform: scale(1) rotate(0); } }
+@keyframes mf-break { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.8); opacity: 0; } }
+.mf-empty { position: absolute; top: 55%; left: 50%; transform: translateX(-50%); color: #b3aabb; font-size: 15px; }
+.mf-card { position: absolute; z-index: 20; width: min(78vw, 300px); background: #181620; border: 1px solid rgba(217, 154, 63, .4); border-left: 3px solid #d99a3f;
+  border-radius: 4px 12px 12px 4px; padding: 16px 18px 14px; box-shadow: 0 20px 40px rgba(0, 0, 0, .5); animation: mf-card-in .22s ease both; }
+@keyframes mf-card-in { from { opacity: 0; transform: translateY(6px) scale(.98); } to { opacity: 1; transform: none; } }
+.mf-card-eyebrow { font-size: 12px; letter-spacing: .04em; color: #f2c374; margin-bottom: 8px; padding-right: 18px; }
+.mf-card-line { font-size: 15px; line-height: 1.7; color: #eee9e2; }
+.mf-card-next { display: block; width: 100%; text-align: left; margin-top: 12px; padding: 10px 0 0; background: none; border: 0; border-top: 1px solid rgba(217, 154, 63, .25); color: #f2c374; font: inherit; font-size: 14px; cursor: pointer; }
+.mf-card-next:hover { color: #fff; }
+.mf-card-x { position: absolute; top: 8px; right: 10px; background: none; border: 0; color: #b3aabb; font-size: 14px; cursor: pointer; padding: 4px; }
+.mf-brand { position: absolute; right: 3%; bottom: 5%; z-index: 6; display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: none; }
+.mf-brand .mindy { width: min(11vw, 92px); filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .5)); }
+.mf-brand .logo { width: min(13vw, 120px); margin-top: 4px; }
+.mf-brand .tagline { font-size: 11px; letter-spacing: .03em; color: #b3aabb; }
+.mf-greet { position: absolute; right: 3%; bottom: calc(5% + 190px); z-index: 7; width: min(380px, 80vw); }
+.mf-greet .mindi-panel { background: rgba(24, 22, 32, .94); border: 1px solid rgba(217, 154, 63, .35); }
+.mf-hint { position: absolute; left: 50%; bottom: 2.4%; transform: translateX(-50%); z-index: 6; font-size: 13px; color: #b3aabb; text-align: center; width: min(720px, 90vw); }
+
+/* ===== 상세(8/22 랜딩 4번) ===== */
+.team-page { max-width: 560px; margin: 0 auto; padding: 28px 22px 80px; }
+.team-page .back { margin-bottom: 8px; }
+.app.team .team-main { background: radial-gradient(ellipse 70% 55% at 50% 8%, #201c26 0%, #17151d 46%, #100f14 100%); }
+.team-detail .td-head { text-align: center; display: grid; justify-items: center; gap: 4px; }
+.td-core { width: 160px; margin: 0 auto 10px; filter: drop-shadow(0 10px 22px rgba(0, 0, 0, .5)); }
+.td-date { font-size: 18px; font-weight: 600; color: var(--mined-ink); }
+.td-tag { font-size: 14px; color: #f2c374; margin-bottom: 18px; letter-spacing: .02em; }
+.td-gauges { width: 100%; text-align: left; margin-bottom: 18px; }
+.td-legend { display: flex; justify-content: space-between; font-size: 12px; color: var(--mined-ink-mute); margin: 0 120px 6px 70px; }
+.team-detail .sentence { text-align: center; font-size: 17px; line-height: 1.75; margin-top: 4px; }
+.td-evidence { font-size: 13px; color: var(--mined-ink-mute); line-height: 1.7; margin: 6px 0 4px; }
+@media (max-width: 760px) {
+  .mf-years { left: 2.5%; gap: 10px; } .mf-yr { font-size: 12px; } .mf-yr.on { font-size: 13.5px; }
+  .mf-brand .mindy { width: 64px; } .mf-brand .logo { width: 84px; } .mf-brand .tagline { font-size: 9px; }
+  .mf-greet { left: 4%; right: 4%; width: auto; bottom: 150px; } .mf-hint { font-size: 11px; }
+  .td-legend { margin: 0 88px 6px 52px; }
+}
+@media (prefers-reduced-motion: reduce) { .mf-ore, .mf-core, .mf-year, .mf-scanner i { animation: none !important; } }

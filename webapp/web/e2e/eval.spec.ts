@@ -11,7 +11,7 @@ const EVENTS = [
 
 test('사건을 봉인하고 샘플로 평가 보고서를 만든다', async ({ page }) => {
   fs.mkdirSync('../out/shots', { recursive: true });
-  await page.goto('/?eval');
+  await page.goto('/?eval&grid');
   await page.getByRole('button', { name: '사건 먼저 적기' }).click();
   await expect(page.getByRole('heading', { name: '실제 기록으로 평가하기' })).toBeVisible();
 

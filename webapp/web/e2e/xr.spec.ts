@@ -2,7 +2,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
 async function openRoom(page: Page, query: string) {
-  await page.goto('/?dev' + query);
+  await page.goto('/?grid&dev' + query);
   await page.getByRole('button', { name: '합성 판정 입력(개발용)' }).click();
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
   await page.getByRole('button', { name: '다음에' }).click();

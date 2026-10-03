@@ -22,7 +22,7 @@ test('사진 2만 장 폴더 가져오기', async ({ page }) => {
     const b = Buffer.from(tpl); b.write(s, at, 'ascii');
     fs.writeFileSync(path.join(sub, `IMG_${i}.jpg`), b);
   }
-  await page.goto('/');
+  await page.goto('/?grid');
   const input = page.locator('input[webkitdirectory]');
   const tSel = Date.now();
   await input.setInputFiles(root);

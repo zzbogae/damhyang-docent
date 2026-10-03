@@ -2,7 +2,7 @@
 import { expect, test } from '@playwright/test';
 
 test('한 번 연 뒤에는 인터넷 없이도 열린다', async ({ page, context }) => {
-  await page.goto('/');
+  await page.goto('/?grid');
   await page.waitForFunction(() => navigator.serviceWorker?.ready.then(() => true));
   await page.reload(); // 서비스 워커가 이 페이지를 맡은 뒤 다시 받게 한다
   await page.getByRole('button', { name: '가짜 샘플 기록으로 먼저 보기' }).click();
@@ -31,7 +31,7 @@ test('한 번 연 뒤에는 인터넷 없이도 열린다', async ({ page, conte
 });
 
 test('안드로이드 공유로 받은 사진이 가져오기 화면으로 넘어온다(서버로 가지 않음)', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?grid');
   await page.waitForFunction(() => navigator.serviceWorker?.ready.then(() => true));
   await page.reload();
   const manifest = await (await page.request.get('/manifest.webmanifest')).json();

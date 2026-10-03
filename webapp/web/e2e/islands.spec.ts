@@ -5,7 +5,7 @@ test('이어진 갱도: 초대·공개 범위·잇는 기준', async ({ page, ba
   const origin = new URL(baseURL!).origin;
   const external: string[] = [];
   page.on('request', (r) => { const u = r.url(); if (!u.startsWith(origin) && !u.startsWith('blob:') && !u.startsWith('data:')) external.push(u); });
-  await page.goto('/?dev&islands');
+  await page.goto('/?grid&dev&islands');
   await page.getByRole('button', { name: '합성 판정 입력(개발용)' }).click();
   await expect(page.getByRole('heading', { name: '지층' })).toBeVisible({ timeout: 180000 });
   await page.getByRole('button', { name: '다음에' }).click();
