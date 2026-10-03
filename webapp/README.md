@@ -27,6 +27,7 @@
 | `web/src/photos/` | 주 사진 확인 서비스, 비슷한 사진 묶기(dHash) |
 | `web/src/mindi/` | 민디 템플릿, 말투 다듬기 검사(숫자 보존·금지어), 화면 읽기(Web Speech, 접근성 기능) |
 | `web/src/ui/`, `web/src/room/`, `web/src/islands/`, `web/src/letters/` | 지층·주 상세·민디에게 묻기·시기·편지·설정 화면, 나의 방 v0(three.js, WebXR), 이어진 갱도 설계 시연(`?islands`) |
+| `web/src/ui/design.ts`, `web/src/assets/design/` | 드라이브 디자인 에셋(입장 영상·로고·민디·광물 9종·곡괭이). 화면 대응은 `docs/design_from_drive.md` |
 | `docs/` | 데이터 계약, 가져오기 규칙, 필터 평가(비슷한 사진 묶기 포함), 판정 평가, 실제 기록 평가 절차 |
 
 ## 실행

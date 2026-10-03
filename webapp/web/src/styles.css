@@ -408,3 +408,163 @@ ul.toggles > li { border-bottom: 1px solid var(--line); padding: 10px 0; }
 .switch-row input[role="switch"]:checked { background: var(--amber); }
 .switch-row input[role="switch"]:checked::after { left: 21px; }
 .toggle-body { padding: 6px 0 4px; }
+
+/* =====================================================================
+   팀 디자인(드라이브 기준) — Mine-D UI 시트(9/7)의 토큰, 8/22 랜딩, 웹 데모 v5(10/3).
+   위의 밝은 뼈대 규칙은 그대로 두고, 같은 변수 이름에 팀 값을 덮어쓴다.
+   ===================================================================== */
+:root {
+  --mined-void: #1B1620; --mined-deep: #241F2C; --mined-panel: #2B2433; --mined-layer: #332A3D; --mined-slate: #4A4056;
+  --mined-line: rgba(255, 236, 214, .08); --mined-line-strong: rgba(255, 236, 214, .14);
+  --mined-ink: #F3E9DC; --mined-ink-soft: #C9BAA9;
+  /* UI 시트의 --mined-ink-mute(#8A7C6D)는 어두운 바탕에서 글자 대비가 4.5:1 에 못 미쳐(axe), 글자용으로 한 단계 밝혔다 */
+  --mined-ink-mute: #A89A8A;
+  --mined-amber: #F2AA55; --mined-amber-soft: rgba(242, 170, 85, .14); --mined-core-light: #FFD48A; --mined-warn: #E8B26B;
+  --mined-r-sm: 12px; --mined-r-md: 18px; --mined-r-lg: 24px; --mined-r-pill: 999px;
+  --mined-ease-bounce: cubic-bezier(.34, 1.4, .64, 1); --mined-ease-pop: cubic-bezier(.22, 1.6, .36, 1); --mined-ease-out: cubic-bezier(.18, .82, .32, 1);
+  --mined-btn-bg: rgba(255, 236, 214, .04); --mined-btn-bg-hi: rgba(255, 236, 214, .09);
+  --mined-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  --ink: var(--mined-ink); --sub: var(--mined-ink-soft); --line: var(--mined-line-strong);
+  --amber: var(--mined-amber); --amber-soft: var(--mined-amber-soft);
+  --bg: var(--mined-void); --box: var(--mined-panel);
+  --warn: var(--mined-warn); --warn-soft: rgba(232, 178, 107, .12);
+  --blue: #8FB4E8; --ok: #8ccfa8;
+  --sed-0: #2A2431; --sed-1: #322A3B; --sed-2: #3D3348; --sed-3: #4A4056;
+  --radius: var(--mined-r-md);
+  --shadow: 0 0 0 1px var(--mined-line), 0 10px 30px rgba(0, 0, 0, .28);
+  --font: 'Pretendard Variable', 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  --serif: var(--font);
+  color-scheme: dark;
+}
+body { background: var(--mined-void); }
+::selection { background: var(--mined-amber-soft); color: var(--mined-ink); }
+:focus-visible { outline-color: var(--mined-core-light); }
+a { color: var(--mined-core-light); }
+
+/* 버튼(UI 시트 1·2): 알약 모양, 호박색 테두리가 주 버튼 */
+.btn { border-radius: var(--mined-r-pill); background: var(--mined-btn-bg); border-color: var(--mined-line-strong); color: var(--mined-ink); transition: background var(--mined-t-fast, .18s) var(--mined-ease-out), border-color .18s, transform .18s var(--mined-ease-out); }
+.btn:hover { background: var(--mined-btn-bg-hi); border-color: rgba(255, 236, 214, .22); transform: translateY(-1px); }
+.btn.primary { background: rgba(242, 170, 85, .16); color: var(--mined-amber); border-color: rgba(242, 170, 85, .55); font-weight: 600; }
+.btn.primary:hover { background: rgba(242, 170, 85, .24); }
+.btn.quiet { color: var(--mined-ink-soft); }
+.btn.quiet:hover { background: var(--mined-btn-bg-hi); color: var(--mined-ink); }
+.btn.danger { color: var(--mined-warn); border-color: rgba(232, 178, 107, .4); }
+.linkish { color: var(--mined-core-light); }
+
+/* 머리·바닥 */
+.top { background: rgba(27, 22, 32, .92); border-bottom-color: var(--mined-line); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 5; }
+.wordmark img { height: 30px; width: auto; display: block; }
+.promise { color: var(--mined-ink-mute); font-size: 14px; }
+.door { border-top-color: var(--mined-line); color: var(--mined-ink-mute); background: var(--mined-void); }
+.door b { color: var(--mined-ink-soft); }
+.col.left { border-right-color: var(--mined-line); }
+.col.right { background: var(--mined-deep); }
+
+/* 카드·입력 */
+.drop, .mindi-panel, .ask .bubble, .isl-visit, .ev-form, .rate-card, .room-panel { background: var(--mined-panel); box-shadow: var(--shadow); border-radius: var(--mined-r-lg); }
+.input, .select { background: rgba(255, 236, 214, .04); border-color: var(--mined-line-strong); color: var(--mined-ink); border-radius: var(--mined-r-sm); }
+.chip { background: rgba(255, 236, 214, .06); color: var(--mined-ink); }
+.gate { background: var(--mined-amber-soft); }
+.help { background: var(--warn-soft); }
+.label-pill { background: var(--mined-amber-soft); color: var(--mined-core-light); }
+.photos .more { background: rgba(27, 22, 32, .8); }
+.skeleton { background: linear-gradient(90deg, var(--mined-panel), var(--mined-layer), var(--mined-panel)); background-size: 200% 100%; }
+.cov .structural_missing { color: #A89A8A; } /* 패널 #241F2C 대비 6.4:1 (WCAG AA) */
+.switch-row input[role="switch"] { background: var(--mined-slate); }
+.switch-row input[role="switch"]::after { background: var(--mined-ink); }
+.room-cap { background: rgba(27, 22, 32, .85); }
+.kiosk-overlay { background: rgba(27, 22, 32, .94); }
+.eval-seal { background: rgba(140, 207, 168, .1); }
+.rate-answers .btn.on { background: var(--mined-amber-soft); color: var(--mined-amber); border-color: var(--mined-amber); }
+html { scrollbar-color: var(--mined-slate) transparent; }
+*::-webkit-scrollbar-thumb { background: var(--mined-slate); border-color: var(--mined-void); }
+
+/* 문장: 민디·판정 문장은 산세리프 한 벌(UI 시트 8. 폰트) */
+.sentence, .mindi .say, .memo .text, .ask .bubble p { font-family: var(--font); }
+.sentence { font-size: 20px; font-weight: 500; color: var(--mined-ink); }
+.memo { border-bottom: 0; padding: 12px 16px; margin-top: 10px; border-left: 2px solid var(--mined-amber); background: rgba(255, 236, 214, .03); border-radius: 0 var(--mined-r-sm) var(--mined-r-sm) 0; }
+.memo .when { color: var(--mined-amber); font-family: var(--mined-mono); font-size: 13px; letter-spacing: .02em; }
+
+/* 지층: 어두운 퇴적층 위에 광물 색 */
+.stratum .yr { color: var(--mined-ink-mute); font-family: var(--mined-mono); font-size: 13px; }
+.wk.sel { outline-color: var(--mined-core-light); }
+.wk.thin::after { background: var(--mined-void); }
+.wk .lab { background: var(--mined-core-light); }
+.wk.span::before, .wk.ep::before { background: var(--mined-core-light); }
+.wk.hit { box-shadow: 0 0 6px rgba(255, 212, 138, .25); }
+.wk.m-호박 { background: #F2A33A; } .wk.m-황철석 { background: #C9A26B; } .wk.m-청금석 { background: #3F6FD0; }
+.wk.m-월장석 { background: #9CC3EE; } .wk.m-자수정 { background: #9A5BE0; } .wk.m-홍옥 { background: #EE8FB0; }
+.wk.m-흑요석 { background: #8E95A8; } .wk.m-석류석 { background: #C4243C; } .wk.m-형석 { background: #5CCB9A; }
+.wk:hover:not(.c0) { box-shadow: 0 2px 10px rgba(0, 0, 0, .45); }
+
+/* 게이지(8/22 상세 화면): 가는 선 위의 호박색 점 */
+.gauge .track { height: 4px; border-radius: 2px; background: rgba(255, 236, 214, .1); }
+.gauge .usual { background: rgba(255, 236, 214, .22); border-radius: 2px; }
+.gauge .needle { top: -5px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--mined-ink); box-shadow: 0 0 10px rgba(255, 212, 138, .35); }
+.gauge .needle.up, .gauge .needle.down { background: var(--mined-amber); }
+.gauge.none .track { box-shadow: inset 0 0 0 1px var(--mined-line-strong); }
+
+/* 민디 눈(UI 시트 4. 민디 표정 3종) */
+.mindi-eyes { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 18%; flex: none; border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, #2a2230, #15111a 70%); box-shadow: 0 0 0 1px var(--mined-line-strong), 0 6px 16px rgba(0, 0, 0, .4); }
+.mindi-eyes i { width: 16%; height: 16%; border-radius: 50%; background: #F7B460; box-shadow: 0 0 6px 2px rgba(242, 170, 85, .75); animation: mindi-blink 3.2s infinite; }
+.mindi-eyes.thinking i { width: 12%; height: 12%; opacity: .8; animation-duration: 1.4s; }
+.mindi-eyes.found i { background: #FFE2A8; box-shadow: 0 0 10px 3px rgba(255, 212, 138, .9); }
+@keyframes mindi-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+@media (prefers-reduced-motion: reduce) { .mindi-eyes i { animation: none; } }
+.mindi .say { font-size: 18px; }
+.mindi .say .dk, .ask .bubble .dk { color: var(--mined-core-light); }
+
+/* 입장 인트로(8/22 랜딩 1번) */
+.entry { position: relative; height: min(78vh, 720px); min-height: 460px; overflow: hidden; display: grid; place-items: center; background: #c9e2e6; }
+.entry-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.entry-scrim { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 42%, rgba(27, 22, 32, 0) 30%, rgba(27, 22, 32, .35) 75%, rgba(27, 22, 32, .9) 100%); }
+.entry-copy { position: relative; text-align: center; color: #fff; margin-top: -4%; }
+.entry-name { font-size: clamp(48px, 7vw, 76px); font-weight: 300; letter-spacing: .02em; line-height: 1.05; text-shadow: 0 2px 30px rgba(0, 0, 0, .35); }
+.entry-kr { font-size: 15px; letter-spacing: .5em; margin-top: 8px; opacity: .85; }
+.entry-line { margin-top: 18px; font-size: 16px; text-shadow: 0 1px 12px rgba(0, 0, 0, .45); }
+.entry-go { margin-top: 22px; border-radius: 4px; background: rgba(255, 255, 255, .12); border-color: rgba(255, 255, 255, .7); color: #fff; letter-spacing: .3em; padding: 0 26px; }
+.entry-go:hover { background: rgba(255, 255, 255, .22); }
+.entry-logo { position: absolute; bottom: 7%; left: 50%; transform: translateX(-50%); width: min(240px, 46vw); opacity: .9; }
+.mindi-intro { display: flex; align-items: center; justify-content: center; gap: 28px; padding: 48px 28px 8px;
+  background: radial-gradient(ellipse at 50% 40%, rgba(242, 170, 85, .12), transparent 60%); }
+.mindi-intro img { width: 132px; height: auto; filter: drop-shadow(0 10px 30px rgba(242, 170, 85, .2)); }
+.mindi-intro-name { color: var(--mined-amber); font-size: 13px; letter-spacing: .3em; }
+.mindi-intro-say { font-size: 20px; line-height: 1.6; margin-top: 6px; }
+.importer { margin-top: 32px; }
+
+/* 광물 채굴(UI 시트 6) */
+.dig { display: grid; justify-items: center; gap: 6px; padding: 10px 0 18px; background: radial-gradient(ellipse at 50% 55%, rgba(242, 170, 85, .14), transparent 62%); }
+.dig-ore { position: relative; border: 0; background: none; padding: 0; cursor: url('./assets/design/pick_cursor.webp') 30 30, pointer; width: 170px; height: 150px; display: grid; place-items: center; }
+.dig-ore > img:first-child { max-width: 100%; max-height: 100%; filter: drop-shadow(0 12px 22px rgba(0, 0, 0, .5)); transition: transform .2s var(--mined-ease-pop), filter .3s; }
+.dig-ore[data-hit='1'] > img:first-child, .dig-ore[data-hit='2'] > img:first-child { animation: dig-tap .26s var(--mined-ease-bounce); }
+.dig-ore.cracked > img:first-child { animation: dig-crack .5s var(--mined-ease-out) forwards; }
+.dig-pick { position: absolute; width: 62px; right: -18px; top: -6px; transform: rotate(-12deg); transform-origin: 80% 20%; pointer-events: none; opacity: .95; }
+.dig-ore[data-hit='1'] .dig-pick, .dig-ore[data-hit='2'] .dig-pick, .dig-ore.cracked .dig-pick { animation: dig-swing .26s var(--mined-ease-out); }
+.dig-count { font-family: var(--mined-mono); font-size: 12px; color: var(--mined-ink-mute); letter-spacing: .12em; }
+@keyframes dig-tap { 0% { transform: translateX(0); } 30% { transform: translateX(-4px) rotate(-2deg); } 60% { transform: translateX(3px) rotate(1deg); } 100% { transform: none; } }
+@keyframes dig-swing { 0% { transform: rotate(-12deg); } 40% { transform: rotate(-48deg); } 100% { transform: rotate(-12deg); } }
+@keyframes dig-crack { 0% { transform: scale(1); } 40% { transform: scale(1.12); filter: drop-shadow(0 0 26px rgba(255, 212, 138, .9)) brightness(1.3); } 100% { transform: scale(1.04); filter: drop-shadow(0 0 18px rgba(255, 212, 138, .6)) brightness(1.1); } }
+@media (prefers-reduced-motion: reduce) { .dig-ore img, .dig-pick { animation: none !important; } }
+@media (max-width: 760px) { .entry { height: 64vh; } .mindi-intro { gap: 16px; padding-top: 32px; } .mindi-intro img { width: 92px; } .mindi-intro-say { font-size: 17px; } }
+
+/* 광물 지하(8/22 랜딩 3번) */
+.yearmine { margin-bottom: 22px; }
+.ym-head { display: flex; align-items: center; justify-content: center; gap: 18px; }
+.ym-year { font-size: 44px; font-weight: 700; color: var(--mined-amber); letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+.ym-arrow { border: 0; background: none; color: var(--mined-amber); font-size: 28px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
+.ym-arrow:hover:not(:disabled) { background: var(--mined-amber-soft); }
+.ym-arrow:disabled { opacity: .25; cursor: default; }
+.ym-field { position: relative; height: 230px; margin-top: 6px; border-radius: var(--mined-r-lg); overflow: hidden;
+  background: linear-gradient(180deg, #2a2431 0%, #221d29 30%, #1e1a24 60%, #18141d 100%); box-shadow: inset 0 0 0 1px var(--mined-line); }
+.ym-band { position: absolute; left: 0; right: 0; height: 1px; background: rgba(255, 236, 214, .06); }
+.ym-ore { position: absolute; transform: translate(-50%, -10%); border: 0; padding: 0; background: none; cursor: pointer; transition: transform .2s var(--mined-ease-pop), filter .2s; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .5)); }
+.ym-ore img { width: 100%; height: 100%; object-fit: contain; }
+.ym-ore:hover, .ym-ore:focus-visible { transform: translate(-50%, -10%) scale(1.18); filter: drop-shadow(0 0 12px rgba(255, 212, 138, .55)); }
+.ym-ore.on { filter: drop-shadow(0 0 14px rgba(255, 212, 138, .9)); transform: translate(-50%, -10%) scale(1.15); }
+.ym-ore.thin { opacity: .6; }
+.ym-empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--mined-ink-mute); font-size: 15px; }
+.ym-mindi { position: absolute; right: 14px; bottom: 12px; }
+.entry-kr, .entry-line { text-shadow: 0 1px 2px rgba(0, 0, 0, .55), 0 0 18px rgba(0, 0, 0, .45); }
+.entry-kr { opacity: 1; }

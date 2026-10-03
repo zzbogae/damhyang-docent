@@ -49,7 +49,7 @@ export function MindiGreeting() {
   return (
     <div className="mindi-panel" role="region" aria-label="민디">
       <div className="mindi">
-        <MindiMark />
+        <MindiMark mood={busy ? 'thinking' : answer?.target ? 'found' : 'idle'} />
         <div>
           <p className="say">
             {say}

@@ -4,6 +4,7 @@ import { useStore } from '../state/store';
 import { importAndJudge, importV6File, runFixture, runSample } from '../pipeline';
 import { IconFile, IconFolder } from './Icons';
 import { CHANNEL_LABEL, type Channel } from '../types';
+import { ART } from './design';
 
 const GUIDE: { title: string; steps: string[] }[] = [
   { title: '구글 기록(유튜브·메모·캘린더·사진)', steps: [
@@ -73,6 +74,38 @@ function ChannelToggles({ onPick, onFolder }: { onPick: () => void; onFolder: ()
   );
 }
 
+/**
+ * 입장 인트로(8/22 랜딩 1·2번 화면): 안개 낀 채굴장 위에 이름과 한 줄, 그 아래 민디 소개.
+ * 움직임을 줄이도록 설정한 기기에서는 영상 대신 첫 장면 그림만 둔다.
+ */
+function EntryHero() {
+  const still = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return (
+    <>
+      <section className="entry" aria-label="Mine D 입장">
+        {still
+          ? <img className="entry-bg" src={ART.introPoster} alt="" />
+          : <video className="entry-bg" src={ART.introFog} poster={ART.introPoster} autoPlay muted loop playsInline aria-hidden="true" />}
+        <div className="entry-scrim" />
+        <div className="entry-copy">
+          <p className="entry-name">Mine D</p>
+          <p className="entry-kr">마 인 디</p>
+          <p className="entry-line">당신의 지난 10년은 이미 여기 묻혀 있습니다.</p>
+          <button className="btn entry-go" onClick={() => document.getElementById('import-start')?.scrollIntoView({ behavior: 'smooth' })}>입장하기</button>
+        </div>
+        <img className="entry-logo" src={ART.logoLight} alt="Your Mind In Your Mine D" />
+      </section>
+      <section className="mindi-intro" aria-label="민디 소개">
+        <img src={ART.mindiCharacter} alt="민디" />
+        <div>
+          <p className="mindi-intro-name">민디</p>
+          <p className="mindi-intro-say">안녕하세요, 저는 민디예요.<br />당신의 기록에서 광물을 캡니다.</p>
+        </div>
+      </section>
+    </>
+  );
+}
+
 export function ImportPanel({ onDone, onEval }: { onDone?: () => void; onEval?: () => void }) {
   const { setPhase, progress, setProgress, reload, error, setError, phase } = useStore();
   const [files, setFiles] = useState<File[]>([]);
@@ -107,7 +140,9 @@ export function ImportPanel({ onDone, onEval }: { onDone?: () => void; onEval?: 
   const stage = (s: string) => setProgress({ ...(progress ?? {}), stage: s });
 
   return (
-    <div className="importer">
+    <>
+    {phase !== 'ready' && <EntryHero />}
+    <div className="importer" id="import-start">
       <h1>기록을 가져옵니다</h1>
       <p className="promise-big">이미 있는 기록만 씁니다. 파일은 이 브라우저 안에서만 읽고, 어디에도 보내지 않습니다.</p>
       <div
@@ -170,5 +205,6 @@ export function ImportPanel({ onDone, onEval }: { onDone?: () => void; onEval?: 
       )}
       <ChannelToggles onPick={() => fileRef.current?.click()} onFolder={() => dirRef.current?.click()} />
     </div>
+    </>
   );
 }

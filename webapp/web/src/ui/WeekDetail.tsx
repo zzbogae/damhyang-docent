@@ -15,6 +15,8 @@ import { groupSimilar } from '../photos/similar';
 import { LABEL as LABELS } from './format';
 
 import { MINERAL_COLOR } from './minerals';
+import { MINERAL_IMG, ART } from './design';
+import { playCue } from '../mindi/sound';
 const GRADE_SHORT: Partial<Record<Grade, string>> = {
   open: '아직 확인 전', returned: '돌아옴, 그 뒤 미확인', held: '그 뒤도 평소 범위', insufficient: '기록이 비어 알 수 없음',
   broken: '돌아옴, 다시 벗어남',
@@ -294,8 +296,35 @@ function EpisodeLine({ w }: { w: WeekRecord }) {
   );
 }
 
+/**
+ * 광물 채굴(팀 UI 시트 「광물 채굴 — 세 번 치면 깨집니다」, 웹 데모 v5 「3회 채굴」).
+ * 1·2번은 톡톡 흔들리고 3번째에 깨지며 「그때 쓴 글」로 내려간다. 보여 주는 내용을 막지는 않는다(원문은 아래에 그대로 있다).
+ */
+function MineralDig({ mineral, sound }: { mineral: keyof typeof MINERAL_IMG; sound: boolean }) {
+  const [hits, setHits] = useState(0);
+  const [shake, setShake] = useState(0);
+  const hit = () => {
+    if (hits >= 3) return;
+    const n = hits + 1;
+    setHits(n); setShake((k) => k + 1);
+    if (n === 3) {
+      if (sound) playCue('mined');
+      setTimeout(() => document.getElementById('wk-memos')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 420);
+    }
+  };
+  return (
+    <div className="dig">
+      <button className={`dig-ore${hits >= 3 ? ' cracked' : ''}`} key={shake} onClick={hit} aria-label={`${mineral} 캐기 (${hits}/3)`} data-hit={hits}>
+        <img src={MINERAL_IMG[mineral]} alt="" />
+        <img className="dig-pick" src={ART.pickaxe} alt="" />
+      </button>
+      <span className="dig-count">HIT_{hits} / 3</span>
+    </div>
+  );
+}
+
 export function WeekDetail({ w }: { w: WeekRecord }) {
-  const { unlocked, unlock } = useStore();
+  const { unlocked, unlock, settings } = useStore();
   const en = useEn();
   // 9/12 회의 5번: 주 단위 「한 번 더 묻기」는 없앴다. 위기 표현이 걸린 글만 하나씩 가려 두고 누르면 연다(Memos)
   const locked = false;
@@ -305,6 +334,7 @@ export function WeekDetail({ w }: { w: WeekRecord }) {
   return (
     <article className="stack" aria-labelledby="wk-title">
       <header>
+        {w.mineral && w.mineral in MINERAL_IMG && <MineralDig mineral={w.mineral as keyof typeof MINERAL_IMG} sound={!!settings.sound} />}
         <div className="week-head">
           <h2 id="wk-title">{rangeLabel(w)}</h2>
           {w.mineral && <span className="chip"><i style={{ background: MINERAL_COLOR[w.mineral] }} />{w.mineral}</span>}
@@ -322,7 +352,7 @@ export function WeekDetail({ w }: { w: WeekRecord }) {
         )}
       </header>
 
-      <section><h3 className="h3">그때 쓴 글</h3><Memos w={w} locked={locked} /></section>
+      <section id="wk-memos"><h3 className="h3">그때 쓴 글</h3><Memos w={w} locked={locked} /></section>
       <section><h3 className="h3">그때 찍은 사진</h3><Photos w={w} locked={locked} /></section>
       <MindiAsk w={w} />
       <section><h3 className="h3">닮은 지난 주</h3><Similar w={w} /></section>

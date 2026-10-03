@@ -41,14 +41,11 @@ export const IconRoom = (p: SVGProps<SVGSVGElement>) => (
 );
 
 /** 민디: 모서리를 깎은 광물 조각(기하 도형). */
-export function MindiMark({ size = 44 }: { size?: number }) {
+/** 민디 얼굴: 팀 UI 시트 「민디 표정 3종」(기본·생각 중·발견). 어두운 얼굴에 호박색 눈 두 개만 빛나고, 눈은 느리게 깜빡인다. */
+export function MindiMark({ size = 44, mood = 'idle' }: { size?: number; mood?: 'idle' | 'thinking' | 'found' }) {
   return (
-    <svg className="face" width={size} height={size} viewBox="0 0 44 44" aria-hidden="true">
-      <polygon points="22,3 38,13 38,31 22,41 6,31 6,13" fill="#f6ead6" stroke="#a86a12" strokeWidth="1.6" />
-      <polygon points="22,3 38,13 22,20 6,13" fill="#efd9b4" />
-      <circle cx="16.5" cy="25" r="1.8" fill="#16151a" />
-      <circle cx="27.5" cy="25" r="1.8" fill="#16151a" />
-      <path d="M19 30.5q3 2 6 0" stroke="#16151a" strokeWidth="1.4" fill="none" strokeLinecap="round" />
-    </svg>
+    <span className={`face mindi-eyes ${mood}`} style={{ width: size, height: size }} aria-hidden="true">
+      <i /><i />
+    </span>
   );
 }

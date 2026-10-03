@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { StoreProvider, useStore } from './state/store';
 import { Strata } from './ui/Strata';
+import { YearMine } from './ui/YearMine';
 import { Summary } from './ui/Summary';
 import { WeekDetail } from './ui/WeekDetail';
 import { Overview } from './ui/Overview';
@@ -12,6 +13,7 @@ import { Collect } from './ui/Collect';
 import { FullscreenButton, KioskOverlay, useKiosk } from './ui/Kiosk';
 import { useEn } from './i18n/useEn';
 import { FOOTER_EN } from './i18n/en';
+import { ART } from './ui/design';
 
 function Door109En() {
   return useEn() ? <span lang="en" className="muted"> · {FOOTER_EN}</span> : null;
@@ -75,7 +77,7 @@ function Shell() {
 
   const header = (
     <header className="top">
-      <div className="wordmark">Mine D</div>
+      <div className="wordmark"><img src={ART.logoLight} alt="" /><span className="sr-only">Mine D</span></div>
       <p className="promise">기록은 이 브라우저 밖으로 나가지 않습니다.</p>
       <div className="spacer" />
       {phase === 'ready' && (
@@ -152,6 +154,7 @@ function Shell() {
       {header}
       <main className="main">
         <div className="col left">
+          <YearMine />
           <Strata />
           {/* 9/12 회의 5번: 숫자가 많은 요약은 접어 둔다 */}
           <details className="why summary-fold" open={!!(result?.summary as { imported_v6?: boolean } | undefined)?.imported_v6}>
