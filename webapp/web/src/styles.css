@@ -493,9 +493,9 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 .wk .lab { background: var(--mined-core-light); }
 .wk.span::before, .wk.ep::before { background: var(--mined-core-light); }
 .wk.hit { box-shadow: 0 0 6px rgba(255, 212, 138, .25); }
-.wk.m-호박 { background: #F2A33A; } .wk.m-황철석 { background: #C9A26B; } .wk.m-청금석 { background: #3F6FD0; }
-.wk.m-월장석 { background: #9CC3EE; } .wk.m-자수정 { background: #9A5BE0; } .wk.m-홍옥 { background: #EE8FB0; }
-.wk.m-흑요석 { background: #8E95A8; } .wk.m-석류석 { background: #C4243C; } .wk.m-형석 { background: #5CCB9A; }
+.wk.m-호박 { background: #d99a3f; } .wk.m-황철석 { background: #e8c45f; } .wk.m-청금석 { background: #5a94d6; }
+.wk.m-월장석 { background: #cfe0e8; } .wk.m-자수정 { background: #a17fd1; } .wk.m-홍옥 { background: #e88ab5; }
+.wk.m-흑요석 { background: #8b87a0; } .wk.m-석류석 { background: #e0705f; } .wk.m-형석 { background: #6fc79a; }
 .wk:hover:not(.c0) { box-shadow: 0 2px 10px rgba(0, 0, 0, .45); }
 
 /* 게이지(8/22 상세 화면): 가는 선 위의 호박색 점 */
@@ -672,3 +672,11 @@ html { scrollbar-color: var(--mined-slate) transparent; }
   .td-legend { margin: 0 88px 6px 52px; }
 }
 @media (prefers-reduced-motion: reduce) { .mf-ore, .mf-core, .mf-year, .mf-scanner i { animation: none !important; } }
+
+/* 연도별 지층 그림(Team Art Assets / 03 앱 지층): 고른 해의 지층 띠를 광물 자리에 깐다 */
+.mf-band { position: absolute; left: 0; right: 0; top: 36%; height: 50%; width: 100%; object-fit: fill; z-index: 3; pointer-events: none; animation: mf-band-in .5s ease both; filter: brightness(1.08); }
+@keyframes mf-band-in { from { opacity: 0; } to { opacity: 1; } }
+.mf-band-note { position: absolute; right: 3%; top: calc(36% - 26px); z-index: 6; font-size: 12px; color: #b3aabb; }
+.mf-core { filter: drop-shadow(0 6px 12px rgba(0, 0, 0, .55)); }
+.mf-ore:not(.breaking) .mf-core { animation: mined-gem-breathe 3.4s ease-in-out infinite; }
+@keyframes mined-gem-breathe { 0%, 100% { opacity: 1; } 50% { opacity: .82; } }

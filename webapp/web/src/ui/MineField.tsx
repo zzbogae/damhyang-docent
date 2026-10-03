@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../state/store';
 import { rangeLabel } from '../mindi/templates';
 import { playCue } from '../mindi/sound';
-import { MINERAL_IMG, ART } from './design';
+import { MINERAL_IMG, ART, stratumFor } from './design';
 import { MINERAL_HEX, type Mineral } from './minerals';
 import { MindiGreeting } from './Mindi';
 import type { WeekRecord } from '../types';
@@ -32,9 +32,9 @@ function Ore({ w, i, onMined }: { w: WeekRecord; i: number; onMined: (w: WeekRec
   const [hit, setHit] = useState(0);
   const wk = Number(w.week.split('-W')[1]);
   const x = 16 + ((wk - 1) / 52) * 66;
-  let y = 42 + (ROW[w.mineral!] ?? 1.5) * 12.5;
-  if (x > 70 && y > 66) y = 60;
-  const size = 46 + Math.min(3, w.evidence.independent ?? 1) * 10;
+  let y = 45 + (ROW[w.mineral!] ?? 1.5) * 11;
+  if (x > 70 && y > 66) y = 62;
+  const size = 40 + Math.min(3, w.evidence.independent ?? 1) * 8;
   const m = w.mineral as Mineral;
   const click = (e: React.MouseEvent) => {
     if (hits >= 3) return;
@@ -106,6 +106,7 @@ export function MineField() {
           </button>
         ))}
       </nav>
+      {(() => { const st = stratumFor(year); return <><img className="mf-band" key={`b${year}`} src={st.src} alt="" />{!st.own && <span className="mf-band-note">{year}년 지층 그림은 아직 없어 다른 해 그림을 씁니다</span>}</>; })()}
       <div className="mf-field" key={year}>
         {ores.map((w, k) => <Ore key={w.week} w={w} i={k} onMined={(ww, x, y) => setCard({ w: ww, x, y })} />)}
         {!ores.length && <p className="mf-empty">{year}년에는 평소를 벗어난 주가 없습니다.</p>}

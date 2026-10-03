@@ -1,4 +1,4 @@
-// 광물 9종(팀 9/23 §1-4): 축 × 방향 8종 + 복합 1종(형석). 색은 드라이브 광물 그림(design.ts MINERAL_IMG)의 대표색이다.
+// 광물 9종(팀 9/23 §1-4): 축 × 방향 8종 + 복합 1종(형석). 색은 드라이브 핸드오프 gems.css 의 --gem-* 값이다.
 import type { Axis } from '../types';
 
 export const MINERALS = ['호박', '황철석', '청금석', '월장석', '자수정', '홍옥', '흑요석', '석류석', '형석'] as const;
@@ -10,8 +10,8 @@ export const MINERAL_EN: Record<Mineral, string> = {
 };
 
 export const MINERAL_HEX: Record<Mineral, string> = {
-  호박: '#F2A33A', 황철석: '#C9A26B', 청금석: '#3F6FD0', 월장석: '#9CC3EE', 자수정: '#9A5BE0',
-  홍옥: '#EE8FB0', 흑요석: '#8E95A8', 석류석: '#C4243C', 형석: '#5CCB9A',
+  호박: '#d99a3f', 황철석: '#e8c45f', 청금석: '#5a94d6', 월장석: '#cfe0e8', 자수정: '#a17fd1',
+  홍옥: '#e88ab5', 흑요석: '#8b87a0', 석류석: '#e0705f', 형석: '#6fc79a',
 };
 export const MINERAL_COLOR: Record<string, string> = MINERAL_HEX;
 
