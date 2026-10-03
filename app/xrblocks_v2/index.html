@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <title>Mine D XR Blocks Prototype v2</title>
+    <link rel="icon" href="data:," />
+    <style>
+      html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #111820; }
+      #status { position: fixed; left: 20px; top: 20px; z-index: 10; max-width: 420px; color: #e4dfd4; background: rgba(16,24,32,.86); border: 1px solid rgba(224,169,63,.45); border-radius: 14px; padding: 14px 16px; font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif; }
+      #status b { color: #e0a93f; }
+      #status small { display: block; margin-top: 6px; color: #9eacb8; }
+      #assetBadge { position: fixed; right: 20px; top: 20px; z-index: 10; color: #9fd8ef; background: rgba(10,18,24,.86); border: 1px solid rgba(107,184,220,.5); border-radius: 999px; padding: 9px 13px; font: 700 10px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; }
+      #legend { position: fixed; left: 20px; bottom: 20px; z-index: 10; color: #d7dfe4; background: rgba(10,16,22,.78); border-radius: 12px; padding: 10px 13px; font: 11px/1.6 -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif; }
+      #legend strong { color: #f0c568; }
+      #elevatorBadge { position: fixed; right: 20px; top: 66px; z-index: 10; color: #f1d48d; background: rgba(10,18,24,.86); border: 1px solid rgba(224,169,63,.45); border-radius: 999px; padding: 9px 13px; font: 700 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .06em; }
+      #controls { position: fixed; left: 50%; bottom: 20px; z-index: 11; transform: translateX(-50%); display: flex; gap: 8px; padding: 8px; border: 1px solid rgba(255,255,255,.13); border-radius: 16px; background: rgba(10,16,22,.84); backdrop-filter: blur(12px); }
+      #controls button { cursor: pointer; color: #d7dfe4; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15); border-radius: 10px; padding: 9px 12px; font: 700 11px/1 -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif; }
+      #controls button.active, #controls button.on { color: #101820; background: #e0a93f; border-color: #f4d58d; }
+      #mineButton { color: #e8f6fb !important; background: rgba(73,143,173,.35) !important; border-color: rgba(127,207,235,.62) !important; }
+      #miningMeter { position: fixed; left: 50%; bottom: 78px; z-index: 10; width: 250px; height: 8px; transform: translateX(-50%); overflow: hidden; border-radius: 99px; background: rgba(255,255,255,.12); }
+      #miningFill { width: 0%; height: 100%; background: linear-gradient(90deg,#78bed6,#e0a93f); transition: width .28s ease; }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/",
+          "lit": "https://esm.sh/lit@3.3.1",
+          "lit/": "https://esm.sh/lit@3.3.1/",
+          "xrblocks": "https://cdn.jsdelivr.net/npm/xrblocks@0.21.1/build/xrblocks.js",
+          "xrblocks/addons/": "https://cdn.jsdelivr.net/npm/xrblocks@0.21.1/build/addons/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="status"><b>Mine D · 기억 지층 엘리베이터</b><br />연도를 골라 지층으로 내려간 뒤 광석을 세 번 채굴하면, 실제 Mine D 장면이 포털로 열립니다.<small>숫자 1·2·3으로 이동 · M 또는 광석 클릭/핀치로 채굴</small></div>
+    <div id="assetBadge">LOADING MINE D ASSET</div>
+    <div id="elevatorBadge">B1 · 2026 · -18 m</div>
+    <div id="legend"><strong>B1 · 2024–2026</strong> 2026 · 호박 (걸음 · 많음)<br><strong>B2 · 2020–2023</strong> 2022 · 형석 (2종 교차)<br><strong>B3 · 2011–2019</strong> 2016 · 황철석 (걸음 · 적음)<br>깊을수록 오래된 기록 · 채굴 후 실제 Mine D 에셋이 열림</div>
+    <div id="miningMeter"><div id="miningFill"></div></div>
+    <div id="controls" aria-label="지층 엘리베이터 제어">
+      <button data-floor="0">1 · 2026</button>
+      <button data-floor="1">2 · 2022</button>
+      <button data-floor="2">3 · 2016</button>
+      <button id="mineButton">⛏ M · 채굴</button>
+    </div>
+    <script type="module" src="main.js"></script>
+  </body>
+</html>
