@@ -20,6 +20,7 @@ v3의 해결:
 """
 from __future__ import annotations   # 파이썬 3.7~3.9 에서도 돌아가게
 from datetime import date
+from .axes import reason_text
 
 FEATURES = [
     ('avg_steps', 'low'),
@@ -176,13 +177,13 @@ def find_candidates(
 
         # 규칙 A: 기준선 형성 구간
         if i - first_idx < baseline_warmup_weeks:
-            out.append({**base, 'tier': 'observed', 'recovered_at': None,
+            out.append({**base, 'tier': 'open', 'recovered_at': None,
                         'reason': '데이터 시작 구간 — 비교할 이전 기록이 없음'})
             continue
 
         # 규칙 B: 확장(성찰) 모양은 위축 서사를 붙이지 않음
         if shape == 'expansion':
-            out.append({**base, 'tier': 'observed', 'recovered_at': None,
+            out.append({**base, 'tier': 'open', 'recovered_at': None,
                         'reason': '평소보다 길게 쓴 주 — 위축이 아니라 기록·성찰일 수 있음'})
             continue
 
@@ -194,10 +195,10 @@ def find_candidates(
                                         recovery_sustain_weeks,
                                         recovery_search_window, last_idx)
         if rec:
-            out.append({**base, 'tier': 'recovered', 'recovered_at': rec, 'reason': None})
+            out.append({**base, 'tier': 'held', 'recovered_at': rec, 'reason': None})
         else:
-            out.append({**base, 'tier': 'passed', 'recovered_at': None,
-                        'reason': '그 뒤가 평소 범위였는지는 아직 확인되지 않았습니다'})
+            out.append({**base, 'tier': 'returned', 'recovered_at': None,
+                        'reason': reason_text('not_held')})
 
     out.sort(key=lambda c: -c['deviation'])
     return out
@@ -271,7 +272,7 @@ def build_sentence(cand: dict, with_percentile: bool = False) -> str:
 
     body = f"{period}, " + " 그리고 ".join(facts) + "."
 
-    if cand['tier'] == 'recovered' and cand['recovered_at']:
+    if cand['tier'] == 'held' and cand['recovered_at']:
         rs, _ = week_date_range(cand['recovered_at'])
         gap = (rs - start).days // 7
         body += f" 그리고 약 {gap}주 뒤부터 평소의 흐름이 이어졌습니다."

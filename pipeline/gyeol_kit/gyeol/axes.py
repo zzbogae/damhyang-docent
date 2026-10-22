@@ -1,99 +1,782 @@
 # -*- coding: utf-8 -*-
-"""4축·화면 문구 정본 — `260912_MineD_화면문구_규칙_v4` 확정 사항.
+"""
+gyeol/axes.py — 4축 판정의 정본 (확정 기록 v2 · 2026.09.11)
 
-`docs/team_spec_sync_260913.md` §2 에서 확정된 숫자·규칙만 그대로 상수로 옮긴 파일이다.
-문구가 확정된 대로 "같은 상황에는 같은 문장"이 되도록(§2-3), 이 파일이 **화면 노출 문구의
-단 하나뿐인 정본**이다. `judge.py`, `analyzer_v3.py`, `rolling_baseline.py`, `report.py` 등
-다른 gyeol_kit 모듈은 문구를 직접 짜지 말고 전부 여기서 가져다 써야 한다. 같은 문장이 두 벌
-있어도 하나를 숨기지 않는다 — 문장을 하나로 통일하는 것이 답이지, 숨기는 건 원칙 6
-(원본을 가공하지 않는다) 위반이다(v3의 "숨기자" 결정은 v4에서 철회됨).
+    from gyeol.axes import build_axes, week_record
 
-τ(문턱값)·형석 조건·스펙D 시간창 같은 **수치** 확정값은 이 파일이 아니라(이 파일은 문구만
-다룸) `docs/team_spec_sync_260913.md` §1 에 있다 — `analyzer_v3.py`(아직 팀에서 못 받음,
-`MISSING_DEPENDENCIES.md` 참고)가 들어올 때 그 문서를 기준으로 옮겨야 한다.
+이 파일 하나가 「무엇을 어떻게 재는가」의 전부입니다.
+숫자를 바꾸려면 여기만 고칩니다. 다른 파일은 이걸 가져다 씁니다.
 
-이 파일 자체는 아직 어디에서도 import 되지 않는다(§2-3에 "만들 것"으로만 지정돼 있었음).
+── 확정 근거 ────────────────────────────────────────────────
+  실데이터 800주 캘리브레이션 (2026.09.11)
+  문서: 04_팀_회의 / 260911_MineD_판정설계_확정기록_v2.md
+  멘토 조언: 안대철님 (log1p · 평균절대편차 대체 · 유클리드)
+
+── 하지 않는 것 ─────────────────────────────────────────────
+  · 원문을 읽지 않습니다. 개수·시각·길이만 씁니다
+  · 없는 값을 지어내지 않습니다. 모르면 None 입니다
+  · 해석하지 않습니다. 축과 방향만 내보냅니다
 """
 from __future__ import annotations
+import math
+import statistics
+from collections import defaultdict
 
-# ── 축 ──────────────────────────────────────────────────────
-# 확정 2026-09-11 (team_spec_sync §2-5). 코드명은 그대로, 화면 표기만 바뀌었다.
+from .channels import FEATURE_FAMILY
 
-AXES = ["move", "rest", "watch", "leave"]
 
-AXIS_LABEL = {                 # 내부 라벨 (코드·로그·발표 대본에서 사용)
-    "move": "움직임",
-    "rest": "쉼",
-    "watch": "보기",
-    "leave": "남기기",
+# ═══════════════════════════════════════════════════════════
+#  1. 축 정의
+# ═══════════════════════════════════════════════════════════
+#
+# 원칙 둘
+#   ① 축에는 「양(量)」 지표만. 비율 지표(심야 비율·1인칭 비율·
+#      단정 표현 비율·캡처 비율)는 축 밖입니다.
+#      「보기 많음」은 얼마나 봤나이지 언제 봤나가 아닙니다.
+#   ② 부호는 「축이 올라가는 방향」. 답장 지연은 길수록 덜 남긴
+#      것이므로 −1 입니다.
+#
+# ─────────────────────────────────────────────────────────
+# label  = 내부 약칭. 문서·로그·회의에서 축을 가리킬 때만 씁니다.
+# screen = 화면에 뜨는 이름. **앱은 이쪽을 씁니다.**
+#
+#   창 B 확정 2026.09.11 — 화면문구_규칙_v2 §4
+#     move 걸음 / rest 쉼 / watch 화면 / leave 기록
+#
+#   rest 를 「잠」이 아니라 「쉼」으로 둔 이유 —
+#   밤 무기록 구간 대체 지표가 들어와도 이름을 안 바꿔도 됩니다.
+#   「잠」이었으면 내용이 넓어질 때 이름이 먼저 좁아집니다.
+#
+#   화면 이름을 바꾸려면 여기 screen 만 고칩니다. 판정 로직과 무관합니다.
+# ─────────────────────────────────────────────────────────
+AXES = {
+    'move':  {'label': '움직임', 'screen': '걸음', 'feats': {'avg_steps': +1}},
+    'rest':  {'label': '쉼',     'screen': '쉼',   'feats': {'avg_sleep': +1}},
+    'watch': {'label': '보기',   'screen': '화면', 'feats': {'yt_total': +1, 'yt_search': +1}},
+    'leave': {'label': '남기기', 'screen': '기록', 'feats': {
+        'notes_count': +1, 'notes_avg_length': +1,
+        'photo_count': +1,
+        'avg_length': +1, 'avg_reply_delay_min': -1,
+        'ai_count': +1,
+    }},
+}
+AXIS_ORDER = ['move', 'rest', 'watch', 'leave']   # 동점일 때의 고정 순서
+
+# 축 밖 — 근거 문장 전용
+RATIO_FEATS = {
+    'yt_night_ratio', 'notes_night_ratio', 'photo_night_ratio',
+    'capture_ratio', 'night_ratio', 'first_person_ratio',
+    'absolute_ratio', 'ai_night_ratio',
 }
 
-AXIS_SCREEN_LABEL = {          # 화면 표기 (사용자에게 보이는 이름)
-    "move": "걸음",
-    "rest": "쉼",
-    "watch": "화면",
-    "leave": "기록",
+# 축이 아닙니다. 맥락 한 줄로만 — 많다·적다를 붙이지 않습니다
+CONTEXT_FEATS = {'cal_events'}
+
+
+# ═══════════════════════════════════════════════════════════
+#  2. 계산 상수 — 실데이터 800주에서 나온 값
+# ═══════════════════════════════════════════════════════════
+
+# 건수형·꼬리가 긴 지표는 log1p 먼저.
+# 없으면 유튜브 검색량 z가 17~18까지 가서 축 간 스케일이 깨집니다.
+LOG1P = {
+    'yt_total', 'yt_search', 'notes_count', 'photo_count', 'ai_count',
+    'avg_reply_delay_min',
 }
 
-# ── 확인 등급 (스펙 D 확정, team_spec_sync §1-3) ─────────────
-# sustain=4주, 복귀 인정 창=4주, 대기 하한 없음.
-# 구 명칭 → 신 명칭: recovered→held / passed→returned / observed→open / (자리 없음)→insufficient
-# 내부 변수명을 구 명칭에서 신 명칭으로 바꾸는 것은 아직 팀 승인 보류 중(§1-6) —
-# 코드에서 실제로 tier 값을 이 상수로 바꿔 쓸 때는 그 승인 여부를 먼저 확인할 것.
+WIN_LONG = 52          # z52 — 게이지 · 광물 · 자동 노출
+WIN_SHORT = 8          # z8  — 이탈 · 복귀 · 지속
+MIN_PERIODS = 12       # 긴 창에서 이만큼 없으면 z를 만들지 않습니다
+MIN_PERIODS_SHORT = 4
 
-TIERS = ["held", "returned", "open", "insufficient"]
+# τ — |z| 상위 7.5% 지점 (800주 실측).
+# 이건 상수입니다. 사용자마다 같은 값을 씁니다 —
+# 개인화는 τ가 아니라 z 계산 안에 이미 있습니다
+# (z = 그 사람의 직전 52주 중위·MAD 대비).
+TAU = {
+    'move':  3.03,
+    'rest':  2.36,
+    'watch': 1.99,
+    'leave': 2.16,
+}
+TAU_PCT = 7.5          # 재캘리브레이션할 때 쓸 백분위
 
-GRADE_TEXT = {                 # 화면 문장 (확정, team_spec_sync §2-4)
-    "held": "그 뒤 4주는 평소 범위였습니다",
-    "returned": "돌아왔지만 그 뒤는 확인되지 않았습니다",
-    "open": "이 주 뒤는 아직 확인되지 않았습니다",
-    "insufficient": "기록이 비어 말할 수 없습니다",
+# 방향별 τ — 위로 드문 주와 아래로 드문 주를 따로 잽니다.
+# 건수형 지표는 오른쪽 꼬리가 깁니다. 메모를 3개 쓰던 사람이 0개로 가면
+# 조금 내려가지만 30개로 가면 크게 올라갑니다. 아래로는 0이라는 바닥이
+# 있어서 갈 데가 없습니다. |z| 하나로 자르면 그 문턱을 위쪽이 거의 다
+# 먹어서, 아래로 꽤 드문 주가 위쪽에 가려 안 잡힙니다.
+#   None 이면 TAU 를 양쪽에 똑같이 씁니다.
+#
+# 실측 (800주 · 2026.09.11) — 채택 근거
+#   공통 τ  : 아래 광물 4주, 안 쓰인 광물 2종 (pyrite · rose 가 0주)
+#   방향별 τ: 아래 광물 33주, 안 쓰인 광물 0종, 전체 광물 수는 그대로(129주)
+#
+#   움직임이 특히 극단적입니다 — 위로 4.91 까지 가야 드문데
+#   아래로는 1.60 만 내려가도 드뭅니다. 걸음수엔 바닥이 있으니까요.
+#   공통 τ 3.03 을 쓰면 「덜 움직인 주」가 영원히 안 잡힙니다.
+#   쉼만 반대입니다 (위 2.21 / 아래 2.99) — 수면은 아래 꼬리가 더 깁니다.
+TAU_UP = {
+    'move':  4.91,
+    'rest':  2.21,
+    'watch': 2.48,
+    'leave': 2.85,
+}
+TAU_DOWN = {
+    'move':  1.60,
+    'rest':  2.99,
+    'watch': 1.44,
+    'leave': 1.37,
+}
+STEP = 0.6             # 계단식 복합 조건의 두 번째 문턱 비율
+
+# 판정 스펙 D — 4주 이내 복귀 + 4주 지속
+Z_OUT = 2.0            # 이탈 (z8 기준)
+Z_BAND = 1.0           # 「내 평소」 밴드
+RETURN_WINDOW = 4
+HOLD_WEEKS = 4
+
+# 유사도 전용 — dominant_axis·코어 크기에는 자르지 않은 z를 씁니다
+SIM_CLIP = 3.0
+SIM_EXCLUDE_RECENT = 12   # 최근 N주는 「닮은 주」 후보에서 제외
+SIM_NEIGHBOR_GAP = 4      # 1위를 뽑은 뒤 앞뒤 N주 제외
+SIM_MIN_AXES = 2          # 공통 축이 이보다 적으면 후보에서 뺍니다.
+                          # 축 하나만 겹치면 거리가 쉽게 0에 가까워져서,
+                          # 기록이 거의 없던 옛날 주가 1위를 독식합니다.
+
+# 확인 등급의 화면 문장 (창 B 확정 2026.09.11)
+#
+# 숫자를 박지 않습니다. 판정이 실제로 본 창 수를 넣습니다 —
+# 박아두면 스펙이 바뀔 때 화면이 틀린 사실을 말하게 됩니다.
+#
+# ⚠ 금지어: 「지나갔습니다」 · 「지나갔고」
+#    축이 밴드로 돌아온 건 지표에 대한 사실인데, 「지나갔다」는 주어를
+#    지표에서 시기로 옮깁니다. 그 한 걸음이 해석입니다.
+#
+#    예외 — 서비스 모토 「당신은 이미 한 번 여기를 지나갔습니다」는 유지합니다.
+#    모토는 특정 주에 붙는 판정이 아니라 사용자 전체에 대한 세계관 문장이고,
+#    주어가 처음부터 사람입니다. 이 예외를 지우지 마세요.
+GRADE_TEXT = {
+    'held':         '그 뒤 {n}주는 평소 범위였습니다',
+    'returned':     '돌아왔지만 그 뒤는 확인되지 않았습니다',
+    'open':         '이 주 뒤는 아직 확인되지 않았습니다',
+    'insufficient': '기록이 비어 판정할 수 없습니다',
 }
 
-GRADE_NOUN = {                 # 명사구 (목록·요약에서 쓰는 짧은 표현)
-    "held": "그 뒤 4주가 평소 범위였던 주",
-    "returned": "평소 범위로 돌아왔지만 그 뒤는 확인 안 된 주",
-    "open": None,
-    "insufficient": None,
+
+# ── 등급 이름 — 새 이름이 정본, 옛 이름도 읽습니다 ─────────
+#
+# 확정 2026.09.19 — 변수명을 판정 결과와 같은 말로 맞춥니다.
+#   recovered → held      passed → returned      observed → open
+#
+# 옛 이름을 버리지 않는 이유 — 이미 만들어진 gyeol_data.json 이
+# 전부 옛 이름을 들고 있습니다. 버리면 그 파일들이 화면에서 빕니다.
+# 읽을 때 normalize_grade() 를 거치면 둘 다 들어옵니다.
+#
+# ⚠ 새로 쓰는 코드는 새 이름만 씁니다. 옛 이름은 읽기 전용입니다.
+GRADE_ORDER = ['held', 'returned', 'open', 'insufficient']
+# ⚠ 'broken' — 복귀 후 다시 벗어난 주. 화면 문안이 아직 없습니다 (창 B 대기).
+#    GRADE_TEXT 에 일부러 안 넣었습니다. grade_text() 가 None 을 돌려줍니다.
+GRADE_PENDING = ['broken']
+
+TIER_ALIAS = {
+    'recovered': 'held',
+    'passed':    'returned',
+    'observed':  'open',
 }
 
-GRADE_PRINCIPLE_TEXT = "확인되지 않은 것을 확인되었다고 말하지 않습니다. 네 단계로 구분합니다."
 
-# ── 결측·근거 문구 ────────────────────────────────────────────
+def normalize_grade(v):
+    """옛 이름이 들어와도 새 이름으로 돌려줍니다. 모르는 값은 그대로."""
+    return TIER_ALIAS.get(v, v)
 
-MISSING_TEXT = "그 주에 평소 있던 기록 중 {n}종이 비어 있습니다"
-# n: 실측값. 기준: 직전 52주 중 절반 이상 나타난 계열인데 이 주엔 없는 경우.
 
-SINGLE_SOURCE_WARN_TEXT = (
-    "이 주들은 한 지표에만 기대고 있어서, 그 뒤가 어땠는지는 말하지 않았습니다."
-)
-SINGLE_SOURCE_REASON_TEXT = (
-    "이 시기엔 {only} 기록만 남아 있습니다 — 한 지표만으로는 그 뒤가 어땠는지 말하지 않습니다"
-)
+def grade_text(grade, n=None):
+    """확인 등급 → 화면 문장. n 은 판정이 실제로 본 창 수입니다."""
+    t = GRADE_TEXT.get(normalize_grade(grade))
+    if t is None:
+        return None
+    return t.format(n=(HOLD_WEEKS if n is None else n))
 
-COUNT_PHRASE_TEXT = "살펴본 {n}주 중 {m}주"   # 구 "전체 판정 N건"의 대체(판정 제거·건→주·전체→살펴본)
 
-# ── 세계관 문장 (예외) ────────────────────────────────────────
-# 서비스 모토. §2-2 금지어("지나갔습니다") 목록의 유일한 예외 — 판정/화면 문구가 아니라
-# 세계관 문장이라서다. 2026-09-13 시점까지 앱 어디에도 배치되지 않았다.
-
-WORLDVIEW_MOTTO_TEXT = "당신은 이미 한 번 여기를 지나갔습니다"
-
-# ── 금지어 (화면 노출 문구 기준, team_spec_sync §2-2) ─────────
-# 내부 문서·코드 변수명·발표 대본에는 적용되지 않는다(주석에 예외 표시).
-
-BANNED_ON_SCREEN = {
-    "지나갔습니다/지나갔고/지나감": "전면 금지 (세계관 모토 WORLDVIEW_MOTTO_TEXT 만 예외)",
-    "판정": "금지 — 원칙: 판정·해석·진단하지 않는다",
-    "회복": "화면 문구에서만 금지. 발표 대본·내부 문서에서는 허용",
-    "더 나아질 겁니다/괜찮아질 겁니다": "예측 — 금지",
-    "○○일 남았습니다": "스트릭 — 금지",
-    "진단명·임상 용어": "금지",
+# ── 사유 문장 (reason) ──────────────────────────────────────
+#
+# 왜 여기 있는가 — 같은 상황에 문장이 두 벌이면 버그입니다.
+# judge.py · analyzer_v3.py · rolling_baseline.py 가 「근거가 얇다」는
+# 같은 상황에 각자 다른 문장을 들고 있었습니다. 어느 모듈이 도는지에
+# 따라 화면이 달라지는데, 그건 사용자가 고를 수 있는 게 아닙니다.
+#
+# 그래서 문장은 여기 한 곳에만 둡니다. 다른 모듈은 가져다 씁니다.
+#   from .axes import reason_text
+#   'reason': reason_text('not_held')
+#
+# ⚠ 다른 파일에 문장을 직접 쓰지 마세요. 쓰는 순간 두 벌이 됩니다.
+#
+# 「비노출」은 철회했습니다 (2026.09.12). 숨길 이유가 없습니다 —
+# 사용자가 연 주에 대해 앱이 아는 것을 안 보여줄 근거가 없고,
+# 아래 문장들은 판정이 아니라 사실 진술입니다.
+REASON = {
+    # 근거 계열이 하나뿐일 때
+    'one_family': ('이 시기엔 {only} 기록만 남아 있습니다 — '
+                   '한 지표만으로는 그 뒤가 어땠는지 말하지 않습니다'),
+    # 밴드로 돌아왔는지 아직 못 본 때
+    'not_held':   '그 뒤가 평소 범위였는지는 아직 확인되지 않았습니다',
 }
 
-__all__ = [
-    "AXES", "AXIS_LABEL", "AXIS_SCREEN_LABEL",
-    "TIERS", "GRADE_TEXT", "GRADE_NOUN", "GRADE_PRINCIPLE_TEXT",
-    "MISSING_TEXT", "SINGLE_SOURCE_WARN_TEXT", "SINGLE_SOURCE_REASON_TEXT",
-    "COUNT_PHRASE_TEXT", "WORLDVIEW_MOTTO_TEXT", "BANNED_ON_SCREEN",
-]
+
+def reason_text(key, **kw):
+    """사유 키 → 화면 문장. 없는 키를 주면 None 입니다 (지어내지 않습니다)."""
+    t = REASON.get(key)
+    return None if t is None else t.format(**kw)
+
+
+def axis_screen(ax):
+    """축 → 화면에 뜨는 이름. 문서·로그에는 AXES[ax]['label'] 을 씁니다."""
+    a = AXES.get(ax)
+    return None if a is None else a.get('screen', a['label'])
+
+
+# ═══════════════════════════════════════════════════════════
+#  2-b. 결측 맥락 줄 (§7-③ · 창 B 확정 2026.09.11)
+# ═══════════════════════════════════════════════════════════
+#
+# 왜 있는가 — 「그 뒤 4주는 평소 범위였습니다」는 사실이지만,
+# 기록이 멈춘 주에서는 「아무 일도 없던 주」로 읽힙니다.
+# 실제로는 잴 것이 없었던 주입니다. 그래서 아래 한 줄을 같이 띄웁니다.
+#
+# 이 줄은 판정하지 않습니다. 셉니다.
+#   · 많다·적다를 붙이지 않습니다
+#   · 왜 비었는지 말하지 않습니다 (기기 교체와 앱 삭제는 똑같이 보입니다)
+#   · 조건부입니다 — 빈 계열이 없으면 아예 안 나옵니다
+MISSING_TEXT = '그 주에 평소 있던 기록 중 {n}종이 비어 있습니다'
+
+# 직전 창에서 이 비율 이상 나타난 계열을 「평소 있던 것」으로 봅니다.
+# 절반으로 잡은 이유 — 더 낮추면 옛날에 한두 번 쓴 앱이 영원히
+# 「평소 있던 것」으로 남아 매주 결측으로 잡힙니다.
+USUAL_MIN = 0.5
+
+
+def usual_families(history_rows, min_ratio=USUAL_MIN):
+    """직전 주들의 row 목록 → 「평소 있던」 계열 집합."""
+    rows = [r for r in history_rows if r]
+    if not rows:
+        return set()
+    cnt = defaultdict(int)
+    for r in rows:
+        for fam in evidence_families(r):
+            cnt[fam] += 1
+    need = len(rows) * min_ratio
+    return {fam for fam, c in cnt.items() if c >= need}
+
+
+def missing_families(row, usual):
+    """평소 있던 계열 중 이번 주에 비어 있는 것. 정렬된 목록."""
+    if not usual:
+        return []
+    return sorted(set(usual) - set(evidence_families(row)))
+
+
+def missing_text(n):
+    """결측 계열 수 → 맥락 줄. 0 이면 None (줄 자체가 안 나옵니다)."""
+    return None if not n else MISSING_TEXT.format(n=n)
+
+
+# 결(줄무늬) — 광물과 다른 기준입니다.
+#
+# 광물은 「얼마나 드문가」(τ)로 정하고, 결은 「얼마나 벗어났나」(z 크기)로
+# 정합니다. 둘을 같은 기준으로 묶으면 τ 를 못 넘은 주가 전부 똑같은 결을
+# 갖게 됩니다 — 움직임 4.74 인 주와 0.1 인 주가 같은 무늬가 됩니다.
+#
+# 문턱은 새로 만들지 않고 이미 정의된 밴드를 씁니다 (redesign §2):
+#   |z| < 1  내 평소   /   |z| >= 1  벗어남   /   |z| >= 2  많이 벗어남
+GRAIN_BAND = 1.0
+
+# 유단희님 단면 패턴 3안에 대응합니다 (방향성재정리 2026.09.07)
+GRAIN = {
+    'mixed':   'C',   # 여러 색이 섞임 — 2축 이상이 밴드 밖
+    'coarse':  'A',   # 결이 굵고 경계가 뚜렷 — 한 축만 밴드 밖
+    'regular': 'B',   # 층이 규칙적 — 전부 밴드 안
+}
+
+# 광물 배정 (하빈님 gems/ 9종)
+GEM = {
+    ('move',  'up'): 'amber',     ('move',  'down'): 'pyrite',
+    ('rest',  'up'): 'lapis',     ('rest',  'down'): 'moonstone',
+    ('watch', 'up'): 'amethyst',  ('watch', 'down'): 'rose',
+    ('leave', 'up'): 'obsidian',  ('leave', 'down'): 'garnet',
+}
+GEM_COMPLEX = 'fluorite'   # 형석 — 교차검증된 주에만
+
+
+# ═══════════════════════════════════════════════════════════
+#  3. robust z
+# ═══════════════════════════════════════════════════════════
+
+def robust_z(value, history, min_periods):
+    """
+    직전 history 대비 robust z.
+
+    MAD 가 0이면 평균절대편차 × 1.2533 으로 대체합니다.
+    (Iglewicz–Hoaglin. 멘토 안대철님 조언 2026.09.11)
+    둘 다 0이면 계산하지 않습니다 — 억지로 큰 수를 넣지 않습니다.
+
+    반환: (z or None, 사유)
+      'ok'      MAD 로 계산
+      'meanad'  평균절대편차로 대체
+      'few'     이력 부족
+      'flat'    변화가 전혀 없어 계산 불가
+    """
+    hist = [h for h in history if h is not None]
+    if len(hist) < min_periods:
+        return None, 'few'
+    med = statistics.median(hist)
+    mad = statistics.median([abs(h - med) for h in hist])
+    if mad > 0:
+        return (value - med) / (1.4826 * mad), 'ok'
+    mean_ad = sum(abs(h - med) for h in hist) / len(hist)
+    if mean_ad > 0:
+        return (value - med) / (1.2533 * mean_ad), 'meanad'
+    return None, 'flat'
+
+
+def build_feature_z(merged, weeks, window, min_periods):
+    """
+    지표별 robust z 를 주 단위로 계산.
+    merged: {week: {feature: value}}   weeks: 시간순 주차 목록
+    반환: ({week: {feat: z}}, {feat: {사유: 횟수}})
+    """
+    feats = sorted({f for row in merged.values() for f in row})
+    zmap, flags = defaultdict(dict), {f: defaultdict(int) for f in feats}
+    series = {f: [] for f in feats}
+
+    for w in weeks:
+        row = merged.get(w, {})
+        for f in feats:
+            v = row.get(f)
+            if v is None:
+                series[f].append(None)
+                continue
+            if f in LOG1P and v >= 0:
+                v = math.log1p(v)
+            hist = [x for x in series[f][-window:] if x is not None]
+            z, why = robust_z(v, hist, min_periods)
+            flags[f][why] += 1
+            if z is not None:
+                zmap[w][f] = z
+            series[f].append(v)
+    return zmap, flags
+
+
+def axis_z(feat_z):
+    """
+    축 z = 계열별 평균 z 의 평균.
+
+    계열로 한 번 접는 이유는 v5 와 같습니다 —
+    카톡 지표 다섯 개가 남기기 축을 혼자 끌고 가면 안 됩니다.
+    「지표 5개는 증거 5개가 아니라 1개」.
+
+    반환: {axis: (z or None, 쓴 지표 수, [계열])}
+    """
+    out = {}
+    for ax in AXIS_ORDER:
+        by_family, n = defaultdict(list), 0
+        for f, sign in AXES[ax]['feats'].items():
+            z = feat_z.get(f)
+            if z is None:
+                continue
+            by_family[FEATURE_FAMILY.get(f, f)].append(sign * z)
+            n += 1
+        if not by_family:
+            out[ax] = (None, 0, [])
+            continue
+        fam_means = [sum(v) / len(v) for v in by_family.values()]
+        out[ax] = (sum(fam_means) / len(fam_means), n, sorted(by_family))
+    return out
+
+
+def build_axes(merged, weeks):
+    """한 번에: 두 창의 축 z 를 만듭니다. 반환 (A52, A8, flags)"""
+    z52, flags = build_feature_z(merged, weeks, WIN_LONG, MIN_PERIODS)
+    z8, _ = build_feature_z(merged, weeks, WIN_SHORT, MIN_PERIODS_SHORT)
+    A52 = {w: axis_z(z52.get(w, {})) for w in weeks}
+    A8 = {w: axis_z(z8.get(w, {})) for w in weeks}
+    return A52, A8, flags
+
+
+# ═══════════════════════════════════════════════════════════
+#  4. 광물 — 축 + 방향, 난수 없음
+# ═══════════════════════════════════════════════════════════
+
+def _thr(ax, z, tau):
+    """그 축·그 방향의 문턱. 방향별 τ 가 있으면 그걸 씁니다."""
+    if z >= 0 and TAU_UP:
+        return TAU_UP.get(ax)
+    if z < 0 and TAU_DOWN:
+        return TAU_DOWN.get(ax)
+    return tau.get(ax)
+
+
+def exceeded(a, tau=None):
+    """τ 를 넘은 축 목록. [(axis, z), ...]"""
+    tau = tau or TAU
+    out = []
+    for ax in AXIS_ORDER:
+        z = a[ax][0]
+        if z is None:
+            continue
+        t = _thr(ax, z, tau)
+        if t and abs(z) >= t:
+            out.append((ax, z))
+    return out
+
+
+def pick_gem(a, tau=None, step=STEP):
+    """
+    그 주의 광물을 결정합니다. 같은 데이터면 언제나 같은 광물입니다.
+
+    형석 조건 (계단식)
+      최대 축이 τ 초과
+      AND 다른 축 하나가 step×τ 초과
+      AND 그 축들을 채운 계열이 2종 이상
+
+    계열 조건이 핵심입니다. 움직임과 쉼은 둘 다 애플헬스에서 나올 수
+    있어서, 그 둘만 벗어난 주를 형석으로 부르면 「형석이 박힌 자리 =
+    교차검증된 주」가 거짓이 됩니다.
+
+    반환: (gem or None, dominant_axis or None, direction or None, [근접 축])
+    """
+    tau = tau or TAU
+    exc = exceeded(a, tau)
+    if not exc:
+        return None, None, None, []          # 평범한 주 — 광물 없음
+
+    top_ax, top_z = max(exc, key=lambda x: abs(x[1]))
+    direction = 'up' if top_z > 0 else 'down'
+
+    near = []
+    for ax in AXIS_ORDER:
+        if ax == top_ax:
+            continue
+        z = a[ax][0]
+        if z is None:
+            continue
+        t = _thr(ax, z, tau)
+        if t and abs(z) >= step * t:
+            near.append(ax)
+
+    fams = set(a[top_ax][2])
+    for ax in near:
+        fams |= set(a[ax][2])
+
+    if near and len(fams) >= 2:
+        return GEM_COMPLEX, top_ax, direction, near
+    return GEM[(top_ax, direction)], top_ax, direction, near
+
+
+# ═══════════════════════════════════════════════════════════
+#  5. 주 단위 레코드 — 앱에 내보낼 모양
+# ═══════════════════════════════════════════════════════════
+
+def grain(a):
+    """
+    그 주의 결. 광물이 없어도 결은 있습니다.
+
+    반환: (kind, 패턴, 세기)
+      kind    'mixed' | 'coarse' | 'regular'
+      패턴    유단희님 A / B / C
+      세기    최대 |z| — 무늬 밀도에 쓰라고 같이 줍니다
+    """
+    zs = [abs(a[ax][0]) for ax in AXIS_ORDER if a[ax][0] is not None]
+    if not zs:
+        return 'regular', GRAIN['regular'], None      # 읽을 게 없으면 평평하게
+    out = sum(1 for z in zs if z >= GRAIN_BAND)
+    if out >= 2:
+        kind = 'mixed'
+    elif out == 1:
+        kind = 'coarse'
+    else:
+        kind = 'regular'
+    return kind, GRAIN[kind], round(max(zs), 3)
+
+
+def evidence_families(row):
+    """그 주에 값이 있었던 지표들의 계열 (캘린더 포함)."""
+    return sorted({FEATURE_FAMILY[f] for f in row if f in FEATURE_FAMILY})
+
+
+def week_record(week, row, a52, a8, pct=None, usual=None, verdict=None):
+    """
+    한 주를 앱이 읽을 모양으로.
+
+    규칙
+      · raw 가 없으면 z 도 None. 0 으로 채우지 않습니다
+        (「기록 없음」과 「평소였음」은 다릅니다)
+      · cross_validated 는 계열 수로 셉니다. 축 수로 세지 않습니다
+      · 캘린더는 context 에만. 백분위도 문장도 없습니다
+    """
+    gem, dom, direction, near = pick_gem(a52)
+    grain_kind, grain_pattern, grain_strength = grain(a52)
+    fams = evidence_families(row)
+    miss = missing_families(row, usual)
+
+    axes = {}
+    for ax in AXIS_ORDER:
+        z52, _, ax_fams = a52[ax]
+        z8 = a8[ax][0]
+        first = next(iter(AXES[ax]['feats']))
+        axes[ax] = {
+            'screen': axis_screen(ax),
+            'raw':   row.get(first) if len(AXES[ax]['feats']) == 1 else None,
+            'z52':   None if z52 is None else round(z52, 3),
+            'z8':    None if z8 is None else round(z8, 3),
+            'pct52': (pct or {}).get(ax),
+            'families': ax_fams,
+        }
+
+    v = verdict or {}
+    return {
+        'week': week,
+        'axes': axes,
+        # 확인 등급 — judge_weeks() 가 준 것. 이탈이 없던 주는 전부 None 입니다
+        'grade':       normalize_grade(v['grade']) if v.get('grade') else None,
+        'return_week': v.get('return_week'),
+        'hold_until':  v.get('hold_until'),
+        'dominant_axis': dom,
+        'direction': direction,
+        'near_axes': near,
+        'n_axes_out': len(exceeded(a52)),
+        'evidence_families': fams,
+        'cross_validated': len(fams) >= 2,
+        'gem': gem,
+        'grain': grain_kind,
+        'grain_pattern': grain_pattern,
+        'grain_strength': grain_strength,
+        'missing_families': miss,
+        'context': ({'cal_events': row['cal_events']}
+                    if 'cal_events' in row else {}),
+        # 화면에 그대로 띄우는 줄. 등급 문장 아래에 붙습니다.
+        # 비어 있으면 아무것도 안 붙습니다 — 조건부입니다.
+        'context_lines': [t for t in [missing_text(len(miss))] if t],
+    }
+
+
+# ═══════════════════════════════════════════════════════════
+#  5-b. 확인 등급 — 스펙 D (2026.09.23)
+# ═══════════════════════════════════════════════════════════
+#
+# 왜 여기 있는가 — Z_OUT · Z_BAND · RETURN_WINDOW · HOLD_WEEKS 가
+# 이 파일에 상수로만 있고 **아무도 안 쓰고 있었습니다** (09-22 스캔으로 확인).
+# 앱이 읽는 gyeol_axes.json 에는 등급이 아예 없었습니다.
+#
+# rolling_baseline.py 도 등급을 만들지만 그건 **롤링 백분위**이고
+# 옛 리포트(gyeol_wall.html) 전용입니다. 그걸 앱에 끌어오면 앱 안에서
+# 「드문 주」의 정의가 두 개가 됩니다 — 광물은 z 로, 등급은 백분위로.
+# 그래서 앱 경로에는 z 로 판정합니다. 광물과 같은 언어입니다.
+#
+# 후보 주만이 아니라 **모든 주**를 봅니다. 닮은 주가 후보가 아니면
+# 등급이 없어서 「그때 그 뒤가 어땠는지」를 못 세기 때문입니다.
+#
+# ⚠ 다섯 번째 상태가 있습니다 — 아래 'broken' 주석을 보세요.
+
+
+def _out_axes(a8):
+    """|z8| 가 Z_OUT 이상인 축. 이탈한 축입니다."""
+    out = []
+    for ax in AXIS_ORDER:
+        z = a8[ax][0]
+        if z is not None and abs(z) >= Z_OUT:
+            out.append(ax)
+    return out
+
+
+def _in_band(a8, axes_):
+    """
+    그 축들이 전부 밴드 안인가.
+    반환: True / False / None(기록이 없어 말할 수 없음)
+    ⚠ None 을 False 로 바꾸지 마세요. 「기록 없음」과 「벗어남」은 다릅니다.
+    """
+    seen = False
+    for ax in axes_:
+        z = a8[ax][0]
+        if z is None:
+            return None
+        seen = True
+        if abs(z) >= Z_BAND:
+            return False
+    return True if seen else None
+
+
+def judge_weeks(A8, weeks):
+    """
+    주마다 확인 등급을 매깁니다. 스펙 D — 4주 이내 복귀 + 4주 지속.
+
+    반환: {week: {'grade', 'return_week', 'hold_until', 'out_axes'} or None}
+      None = 이탈이 없던 주. 판정 대상이 아닙니다 (등급 없음 ≠ 나쁜 등급).
+
+    등급
+      held         복귀했고, 그 뒤 HOLD_WEEKS 주가 전부 밴드 안이었습니다
+      returned     복귀했지만 그 뒤를 아직 못 봤습니다 (주가 모자라거나 기록이 빔)
+      open         복귀 창이 아직 안 닫혔습니다
+      insufficient 창 안에 기록이 비어 복귀 여부를 말할 수 없습니다
+      broken       ⚠ 복귀했다가 다시 밴드를 벗어났습니다 — **화면 문안 없음**
+
+    ⚠ 'broken' 은 확정된 4등급에 없습니다.
+       여기에 'returned'(「그 뒤는 확인되지 않았습니다」)를 쓰면 거짓말입니다.
+       확인은 됐고, 유지가 안 된 것입니다. 반대로 'held' 도 당연히 아닙니다.
+       그래서 새 상태로 두고, grade_text() 는 None 을 돌려줍니다 —
+       문안이 정해질 때까지 화면에 아무것도 안 붙습니다.
+       문안은 창 B 소관입니다. 이 창은 문장을 만들지 않습니다.
+    """
+    n = len(weeks)
+    verdicts = {}
+    for i, w in enumerate(weeks):
+        outs = _out_axes(A8[w])
+        if not outs:
+            verdicts[w] = None
+            continue
+
+        ret_i, unknown = None, False
+        for j in range(i + 1, min(i + 1 + RETURN_WINDOW, n)):
+            ok = _in_band(A8[weeks[j]], outs)
+            if ok is None:
+                unknown = True
+                continue
+            if ok:
+                ret_i = j
+                break
+
+        if ret_i is None:
+            # 창이 다 안 지났으면 아직 모릅니다. 다 지났는데 못 돌아왔으면
+            # 기록이 비어서인지 정말 안 돌아와서인지를 갈라야 합니다.
+            if i + RETURN_WINDOW >= n:
+                grade = 'open'
+            elif unknown:
+                grade = 'insufficient'
+            else:
+                grade = 'open'      # 창 안에 복귀가 없었습니다 — 아직 안 닫힌 것으로 둡니다
+            verdicts[w] = {'grade': grade, 'return_week': None,
+                           'hold_until': None, 'out_axes': outs}
+            continue
+
+        hold_end = ret_i + HOLD_WEEKS
+        if hold_end >= n:
+            grade = 'returned'          # 볼 주가 모자랍니다
+        else:
+            states = [_in_band(A8[weeks[k]], outs)
+                      for k in range(ret_i + 1, hold_end + 1)]
+            if any(x is False for x in states):
+                grade = 'broken'
+            elif any(x is None for x in states):
+                grade = 'returned'      # 기록이 비어 확인 못 했습니다
+            else:
+                grade = 'held'
+
+        verdicts[w] = {
+            'grade': grade,
+            'return_week': weeks[ret_i],
+            'hold_until': weeks[hold_end] if hold_end < n else None,
+            'out_axes': outs,
+        }
+    return verdicts
+
+
+# ═══════════════════════════════════════════════════════════
+#  6. 유사도 — 참고 구현
+# ═══════════════════════════════════════════════════════════
+#
+# 실제 계산은 앱(브라우저)에서 합니다. 현재 주는 매주 바뀌는데
+# 파이프라인에서 계산하면 매주 터미널을 다시 써야 하기 때문입니다.
+# 여기 있는 건 테스트·검증용입니다.
+#
+# 척도는 유클리드입니다. 코사인은 방향만 봐서
+# (0.2, 0.2, -0.2, 0.2) 인 평범한 주와 (3, 3, -3, 3) 인 극단적인 주를
+# 같은 주로 봅니다. 우리 데이터의 84%가 평범한 주입니다.
+
+def _vec(a):
+    return {ax: (None if a[ax][0] is None
+                 else max(-SIM_CLIP, min(SIM_CLIP, a[ax][0])))
+            for ax in AXIS_ORDER}
+
+
+def distance(a, b):
+    """
+    두 주의 유클리드 거리. 공통으로 값이 있는 축만 씁니다.
+    결측을 0 으로 채우면 「기록 없음」이 「평소였음」이 됩니다.
+    반환: (거리 or None, 쓴 축 수)
+    """
+    va, vb = _vec(a), _vec(b)
+    used = [ax for ax in AXIS_ORDER if va[ax] is not None and vb[ax] is not None]
+    if not used:
+        return None, 0
+    d = math.sqrt(sum((va[ax] - vb[ax]) ** 2 for ax in used) / len(used))
+    return d, len(used)
+
+
+def similar_weeks(A, weeks, target, k=5, min_axes=SIM_MIN_AXES):
+    """
+    target 과 닮은 과거 주 k 개.
+
+    최근 12주를 빼는 이유 — 안 빼면 지난주·2주 전이 상위를 독식합니다.
+    당연히 가장 가까운 주가 가장 비슷하니까요. 그러면
+    「당신은 이미 한 번 여기를 지나갔다」가 성립하지 않습니다.
+
+    1위를 뽑은 뒤 앞뒤 4주를 빼는 이유 — 같은 시기가 3개 나오는 걸 막습니다.
+
+    공통 축이 2개 미만인 주를 빼는 이유 — 축 하나만 겹치면 거리가 쉽게
+    0에 가까워집니다. 그러면 기록이 거의 없던 옛날 주가 1위가 되는데,
+    그건 닮은 게 아니라 비교할 게 없었던 것입니다.
+    """
+    i = weeks.index(target)
+    pool = weeks[:max(0, i - SIM_EXCLUDE_RECENT)]
+    scored = []
+    for w in pool:
+        d, n = distance(A[target], A[w])
+        if d is not None and n >= min_axes:
+            scored.append((d, -n, w, n))
+    # 거리가 같으면 축이 많은 쪽을 먼저 — 근거가 두꺼운 쪽입니다
+    scored.sort()
+
+    out, taken = [], set()
+    for d, _negn, w, n in scored:
+        j = weeks.index(w)
+        if any(abs(j - t) <= SIM_NEIGHBOR_GAP for t in taken):
+            continue
+        out.append({'week': w, 'distance': round(d, 3),
+                    'axes_used': n, 'thin': n <= 2})
+        taken.add(j)
+        if len(out) >= k:
+            break
+    return out
+
+
+# ═══════════════════════════════════════════════════════════
+#  7. 재캘리브레이션 — 채널이 바뀌면 τ 를 다시 뽑습니다
+# ═══════════════════════════════════════════════════════════
+
+def calibrate_tau_directional(A52, weeks, pct=TAU_PCT):
+    """
+    위로 드문 주 / 아래로 드문 주의 문턱을 따로 뽑습니다.
+    반환: (tau_up, tau_down) — 둘 다 양수입니다.
+    """
+    up, down = {}, {}
+    for ax in AXIS_ORDER:
+        pos = sorted(A52[w][ax][0] for w in weeks
+                     if A52[w][ax][0] is not None and A52[w][ax][0] >= 0)
+        neg = sorted(-A52[w][ax][0] for w in weeks
+                     if A52[w][ax][0] is not None and A52[w][ax][0] < 0)
+        up[ax] = (pos[min(int(len(pos) * (100 - pct) / 100.0), len(pos) - 1)]
+                  if len(pos) >= 20 else None)
+        down[ax] = (neg[min(int(len(neg) * (100 - pct) / 100.0), len(neg) - 1)]
+                    if len(neg) >= 20 else None)
+    return up, down
+
+
+def calibrate_tau(A52, weeks, pct=TAU_PCT):
+    """축별 |z| 상위 pct 지점. 결과를 위 TAU 에 적어 넣습니다."""
+    tau = {}
+    for ax in AXIS_ORDER:
+        vals = sorted(abs(A52[w][ax][0]) for w in weeks
+                      if A52[w][ax][0] is not None)
+        tau[ax] = (vals[min(int(len(vals) * (100 - pct) / 100.0), len(vals) - 1)]
+                   if len(vals) >= 20 else None)
+    return tau

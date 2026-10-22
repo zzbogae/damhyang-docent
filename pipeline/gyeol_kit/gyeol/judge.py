@@ -15,6 +15,7 @@ v4 문서에 '남은 문제'로 적어둔 것 중 두 개를 여기서 처리합
 """
 from __future__ import annotations   # 파이썬 3.7~3.9 에서도 돌아가게
 from .channels import FEATURE_LABEL, FEATURE_SOURCE, FEATURE_FAMILY, FAMILY_LABEL
+from .axes import reason_text
 
 MIN_EVIDENCE = 2        # 회복/미회복을 말하려면 근거 지표가 최소 이만큼
 
@@ -91,10 +92,10 @@ def apply_evidence_floor(cands: list[dict]) -> list[dict]:
         c = {**c, 'n_available': len(avail), 'available': avail,
              'families': fams, 'evidence_families': ev_fams}
 
-        if len(avail) < MIN_EVIDENCE and c['tier'] != 'observed':
+        if len(avail) < MIN_EVIDENCE and c['tier'] != 'open':
             only = FEATURE_LABEL.get(avail[0], avail[0]) if avail else '한 가지'
-            c = {**c, 'tier': 'observed', 'recovered_at': None,
-                 'reason': f'이 시기엔 {only} 기록만 남아 있습니다 — 한 지표만으로는 회복을 말하지 않습니다',
+            c = {**c, 'tier': 'open', 'recovered_at': None,
+                 'reason': reason_text('one_family', only=only),
                  'thin': True, 'single_source': True}
         else:
             c = {**c, 'thin': False, 'single_source': len(ev_fams) <= 1}
@@ -133,12 +134,12 @@ def build_sentence(cand, with_percentile=True, max_facts=2) -> str:
                  f'다른 기록이 더해지면 달라질 수 있습니다.')
         return body
 
-    if cand['tier'] == 'recovered' and cand.get('recovered_at'):
+    if cand['tier'] == 'held' and cand.get('recovered_at'):
         from .analyzer_v3 import week_date_range
         rs, _ = week_date_range(cand['recovered_at'])
         gap = (rs - start).days // 7
         body += f' 그리고 약 {gap}주 뒤부터 평소의 흐름이 이어졌습니다.'
-    elif cand['tier'] == 'passed':
+    elif cand['tier'] == 'returned':
         body += ' 그 뒤로 평소의 흐름이 충분히 오래 이어졌는지는 확인되지 않았습니다.'
 
     return body

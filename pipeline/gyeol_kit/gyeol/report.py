@@ -19,9 +19,9 @@ from .core_generator import MINERALS, core_params, draw_core
 
 SHAPE_KO = {'round': '둥근 것', 'angular': '각진 것',
             'long': '길쭉한 것', 'wide': '넓은 것'}
-TIER_KO = {'recovered': '그 뒤 4주는 평소 범위였습니다',
-           'passed': '돌아왔지만 그 뒤는 확인되지 않았습니다',
-           'observed': '이 주 뒤는 아직 확인되지 않았습니다'}
+TIER_KO = {'held': '그 뒤 4주는 평소 범위였습니다',
+           'returned': '돌아왔지만 그 뒤는 확인되지 않았습니다',
+           'open': '이 주 뒤는 아직 확인되지 않았습니다'}
 
 
 def e(s):
@@ -94,9 +94,9 @@ def print_console(ctx):
     t = ctx['tiers']
     print('\n[4] 판정')
     print(f'   전체 {ctx["n_weeks"]}주 · 기준선이 생겨 판정 가능해진 주 {ctx["n_judgeable"]}주')
-    print(f'   그 뒤 4주가 평소 범위였던 주  {len(t["recovered"]):>4}주')
-    print(f'   평소 범위로 돌아왔지만 그 뒤는 확인 안 된 주  {len(t["passed"]):>4}주')
-    print(f'   관찰만                  {len(t["observed"]):>4}건'
+    print(f'   그 뒤 4주가 평소 범위였던 주  {len(t["held"]):>4}주')
+    print(f'   평소 범위로 돌아왔지만 그 뒤는 확인 안 된 주  {len(t["returned"]):>4}주')
+    print(f'   관찰만                  {len(t["open"]):>4}건'
           f'   (그중 근거 부족 {ctx["unlock"]["thin_candidates"]}건)')
     print(f'   ⚠ 한 종류의 기록만 보고 내린 판정 {ctx["unlock"]["single_source"]}건'
           f'  — 지금 기록 종류가 {ctx["unlock"]["n_families"]}가지입니다')
@@ -297,7 +297,7 @@ def _core_cards(health_rows, weeks_wanted):
 def build_html(ctx) -> str:
     u = ctx['unlock']
     t = ctx['tiers']
-    ordered = t['recovered'] + t['passed'] + t['observed']
+    ordered = t['held'] + t['returned'] + t['open']
 
     zero_note = ''
     if ctx['n_judgeable'] == 0:
@@ -339,7 +339,7 @@ def build_html(ctx) -> str:
 <div><b>{len(ctx['found'])}</b><span>읽힌 채널</span></div>
 <div><b>{ctx['n_weeks']:,}</b><span>분석된 주</span></div>
 <div><b>{ctx['n_judgeable']:,}</b><span>판정 가능한 주</span></div>
-<div><b>{len(t['recovered'])}</b><span>그 뒤 4주가 평소 범위였던 주</span></div>
+<div><b>{len(t['held'])}</b><span>그 뒤 4주가 평소 범위였던 주</span></div>
 </div>
 
 <h2><span class="n">01</span>읽힌 것</h2>
@@ -361,9 +361,9 @@ def build_html(ctx) -> str:
 <h2><span class="n">04</span>판정</h2>
 <p class="lead">확인되지 않은 것을 확인되었다고 말하지 않습니다. 네 단계로 구분합니다.</p>
 <div class="stat">
-<div><b>{len(t['recovered'])}</b><span>그 뒤 4주가 평소 범위였던 주</span></div>
-<div><b>{len(t['passed'])}</b><span>평소 범위로 돌아왔지만 그 뒤는 확인 안 된 주</span></div>
-<div><b>{len(t['observed'])}</b><span>관찰만</span></div>
+<div><b>{len(t['held'])}</b><span>그 뒤 4주가 평소 범위였던 주</span></div>
+<div><b>{len(t['returned'])}</b><span>평소 범위로 돌아왔지만 그 뒤는 확인 안 된 주</span></div>
+<div><b>{len(t['open'])}</b><span>관찰만</span></div>
 </div>
 {zero_note}
 <div style="margin-top:16px">{_week_blocks(ordered)}</div>

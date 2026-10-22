@@ -72,3 +72,4 @@ web/dist-cli/
 
 # 합성 인물 산출물(재생성: core/.venv/bin/python synth/make_persona.py)
 synth/out/
+_backup_*/

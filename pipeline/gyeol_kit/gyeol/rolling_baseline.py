@@ -18,6 +18,7 @@ from __future__ import annotations   # 파이썬 3.7~3.9 에서도 돌아가게
 from datetime import date
 from .analyzer_v3 import (week_to_index, week_date_range, _percentile_rank,
                           classify_shape, build_sentence)
+from .axes import reason_text
 
 DEFAULT_WINDOW = 52          # 직전 52주(1년)를 기준선으로
 MIN_WINDOW = 20              # 최소 이만큼은 쌓여야 판정 시작
@@ -121,7 +122,7 @@ def find_candidates_rolling(
                     p_row=p_row, raw=weekly_raw.get(wk, {}))
 
         if shape == 'expansion':
-            out.append({**base, 'tier': 'observed', 'recovered_at': None,
+            out.append({**base, 'tier': 'open', 'recovered_at': None,
                         'reason': '평소보다 길게 쓴 주 — 위축이 아니라 기록·성찰일 수 있음'})
             continue
 
@@ -146,10 +147,10 @@ def find_candidates_rolling(
                 break
 
         if rec:
-            out.append({**base, 'tier': 'recovered', 'recovered_at': rec, 'reason': None})
+            out.append({**base, 'tier': 'held', 'recovered_at': rec, 'reason': None})
         else:
-            out.append({**base, 'tier': 'passed', 'recovered_at': None,
-                        'reason': '지표가 충분히 오래 안정되지 않음 — 회복을 단정하지 않음'})
+            out.append({**base, 'tier': 'returned', 'recovered_at': None,
+                        'reason': reason_text('not_held')})
 
     out.sort(key=lambda c: -c['deviation'])
     return out
