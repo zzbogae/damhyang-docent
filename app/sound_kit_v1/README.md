@@ -1,11 +1,12 @@
-# Mine D 사운드 키트 v1
+# Mine D 사운드 키트 v1.1
 
-**2026-10-23** · 보경 지시 · 정리 Claude · 상태: **제안** (보경 청취 확인 전)
+**2026-10-23** · v1.1 = 빠짐 점검 반영 (v1 폴더는 그대로 둠) · 보경 지시 · 정리 Claude · 상태: **제안** (보경 청취 확인 전)
 **바탕**: `261023_MineD_사운드_빈구간_챗봇연결_이름짓기_문구기준_v1.md` §1 · `261023_MineD_화면설계_최종본_v6.md` · `261023_MineD_버튼배치_확정_v1.md`
 
 ## 요약
 
-- 화면 구역 P0~P13마다 바탕 소리를 정하고, 버튼·사건마다 효과음 13종, 민디 음절 22종을 붙였습니다.
+- 화면 구역 P0~P13마다 바탕 소리를 정하고, 버튼·사건마다 효과음 31종, 민디 음절 22종을 붙였습니다.
+- v1.1: 화면·하위 창·버튼·상태 전환 107개를 하나씩 대조해 빈 곳 52개를 채웠습니다. 전체 표는 `261023_MineD_사운드_빠짐점검표_v1.md`, 사운드 창 맨 아래에서 ▶로 들어 볼 수 있습니다.
 - 파일 하나(`mined-sound.js`)만 넣으면 됩니다. 외부 라이브러리 없음.
 - 바로 들어 보기: `index.html`(사운드 창)을 브라우저로 열고 「소리 켜기」.
 
@@ -19,7 +20,8 @@
 |---|---|
 | `index.html` | 사운드 창. 구역·효과음·민디 목소리를 버튼으로 들어 보는 시험 페이지 |
 | `mined-sound.js` | 사운드 엔진. `window.MineDSound` |
-| `sound-map.json` | 구역 → 소리 매핑 (개발 참고용) |
+| `sound-map.json` | 구역 → 소리 매핑 + `events`(107개 항목별 소리) (개발 참고용) |
+| `261023_MineD_사운드_빠짐점검표_v1.md` | 빠짐 점검표 |
 | `audio/*.wav` | 섬 영상에서 잘라 낸 소리 5개 (약 0.8 MB) |
 
 ## 구역별 매핑
@@ -29,7 +31,7 @@
 | P0 첫 화면 · 안개 | 안개 바람 + 낮은 패드 | ENTER → `door` | — |
 | P1 로그인 | 안개 (작게) | 버튼 → `tap` | — |
 | P2 데이터 연결 | 안개 (작게) | 연결 완료 → `confirm` | — |
-| P3 관측소 | 등불 + 먼 물방울, 선율 없음 | 기능 버튼 5개 → `tap` · 관측소의 문 → `door` | 첫 만남 `hello` · 말풍선 `say()` |
+| P3 관측소 | 고른 장면: 등불(기본)·비·바람·없음, 선율 없음 | 기능 버튼 5개 → `tap` · 관측소의 문 → `door` | 첫 만남 `hello` · 말풍선 `say()` |
 | P4 하루 고르기 | 관측소와 같음 | → `tap` | `say()` |
 | P5 엘리베이터 | 출발 덜컹 → 기계음 + 깊이 이동 → 도착 종 | 내려간다 → `confirm` · 돌아가기 → `back` | `wait` |
 | P6 연도 지층 | 깊이에 따라 바람↓ 저주파·물방울↑, 음악 없음 | 층 넘김 → `tap` | `found` |
@@ -38,10 +40,14 @@
 | P9 민디와 이야기 | 등불 (작게) | 보내기 → `tap` | 답마다 `say()` · `react()` |
 | P10 캔 광석 보관함 | 등불 + 물방울 (작게) | 넣기 → `keep` | — |
 | P11 나의 공간 만들기 | 고른 환경 미리 듣기 (60%) | 고르기 → `tap` · 열림 → `space_open` | `say()` |
-| P12 나의 공간 | 바다 = 파도 + 물결 / 방 = 방 공기 | 걷기 → `step` · 소품 → `keep` | — |
+| P12 나의 공간 | 바다 = 파도 + 물결 / 산 = 바람 + 새 / 하늘 = 높은 바람 / 정글 = 풀벌레 + 새 / 방 = 방 공기 | 걷기 → `step` · 소품 → `keep` | — |
 | P13 설정 | 바꾸지 않음 (겹쳐 뜨는 창) | 토글 → `toggle` | — |
 
 **깊이 (P5~P8)**: `depth` 0 → 1. 음량 100% → 55%, 고음 18 kHz → 2.5 kHz, 울림 0.4초 → 2.8초, 울림 비율 10% → 45%. 깊이는 **몇 번째 층인지**로만 계산합니다(예: `층 번호 / 전체 층 수`).
+
+## v1.1에서 더한 효과음
+
+`toggle_on` `toggle_off` `close` `card` `panel_open` `panel_close` `floor_tick` `locked` `glint` `hide` `erase` `send` `memory_note` `shuffle` `fog_clear` `appear` `spotlight` `mindi_steps` — 이름과 쓰는 곳은 점검표 참고. 마우스 올리기·튜토리얼 안내띠는 일부러 무음입니다.
 
 ## 소리 출처
 
@@ -54,7 +60,7 @@
 | 방 공기 `amb_room_tone` | 섬 영상 C05 | 제안 · 청취 확인 필요 |
 | 문 `sfx_door_open` | 섬 영상 C04 손잡이·경첩 | 제안 · 청취 확인 필요 |
 | 나무 발소리 `sfx_step_wood(_2)` | 섬 영상 C03 | 제안 · 청취 확인 필요 |
-| 바람·패드·등불·물방울·기계음·저주파·효과음 나머지 | `mined-sound.js` 안에서 합성 | 제안 |
+| 바람·패드·등불·물방울·기계음·저주파·비·새·풀벌레·효과음 나머지 | `mined-sound.js` 안에서 합성 | 제안 |
 
 파일을 못 불러오면 합성음으로 대신하므로 페이지는 멈추지 않습니다.
 
@@ -79,7 +85,10 @@ MineDSound.setDepth(layerIndex / layerCount);  // 지층 스크롤
 await MineDSound.descend(0.6, 3.5);            // 엘리베이터 (덜컹 → 이동 → 종)
 MineDSound.sfx('pick'); MineDSound.sfx('ore_crack');
 MineDSound.say(bubbleText, { tone: 'quiet' }); // quiet | warm | plain | dry
-MineDSound.setZone('P12', { env: 'sea' });     // sea | room | none
+MineDSound.setZone('P12', { env: 'sea' });     // sea | mountain | sky | jungle | room | none
+MineDSound.setScene('rain');                   // P3 바탕: lantern | rain | wind | none
+MineDSound.overlay('help', true);              // 창 열림: door | help | panel | notice → 바탕만 낮춤
+MineDSound.overlay('help', false);             // 창 닫힘
 MineDSound.setReduced(true);                   // 「연출 줄이기」를 켜면 바탕 소리 절반
 ```
 

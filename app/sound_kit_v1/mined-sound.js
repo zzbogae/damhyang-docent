@@ -1,4 +1,4 @@
-/* Mine D 사운드 키트 v1 (2026-10-23)
+/* Mine D 사운드 키트 v1.1 (2026-10-23)
  *
  * 한 파일, 의존성 없음. <script src="mined-sound.js"></script> 로 넣으면 window.MineDSound 가 생긴다.
  *
@@ -29,25 +29,40 @@
     P0: { name: '첫 화면 · 안개', depth: 0, layers: { wind: 0.55, pad: 0.22 } },
     P1: { name: '로그인', depth: 0, layers: { wind: 0.32, pad: 0.16 } },
     P2: { name: '데이터 연결', depth: 0, layers: { wind: 0.32, pad: 0.16 } },
-    P3: { name: '관측소', depth: 0.05, layers: { lantern: 0.4, drip: 0.25 } },
-    P4: { name: '하루 고르기', depth: 0.05, layers: { lantern: 0.4, drip: 0.25 } },
+    // scene: 관측소 좌상단 「배경·소리 바꾸기」로 사용자가 고른 장면을 따르는 구역 (v6 P3)
+    P3: { name: '관측소', depth: 0.05, scene: 1, layers: {} },
+    P4: { name: '하루 고르기', depth: 0.05, scene: 1, layers: {} },
     P5: { name: '엘리베이터', depth: null, depthDriven: true, layers: { lantern: 0.1 } },
     P6: { name: '연도 지층', depth: null, depthDriven: true, layers: {} },
     P7: { name: '광석 캐기', depth: null, depthDriven: true, layers: {} },
     P8: { name: '광석 상세', depth: null, depthDriven: true, scale: 0.7, layers: {} },
-    P9: { name: '민디와 이야기', depth: 0.05, layers: { lantern: 0.22 } },
-    P10: { name: '캔 광석 보관함', depth: 0.05, layers: { lantern: 0.3, drip: 0.15 } },
+    P9: { name: '민디와 이야기', depth: 0.05, scene: 0.55, layers: {} },
+    P10: { name: '캔 광석 보관함', depth: 0.05, scene: 0.75, layers: {} },
     P11: { name: '나의 공간 만들기', depth: 0, env: true, scale: 0.6, layers: {} },
     P12: { name: '나의 공간', depth: 0, env: true, layers: {} },
     P13: { name: '설정', keep: true, layers: {} } // 설정은 겹쳐 뜨는 창이라 바탕 소리를 바꾸지 않는다
   };
 
-  // 나의 공간 환경 → 레이어 (사용자가 고른 「장소」에만 반응. 기록 내용과 무관)
+  // 관측소 장면 (사용자가 고름. 「소리 없음」 포함)
+  var SCENES = {
+    lantern: { lantern: 0.4, drip: 0.25 },
+    rain: { rain: 0.45, lantern: 0.12 },
+    wind: { wind: 0.4, pad: 0.1 },
+    none: {}
+  };
+
+  // 나의 공간 환경 → 레이어 (사용자가 고른 「장소」에만 반응. 기록 내용과 무관). v6 P11 환경 카드 다섯 + 소리 없음
   var ENVS = {
     sea: { sea: 0.9, surf: 0.25 },
+    mountain: { wind: 0.35, birds: 0.5 },
+    sky: { air: 0.55, pad: 0.12 },
+    jungle: { insects: 0.35, birds: 0.6, rain: 0.08 },
     room: { room: 0.9 },
     none: {}
   };
+
+  // 겹쳐 뜨는 창이 열려 있는 동안 바탕 소리를 얼마나 낮출지. 관측소의 문은 가장 조용하게
+  var OVERLAYS = { door: 0.35, help: 0.7, panel: 0.8, notice: 0.6 };
 
   // 깊이 0(지상) → 1(가장 깊은 층). 사운드 설계 v1 §1-2 표 그대로
   var DEPTH = {
@@ -102,7 +117,7 @@
   var layers = {}; // name → { gain, stop }
   var buffers = {}; // file key → AudioBuffer | 'loading' | 'failed'
   var state = {
-    on: false, volume: 0.8, zone: null, env: 'sea', depth: 0, moving: false,
+    on: false, volume: 0.8, zone: null, env: 'sea', scene: 'lantern', depth: 0, moving: false, overlays: {},
     reduced: false, base: 'audio/', listeners: []
   };
   var dripTimer = null, lanternTimer = null, depthAnim = null;
@@ -119,7 +134,7 @@
     }
   }
   function snapshot() {
-    return { on: state.on, volume: state.volume, zone: state.zone, env: state.env, depth: state.depth, moving: state.moving };
+    return { on: state.on, volume: state.volume, zone: state.zone, env: state.env, scene: state.scene, depth: state.depth, moving: state.moving, overlays: Object.keys(state.overlays) };
   }
   function lerp(a, b, t) { return a + (b - a) * t; }
   function clamp01(x) { return Math.max(0, Math.min(1, x)); }
@@ -284,6 +299,49 @@
       s.connect(lp); lp.connect(g); g.connect(out); s.start(); lfo.start();
       return function () { s.stop(); lfo.stop(); };
     },
+    rain: function (out) { // 비: 넓은 잡음 + 가끔 굵은 빗방울
+      var s = noiseSource(), hp = ac.createBiquadFilter(), lp = ac.createBiquadFilter(), g = ac.createGain();
+      hp.type = 'highpass'; hp.frequency.value = 500; lp.type = 'lowpass'; lp.frequency.value = 7000; g.gain.value = 0.6;
+      s.connect(hp); hp.connect(lp); lp.connect(g); g.connect(out); s.start();
+      var t0 = null, drop = function () {
+        if (!ac) return;
+        var t = ac.currentTime + 0.01, b = ac.createBufferSource(), f = ac.createBiquadFilter(), e = ac.createGain();
+        b.buffer = noise(); f.type = 'bandpass'; f.frequency.value = 1800 + Math.random() * 2000; f.Q.value = 4;
+        e.gain.setValueAtTime(0.0001, t); e.gain.exponentialRampToValueAtTime(0.4, t + 0.003); e.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+        b.connect(f); f.connect(e); e.connect(out); b.start(t, Math.random() * 3, 0.05);
+        t0 = setTimeout(drop, 60 + Math.random() * 260);
+      };
+      drop();
+      return function () { s.stop(); clearTimeout(t0); };
+    },
+    air: function (out) { // 하늘: 높고 가벼운 바람
+      var s = noiseSource(), bp = ac.createBiquadFilter(), lfo = ac.createOscillator(), lg = ac.createGain();
+      bp.type = 'bandpass'; bp.frequency.value = 1700; bp.Q.value = 0.5;
+      lfo.frequency.value = 0.05; lg.gain.value = 700;
+      lfo.connect(lg); lg.connect(bp.frequency); s.connect(bp); bp.connect(out); s.start(); lfo.start();
+      return function () { s.stop(); lfo.stop(); };
+    },
+    birds: function (out) { // 먼 새소리: 몇 초에 한 번 짧은 지저귐
+      var t0 = null, chirp = function () {
+        if (!ac) return;
+        var t = ac.currentTime + 0.02, n = 2 + Math.floor(Math.random() * 3), base = 2400 + Math.random() * 1200;
+        for (var i = 0; i < n; i++) {
+          var o = ac.createOscillator(), e = ac.createGain(), s = t + i * 0.09;
+          o.type = 'sine'; o.frequency.setValueAtTime(base, s); o.frequency.exponentialRampToValueAtTime(base * 1.35, s + 0.05);
+          e.gain.setValueAtTime(0.0001, s); e.gain.exponentialRampToValueAtTime(0.18, s + 0.01); e.gain.exponentialRampToValueAtTime(0.0001, s + 0.07);
+          o.connect(e); e.connect(out); o.start(s); o.stop(s + 0.08);
+        }
+        t0 = setTimeout(chirp, 2500 + Math.random() * 5500);
+      };
+      t0 = setTimeout(chirp, 600);
+      return function () { clearTimeout(t0); };
+    },
+    insects: function (out) { // 정글 풀벌레: 높은 음을 빠르게 떨게
+      var o = ac.createOscillator(), g = ac.createGain(), am = ac.createOscillator(), ag = ac.createGain();
+      o.type = 'sine'; o.frequency.value = 4300; g.gain.value = 0.0; am.frequency.value = 28; ag.gain.value = 0.08;
+      am.connect(ag); ag.connect(g.gain); o.connect(g); g.connect(out); o.start(); am.start();
+      return function () { o.stop(); am.stop(); };
+    },
     sea: fileLayer('sea', 'surf'),
     room: fileLayer('room', null)
   };
@@ -330,6 +388,7 @@
   function targetLevels() {
     var z = ZONES[state.zone] || {}, out = {}, k;
     for (k in z.layers) out[k] = z.layers[k];
+    if (z.scene) { var sc = SCENES[state.scene] || {}; for (k in sc) out[k] = (out[k] || 0) + sc[k] * z.scene; }
     if (z.env) { var e = ENVS[state.env] || {}; for (k in e) out[k] = e[k]; }
     if (z.depthDriven) {
       var d = state.depth;
@@ -361,10 +420,15 @@
     var hz = DEPTH.lowpassHz[0] * Math.pow(DEPTH.lowpassHz[1] / DEPTH.lowpassHz[0], d); // 귀에 고르게 들리도록 지수 보간
     var mix = lerp(DEPTH.reverbMix[0], DEPTH.reverbMix[1], d);
     ramp(ambFilter.frequency, hz, t, T);
-    ramp(ambGain.gain, lerp(DEPTH.gain[0], DEPTH.gain[1], d), t, T);
+    ramp(ambGain.gain, lerp(DEPTH.gain[0], DEPTH.gain[1], d) * duckFactor(), t, T);
     ramp(dry.gain, 1 - mix, t, T);
     ramp(wetShort.gain, mix * (1 - d), t, T); // 얕으면 짧은 울림(0.4초), 깊으면 긴 울림(2.8초)
     ramp(wetLong.gain, mix * d, t, T);
+  }
+  function duckFactor() {
+    var f = 1;
+    for (var k in state.overlays) f = Math.min(f, OVERLAYS[k] || 0.8);
+    return f;
   }
   function ramp(param, v, t, T) {
     param.cancelScheduledValues(t);
@@ -419,8 +483,34 @@
     name_save: function (t) { tone(t, 784, 784, 0.12, 'sine', 0.12); tone(t + 0.1, 1175, 1175, 0.3, 'sine', 0.1); }, // 이름 붙이기 저장
     space_open: function (t) { [523, 659, 784, 1046].forEach(function (f, i) { tone(t + i * 0.12, f, f, 0.6, 'sine', 0.1); }); }, // 나의 공간 열림 (광석 3개)
     step: function () { playFile(SFX._s = SFX._s === 'step' ? 'step2' : 'step', 0.8, function () { burst(ac.currentTime, 180, 1, 0.12, 0.5, 'lowpass'); }); }, // 나의 공간 걷기 (섬 영상 C03 나무 발소리)
-    toggle: function (t) { tone(t, 660, 660, 0.05, 'sine', 0.1); } // 설정 토글
+    toggle: function (t) { tone(t, 660, 660, 0.05, 'sine', 0.1); }, // 설정 토글 (켜짐·꺼짐 구분 없을 때)
+    // ── v1.1 추가 (화면설계 v6 · 사이트맵 v1 · 튜토리얼 v1.1 대조로 빠진 곳) ──
+    toggle_on: function (t) { tone(t, 660, 880, 0.06, 'sine', 0.1); }, // 스위치 켜기 (P2 자동 연결 · P13)
+    toggle_off: function (t) { tone(t, 880, 600, 0.06, 'sine', 0.09); }, // 스위치 끄기
+    close: function (t) { tone(t, 600, 450, 0.06, 'sine', 0.08); }, // 말풍선 × · 창 닫기
+    card: function (t) { sweep(t, 2200, 3600, 0.12, 0.1); }, // 안내 카드 넘김 (P0 카드 4장)
+    panel_open: function (t) { sweep(t, 800, 2400, 0.18, 0.1); tone(t + 0.05, 660, 660, 0.1, 'sine', 0.05); }, // 하위 창 열기 (P2-a P4-a P8-a~d P9-a·b ?-안내)
+    panel_close: function (t) { sweep(t, 2400, 800, 0.16, 0.08); }, // 하위 창 닫기
+    floor_tick: function (t) { tone(t, 1200, 1200, 0.03, 'triangle', 0.1); burst(t, 4000, 3, 0.012, 0.15); }, // 층 표시기 ▲▼ · ◁▷ 연도 넘김
+    locked: function (t) { tone(t, 180, 150, 0.14, 'triangle', 0.28); burst(t, 900, 2, 0.03, 0.2); }, // Ⓔ 나의 공간 잠김 (진행만 보여 줌)
+    glint: function (t) { tone(t, 2637, 2637, 0.25, 'sine', 0.07); tone(t + 0.06, 3520, 3520, 0.3, 'sine', 0.05); }, // P8 빛점 누름
+    hide: function (t) { sweep(t, 2000, 600, 0.22, 0.09); }, // ⋯ 이 기간·이 주 숨기기
+    erase: function (t) { sweep(t, 1500, 300, 0.32, 0.11); }, // 기록·기억·대화 지우기 (P9-b · P13)
+    send: function (t) { tone(t, 520, 780, 0.08, 'sine', 0.1); }, // P8·P9 보내기
+    memory_note: function (t) { tone(t, 988, 988, 0.18, 'sine', 0.06); tone(t + 0.12, 1319, 1319, 0.28, 'sine', 0.05); }, // 「민디가 이것을 기억했어요」
+    shuffle: function (t) { [0, 0.07, 0.14].forEach(function (d) { sweep(t + d, 2000, 3200, 0.07, 0.07); }); }, // 다른 단어 보기 ↻ · 다시 꺼내 보기 ↻
+    fog_clear: function (t) { sweep(t, 300, 4000, 2.2, 0.16, 'lowpass'); [523, 784, 1046].forEach(function (f, i) { tone(t + 0.8 + i * 0.25, f, f, 1.4, 'sine', 0.05); }); }, // 안개 걷힘 (P0 ENTER 후 · P11 ⑤ 열림 · P12 꾸밀 자리 생김)
+    appear: function (t) { [0, 1, 2, 3, 4].forEach(function (i) { tone(t + i * 0.16, 784 + i * 40, 784 + i * 40, 0.08, 'sine', 0.06); }); }, // 관측소 버튼 Ⓐ→Ⓔ 차례로 나타남 (T1)
+    spotlight: function (t) { sweep(t, 200, 1200, 0.35, 0.1, 'lowpass'); tone(t, 330, 330, 0.3, 'sine', 0.04); }, // 튜토리얼 등불 비춤
+    mindi_steps: function (t) { [0, 0.28, 0.56, 0.84].forEach(function (d) { burst(t + d, 300, 1, 0.06, 0.22, 'lowpass'); }); } // 첫 방문 민디가 굴에서 걸어 나옴 (T1)
   };
+  // 잡음을 대역 필터로 쓸어 올리거나 내림 (종이·천·안개 질감)
+  function sweep(t, f0, f1, dur, peak, type) {
+    var s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = env(t, peak, dur * 0.3, dur * 0.7);
+    s.buffer = noise(); f.type = type || 'bandpass'; f.Q.value = type ? 0.7 : 1.2;
+    f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    s.connect(f); f.connect(g); g.connect(sfxBus); s.start(t, 1, dur + 0.1);
+  }
 
   // ── 민디 보이스 ─────────────────────────────────────────
   function syllables(list, t, tone_, out) {
@@ -482,9 +572,10 @@
   }
 
   var api = {
-    version: '1.0.0',
+    version: '1.1.0',
     zones: ZONES,
     envs: Object.keys(ENVS),
+    scenes: Object.keys(SCENES),
     tones: Object.keys(TONES),
     sfxNames: Object.keys(SFX).filter(function (k) { return k.charAt(0) !== '_'; }),
     reactNames: Object.keys(SYL_REACT),
@@ -519,8 +610,18 @@
       if (ac) { applyDepth(state.depth, 1.5); applyLevels(1.5); }
       emit();
     },
-    /** 나의 공간 환경: 'sea' | 'room' | 'none' (사용자가 고른 장소) */
+    /** 나의 공간 환경: 'sea' | 'mountain' | 'sky' | 'jungle' | 'room' | 'none' (사용자가 고른 장소) */
     setEnvironment: function (name) { if (ENVS[name]) { state.env = name; applyLevels(1.2); emit(); } },
+    /** 관측소 「배경·소리 바꾸기」: 'lantern'(기본) | 'rain' | 'wind' | 'none' */
+    setScene: function (name) { if (SCENES[name]) { state.scene = name; applyLevels(1.2); emit(); } },
+    /** 겹쳐 뜨는 창이 열리고 닫힐 때. kind: 'door'(관측소의 문) | 'help'(?-안내) | 'panel'(P8-a 등 하위 창) | 'notice'(첫 대화 고지)
+     *  열면 바탕 소리를 낮추고 panel_open, 닫으면 되돌리고 panel_close. 관측소의 문은 문 소리 없이 조용히만 낮춘다 */
+    overlay: function (kind, open) {
+      if (open) state.overlays[kind] = 1; else delete state.overlays[kind];
+      if (ac) applyDepth(state.depth, 0.5);
+      if (kind !== 'door' && kind !== 'notice') api.sfx(open ? 'panel_open' : 'panel_close');
+      emit();
+    },
     /** 깊이 0~1. 연도 지층에서 스크롤할 때 「몇 번째 층인지」로만 계산해 넘긴다 (그 해의 기록 내용 X) */
     setDepth: function (d, sec) {
       state.depth = clamp01(d);
