@@ -61,8 +61,8 @@ test('작동 영상', async ({ page }) => {
 
   // 4. 세 번 쳐서 캐기 → 기록 조각 → 상세
   const ores = page.locator('.mf-layer[data-year="2025"] .mf-ore');
-  const labels = await ores.evaluateAll((els) => els.map((e) => e.getAttribute('aria-label') ?? ''));
-  const pick = Math.max(0, labels.findIndex((l) => l.includes('호박')));
+  const kinds = await ores.evaluateAll((els) => els.map((e) => e.getAttribute('data-mineral') ?? ''));
+  const pick = Math.max(0, kinds.indexOf('호박'));
   const ore = ores.nth(pick);
   await cap(page, '곡괭이로 세 번 칩니다.', 2200);
   for (let i = 0; i < 3; i++) { await ore.click(); await page.waitForTimeout(800); }

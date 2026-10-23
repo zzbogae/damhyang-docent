@@ -7,7 +7,7 @@ import { selectRelic } from '../relic/select';
 import { checkWeekPhotos, orderPhotos, type ShownPhoto } from '../photos/service';
 import { AXIS_DIR_QUESTION, AXIS_IDS } from '../mindi/answers';
 import { MINERAL_COLOR } from './minerals';
-import { oreLabel } from './oreName';
+import { customOreName } from './oreName';
 import type { Axis, WeekRecord } from '../types';
 
 const PAGE = 6;
@@ -34,7 +34,7 @@ function WeekCard({ w, onOpen }: { w: WeekRecord; onOpen: () => void }) {
   return (
     <article className="collect-card">
       <header className="label-row">
-        {w.mineral && <span className="chip"><i style={{ background: MINERAL_COLOR[w.mineral] }} />{oreLabel(w)}</span>}
+        {w.mineral && <span className="chip"><i style={{ background: MINERAL_COLOR[w.mineral] }} />{customOreName(w.week) ?? '광석'}</span>}
         <button className="linkish" onClick={onOpen}>{rangeLabel(w)}</button>
       </header>
       {locked ? (

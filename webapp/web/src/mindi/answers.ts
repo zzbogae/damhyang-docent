@@ -1,6 +1,6 @@
 // 민디는 묻는 말에만 답한다. 질문은 정해진 몇 가지이고, 답은 판정값으로 만든 템플릿이다(숫자는 LLM 에 맡기지 않는다).
 import type { Axis, Episode, Era, MemoRecord, MinedResult, WeekRecord } from '../types';
-import { afterText, dateLabel, DONT_KNOW, gradeText, josa, rangeLabel, sameDirectionText } from './templates';
+import { afterText, dateLabel, DONT_KNOW, gradeText, rangeLabel, sameDirectionText } from './templates';
 
 export type QuestionId = 'what' | 'why' | 'after' | 'similar' | 'era' | 'year' | 'rest_low';
 
@@ -124,7 +124,7 @@ export function axisDirAnswer(ax: Axis, dir: 'up' | 'down', w: WeekRecord, ctx: 
   const n = ctx.memosByWeek.get(last.week)?.length ?? 0;
   const parts = [`${AXIS_MEASURE[ax]} ${measured}주 가운데 ${phrase} 주는 ${hits.length}번이었습니다.`,
     `가장 가까운 때는 ${dateLabel(last.date_start)}부터의 한 주입니다.`];
-  if (last.mineral) parts.push(`그 주에는 ${josa(last.mineral, '이', '가')} 남아 있습니다.`);
+  if (last.mineral) parts.push('그 주에는 광석이 하나 남아 있습니다.');
   if (n) parts.push(`그 주에 쓴 글이 ${n}개 있습니다.`);
   return { text: parts.join(' '), dontKnow: false, goto: last.week, ...(hits.length > 1 ? { collect: { axis: ax, dir } } : {}) };
 }

@@ -315,7 +315,7 @@ function MineralDig({ mineral, sound }: { mineral: keyof typeof MINERAL_IMG; sou
   };
   return (
     <div className="dig">
-      <button className={`dig-ore${hits >= 3 ? ' cracked' : ''}`} key={shake} onClick={hit} aria-label={`${mineral} 캐기 (${hits}/3)`} data-hit={hits}>
+      <button className={`dig-ore${hits >= 3 ? ' cracked' : ''}`} key={shake} onClick={hit} aria-label={`광석 캐기 (${hits}/3)`} data-hit={hits}>
         <img src={MINERAL_IMG[mineral]} alt="" />
         <img className="dig-pick" src={ART.pickaxe} alt="" />
       </button>
@@ -336,7 +336,7 @@ export function WeekDetail({ w, team = false }: { w: WeekRecord; team?: boolean 
     <article className={`stack${team ? ' team-detail' : ''}`} aria-labelledby="wk-title">
       {team && (
         <header className="td-head">
-          {w.mineral && w.mineral in MINERAL_IMG && <img className="td-core" src={MINERAL_IMG[w.mineral as keyof typeof MINERAL_IMG]} alt={w.mineral} />}
+          {w.mineral && w.mineral in MINERAL_IMG && <img className="td-core" src={MINERAL_IMG[w.mineral as keyof typeof MINERAL_IMG]} alt="광석" />}
           <h2 id="wk-title" className="td-date">{rangeLabel(w)}</h2>
           <div className="td-tag">{w.grade ? gradeText(w) : ''}</div>
           <OreName w={w} />

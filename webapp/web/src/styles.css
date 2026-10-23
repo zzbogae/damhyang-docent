@@ -703,3 +703,5 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 .ore-name-btn { min-height: 30px; padding: 0 10px; font-size: 13px; }
 .ore-name-edit { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .ore-name-edit input { min-height: 32px; padding: 0 10px; border-radius: var(--mined-r-pill, 999px); border: 1px solid var(--mined-line-strong, #8886); background: transparent; color: inherit; font: inherit; max-width: 12em; }
+.ore-name-examples { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
+.ore-name-examples .chip[aria-pressed="true"] { outline: 2px solid currentColor; }

@@ -6,7 +6,7 @@ import type { WeekRecord } from '../types';
 import { rangeLabel } from '../mindi/templates';
 
 import { MINERAL_BY_AXIS_DIR } from './minerals';
-import { oreLabel } from './oreName';
+import { customOreName } from './oreName';
 import { playCue } from '../mindi/sound';
 import { AXES, axisScreen } from '../types';
 
@@ -16,7 +16,7 @@ const MINERAL_LEGEND: [string, string][] = [
     [MINERAL_BY_AXIS_DIR[ax].up, `${axisScreen(ax)} 많음`] as [string, string],
     [MINERAL_BY_AXIS_DIR[ax].down, `${axisScreen(ax)} 적음`] as [string, string],
   ]),
-  ['형석', '여러 축'],
+  ['형석', '여러 지표'],
 ];
 
 function isoWeekNo(key: string) { return Number(key.split('-W')[1]); }
@@ -38,7 +38,7 @@ export function describeWeek(w: WeekRecord): string {
   const n = observedCount(w);
   const base = `${rangeLabel(w)} · 기록 ${n}종`;
   if (!w.candidate) return n === 0 ? `${rangeLabel(w)} · 기록 없음` : base;
-  return `${base} · 광물${w.mineral ? ` · ${oreLabel(w)}` : ''}${w.evidence.cross_validated ? '' : ' · 근거가 얇음'}`;
+  return `${base} · 광석${w.mineral && customOreName(w.week) ? ` · ${customOreName(w.week)}` : ''}${w.evidence.cross_validated ? '' : ' · 근거가 얇음'}`;
 }
 
 export function Strata() {
@@ -132,9 +132,9 @@ export function Strata() {
       })()}
       <div className="legend">
         {MINERAL_LEGEND.map(([name, what]) => (
-          <span key={name}><i className={`wk hit m-${name} swatch`} />{name} <small>{what}</small></span>
+          <span key={name}><i className={`wk hit m-${name} swatch`} />{what}</span>
         ))}
-        <span><i className="wk hit m-흑요석 thin swatch" />근거가 얇은 광물</span>
+        <span><i className="wk hit m-흑요석 thin swatch" />근거가 얇은 광석</span>
         <span><i className="wk c4 swatch" />기록이 많은 주</span>
         <span><i className="wk c1 swatch" />기록이 적은 주</span>
         <span><i className="wk c0 swatch" />기록 없음</span>

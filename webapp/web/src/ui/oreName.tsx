@@ -1,7 +1,9 @@
-// 10/23 보경: 광물 이름은 「예시 이름」이다. 앱은 처음 이름(호박·청금석 …)만 제안하고, 이름은 사용자가 붙인다.
+// 10/23 보경: 광석은 처음엔 이름 없이 날짜로만 보인다. 광물 이름(호박·청금석 …)은 예시이고,
+// 사용자가 「이름 붙이기」에서 예시 중 하나를 고르거나 직접 적는다.
 // 사용자가 붙인 이름은 이 기기의 브라우저에만 둔다(원문과 같이 기기 밖으로 나가지 않는다).
 import { useState } from 'react';
-import { MINERAL_COLOR } from './minerals';
+import { MINERAL_COLOR, MINERALS } from './minerals';
+import { dateLabel } from '../mindi/templates';
 
 const KEY = 'mined.oreNames.v1';
 
@@ -30,14 +32,21 @@ export function saveOreName(week: string, name: string): void {
   }
 }
 
-/** 화면에 보일 이름: 사용자가 붙인 이름이 있으면 그것, 없으면 예시 이름 */
-export function oreLabel(w: { week: string; mineral: string | null }): string {
+type OreWeek = { week: string; date_start: string; mineral: string | null };
+
+/** 화면에 보일 이름: 사용자가 붙인 이름이 있으면 그것, 없으면 날짜 */
+export function oreLabel(w: OreWeek): string {
   if (!w.mineral) return '';
-  return customOreName(w.week) ?? w.mineral;
+  return customOreName(w.week) ?? `${dateLabel(w.date_start)}의 광석`;
 }
 
-/** 광석 이름 칩 + 「이름 붙이기」. 예시 이름이면 「예시」 표시를 붙인다 */
-export function OreName({ w }: { w: { week: string; mineral: string | null } }) {
+/** 예시 이름 목록: 이 광석의 색에 맞는 이름을 맨 앞에 */
+export function exampleNames(mineral: string): string[] {
+  return [mineral, ...MINERALS.filter((m) => m !== mineral)];
+}
+
+/** 광석 이름 칩 + 「이름 붙이기」. 이름이 없으면 날짜만 보이고, 예시 이름은 고를 때만 보인다 */
+export function OreName({ w }: { w: OreWeek }) {
   const [name, setName] = useState(() => customOreName(w.week));
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(name ?? '');
@@ -51,8 +60,13 @@ export function OreName({ w }: { w: { week: string; mineral: string | null } }) 
         setName(draft.trim() ? draft.trim().slice(0, 20) : null);
         setEditing(false);
       }}>
-        <input value={draft} maxLength={20} autoFocus placeholder={w.mineral}
+        <input value={draft} maxLength={20} autoFocus placeholder="이름을 적거나 아래 예시에서 고르기"
           aria-label="이 광석의 이름" onChange={(e) => setDraft(e.target.value)} />
+        <div className="ore-name-examples" role="group" aria-label="예시 이름">
+          {exampleNames(w.mineral).map((m) => (
+            <button key={m} className="chip" type="button" aria-pressed={draft === m} onClick={() => setDraft(m)}>{m}</button>
+          ))}
+        </div>
         <button className="btn" type="submit">붙이기</button>
         <button className="btn" type="button" onClick={() => { setDraft(name ?? ''); setEditing(false); }}>돌아가기</button>
       </form>
@@ -60,7 +74,7 @@ export function OreName({ w }: { w: { week: string; mineral: string | null } }) 
   }
   return (
     <span className="ore-name">
-      <span className="chip"><i style={{ background: color }} />{name ?? w.mineral}{!name && <small className="muted"> · 예시 이름</small>}</span>
+      <span className="chip"><i style={{ background: color }} />{name ?? `${dateLabel(w.date_start)}의 광석`}</span>
       <button className="btn ore-name-btn" type="button" onClick={() => setEditing(true)}>{name ? '이름 바꾸기' : '이름 붙이기'}</button>
     </span>
   );

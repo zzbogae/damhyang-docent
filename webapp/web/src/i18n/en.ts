@@ -82,7 +82,7 @@ export function axisDirEn(ax: Axis, dir: 'up' | 'down', w: WeekRecord, ctx: { re
   const last = hits[hits.length - 1];
   const n = ctx.memosByWeek.get(last.week)?.length ?? 0;
   return [`Out of ${measured} weeks, ${AXIS_PHRASE_EN[ax][dir]} in ${hits.length} weeks.`, `The most recent was the week of ${dateEn(last.date_start)}.`,
-    last.mineral ? `That week left a piece of ${MINERAL_EN_NAME[last.mineral] ?? last.mineral}.` : '', n ? `You wrote ${n} notes that week.` : ''].filter(Boolean).join(' ');
+    last.mineral ? 'That week left an ore.' : '', n ? `You wrote ${n} notes that week.` : ''].filter(Boolean).join(' ');
 }
 
 export function answerEn(q: QuestionId, w: WeekRecord, ctx: { result: MinedResult; byKey: Map<string, WeekRecord>; memosByWeek: Map<string, MemoRecord[]> }): string {
