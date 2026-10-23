@@ -93,7 +93,7 @@ button.play { padding: 2px 10px; font-size: .8rem; }
 
 <div class="wrap">
   <header>
-    <p class="label">MINE D · 사운드 키트 v1.2 · 2026-10-23</p>
+    <p class="label">MINE D · 사운드 키트 v1.3 · 2026-10-23</p>
     <h1>구역마다 어울리는 소리</h1>
     <p class="muted" style="max-width:65ch">화면 구역(P0~P13)을 누르면 그 자리의 바탕 소리로 바뀝니다. 아래 효과음과 민디 목소리는 버튼 하나로 들어 볼 수 있습니다. 브라우저 규칙상 첫 소리는 「소리 켜기」를 눌러야 납니다.</p>
     <div class="bar">
@@ -130,19 +130,23 @@ button.play { padding: 2px 10px; font-size: .8rem; }
   </section>
 
   <section aria-labelledby="h-mindi" class="mindi">
-    <h2 id="h-mindi">민디 목소리 (뜻 없는 음절)</h2>
-    <p class="muted" style="font-size:.85rem">청룡사 인형 목소리 오디션(9/22)의 알아들을 수 없는 변말을 음절 하나씩 잘라 높였습니다. 음절을 섞어 쓰므로 실제 낱말은 남지 않습니다. 대사 내용은 말풍선 자막으로 보여 줍니다.</p>
+    <h2 id="h-mindi">민디 목소리 (뜻 없는 외계어)</h2>
+    <p class="muted" style="font-size:.85rem">미니언즈처럼 알아들을 수 없는 외계어 낱말 40개(목소리 B)를 대사 상황별 곡조로 이어 붙입니다. 말은 뜻이 없고, 대사 내용은 말풍선 자막으로 보여 줍니다. 곡조를 「자동」으로 두면 문장 끝 글자(? ! …)로 고릅니다.</p>
     <div class="ctrl">
       <label for="tone">말투
         <select id="tone"><option value="quiet">조용한</option><option value="warm">다정한</option><option value="plain">담백한</option><option value="dry">시니컬한</option></select>
       </label>
       <label for="voice">목소리
-        <select id="voice"><option value="a">a · 인형 변말 (합창, +2반음)</option><option value="b">b · 인형 변말 (홍동지, +5반음)</option><option value="synth">합성 음절 (v1.1)</option></select>
+        <select id="voice"><option value="alien">외계어 목소리 B (기본)</option><option value="synth">합성 음절 (v1.1)</option></select>
+      </label>
+      <label for="mood">곡조
+        <select id="mood"><option value="">자동 (끝 글자)</option></select>
       </label>
       <button id="say" type="button">말풍선 소리 내기</button>
     </div>
-    <label for="line" class="label">말풍선 문장 (글자 4~5개당 음절 1개, 끝 글자 ? . … 로 끝맺음)</label>
+    <label for="line" class="label">말풍선 문장 (글자 4~5개당 외계어 낱말 1개)</label>
     <input id="line" type="text" value="2021년 4월이네요. 이 주는 잠이 짧게 적혀 있어요. …그 무렵 이야기, 들어볼까요?">
+    <div><p class="label">곡조 12개 (지금 문장으로)</p><div class="chips" id="moods"></div></div>
     <div><p class="label">상황음</p><div class="chips" id="cues"></div></div>
     <div><p class="label">맞장구</p><div class="chips" id="reacts"></div></div>
   </section>
@@ -194,7 +198,7 @@ MineDSound.setMusic(false);                // 음악만 끄기
 MineDSound.setVoice('b');                  // 민디 목소리 a | b | synth</pre>
   </section>
 
-  <footer>음악 3곡은 예전 홈페이지(MineD_stage_v4)에 쓰던 8/22 Suno 곡에서 만들었습니다(안개 = 전체, 등불 = 34~102초를 먹먹하게, 열린 곳 = 106~150초). 민디 목소리는 청룡사 인형 목소리 오디션 음성에서 음절을 잘라 썼습니다. 파일 소리 4종(파도·방·문·나무 발소리)은 10/3 섬 영상 원음입니다. 나머지 효과음은 mined-sound.js 안에서 합성하며, 파일이 없으면 합성음으로 대신합니다.</footer>
+  <footer>음악 3곡은 예전 홈페이지(MineD_stage_v4)에 쓰던 8/22 Suno 곡에서 만들었습니다(안개 = 전체, 등불 = 34~102초를 먹먹하게, 열린 곳 = 106~150초). 민디 목소리는 로컬 TTS(Kokoro)로 뜻 없는 외계어 낱말을 읽힌 뒤 높이·음색을 다듬은 것입니다(목소리 B, 외계어 3판). 파일 소리 4종(파도·방·문·나무 발소리)은 10/3 섬 영상 원음입니다. 나머지 효과음은 mined-sound.js 안에서 합성하며, 파일이 없으면 합성음으로 대신합니다.</footer>
 </div>
 
 <script src="mined-sound.js"></script>
@@ -271,8 +275,10 @@ MineDSound.setVoice('b');                  // 민디 목소리 a | b | synth</pr
     names.forEach(function (k) { var b = document.createElement('button'); b.type = 'button'; b.textContent = ko[k] + ' · ' + k; b.onclick = function () { need(); fn(k); }; el.appendChild(b); });
   }
   chips($('cues'), S.cueNames, CUE_KO, function (k) { S.cue(k, { tone: $('tone').value }); });
+  var MOOD_KO = {}; Object.keys(S.moods).forEach(function (k) { MOOD_KO[k] = S.moods[k].ko; var o = document.createElement('option'); o.value = k; o.textContent = S.moods[k].ko; $('mood').appendChild(o); });
+  chips($('moods'), Object.keys(S.moods), MOOD_KO, function (k) { need(); S.say($('line').value, { tone: $('tone').value, mood: k }); });
   chips($('reacts'), S.reactNames, REACT_KO, function (k) { S.react(k, { tone: $('tone').value }); });
-  $('say').onclick = function () { need(); S.say($('line').value, { tone: $('tone').value }); };
+  $('say').onclick = function () { need(); S.say($('line').value, { tone: $('tone').value, mood: $('mood').value || undefined }); };
 
   var rows = $('maprows');
   Object.keys(MAP).forEach(function (id) {
@@ -300,7 +306,7 @@ MineDSound.setVoice('b');                  // 민디 목소리 a | b | synth</pr
     else if (k === 'overlay') { S.overlay(v, true); setTimeout(function () { S.overlay(v, false); }, 2500); }
     else if (k === 'cue') S.cue(v, { tone: $('tone').value });
     else if (k === 'react') S.react(v, { tone: $('tone').value });
-    else if (k === 'say') S.say($('line').value, { tone: $('tone').value });
+    else if (k === 'say') S.say($('line').value, { tone: $('tone').value, mood: $('mood').value || undefined });
     else if (k === 'descend') $('descend').onclick();
     else if (k === 'ascend') $('ascend').onclick();
     else if (k === 'toggle') S.sfx('toggle');

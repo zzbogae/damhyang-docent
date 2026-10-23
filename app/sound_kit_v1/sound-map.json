@@ -1,1058 +1,1196 @@
 {
-  "version": "1.2.0",
-  "date": "2026-10-23",
-  "rule": "소리는 사용자가 있는 위치(구역·깊이·고른 환경)에만 반응한다. 기록 내용·광석 종류·등급에 연동 금지.",
-  "zones": {
-    "P0": {
-      "name": "첫 화면 · 안개",
-      "ambient": [
-        "wind",
-        "pad"
-      ],
-      "sfx": {
-        "ENTER": "door"
-      }
-    },
-    "P1": {
-      "name": "로그인",
-      "ambient": [
-        "wind",
-        "pad"
-      ],
-      "sfx": {
-        "버튼": "tap"
-      }
-    },
-    "P2": {
-      "name": "데이터 연결",
-      "ambient": [
-        "wind",
-        "pad"
-      ],
-      "sfx": {
-        "연결 완료": "confirm"
-      }
-    },
-    "P3": {
-      "name": "관측소",
-      "ambient": [
-        "scene: lantern(기본)=lantern+drip / rain=rain+lantern / wind=wind+pad / none"
-      ],
-      "sfx": {
-        "기능 버튼 5개": "tap",
-        "관측소의 문": "door"
-      },
-      "mindi": [
-        "hello",
-        "say"
-      ]
-    },
-    "P4": {
-      "name": "하루 고르기",
-      "ambient": [
-        "lantern",
-        "drip"
-      ],
-      "sfx": {
-        "하루 고르기": "tap"
-      },
-      "mindi": [
-        "say"
-      ]
-    },
-    "P5": {
-      "name": "엘리베이터",
-      "ambient": [
-        "hum(이동 중)",
-        "depth"
-      ],
-      "sfx": {
-        "내려간다": "confirm",
-        "돌아가기": "back",
-        "출발": "lift_start",
-        "도착": "lift_arrive"
-      },
-      "mindi": [
-        "wait"
-      ]
-    },
-    "P6": {
-      "name": "연도 지층",
-      "ambient": [
-        "depth"
-      ],
-      "sfx": {
-        "층 넘김": "tap"
-      },
-      "mindi": [
-        "found"
-      ]
-    },
-    "P7": {
-      "name": "광석 캐기",
-      "ambient": [
-        "depth"
-      ],
-      "sfx": {
-        "곡괭이(3번)": "pick",
-        "깨짐": "ore_crack"
-      },
-      "mindi": [
-        "mined"
-      ]
-    },
-    "P8": {
-      "name": "광석 상세",
-      "ambient": [
-        "depth x0.7"
-      ],
-      "sfx": {
-        "VIBE 버튼": "tap",
-        "이름 붙이기": "name_save",
-        "보관": "keep"
-      },
-      "mindi": [
-        "say"
-      ]
-    },
-    "P9": {
-      "name": "민디와 이야기",
-      "ambient": [
-        "lantern"
-      ],
-      "sfx": {
-        "보내기": "tap"
-      },
-      "mindi": [
-        "say",
-        "react"
-      ]
-    },
-    "P10": {
-      "name": "캔 광석 보관함",
-      "ambient": [
-        "lantern",
-        "drip"
-      ],
-      "sfx": {
-        "넣기": "keep"
-      }
-    },
-    "P11": {
-      "name": "나의 공간 만들기",
-      "ambient": [
-        "env x0.6"
-      ],
-      "sfx": {
-        "환경 고르기": "tap",
-        "열림": "space_open"
-      },
-      "mindi": [
-        "say"
-      ]
-    },
-    "P12": {
-      "name": "나의 공간",
-      "ambient": [
-        "env: sea / mountain / sky / jungle / room / none"
-      ],
-      "sfx": {
-        "걷기": "step",
-        "소품 놓기": "keep"
-      }
-    },
-    "P13": {
-      "name": "설정",
-      "ambient": [
-        "유지"
-      ],
-      "sfx": {
-        "토글": "toggle"
-      }
-    }
+ "version": "1.3.0",
+ "date": "2026-10-23",
+ "rule": "소리는 사용자가 있는 위치(구역·깊이·고른 환경)에만 반응한다. 기록 내용·광석 종류·등급에 연동 금지.",
+ "zones": {
+  "P0": {
+   "name": "첫 화면 · 안개",
+   "ambient": [
+    "wind",
+    "pad"
+   ],
+   "sfx": {
+    "ENTER": "door"
+   }
   },
-  "depth": {
-    "gain": [
-      1.0,
-      0.55
-    ],
-    "lowpass_hz": [
-      18000,
-      2500
-    ],
-    "reverb_sec": [
-      0.4,
-      2.8
-    ],
-    "reverb_mix": [
-      0.1,
-      0.45
-    ],
-    "transition_sec": 1.5
+  "P1": {
+   "name": "로그인",
+   "ambient": [
+    "wind",
+    "pad"
+   ],
+   "sfx": {
+    "버튼": "tap"
+   }
   },
-  "files": {
-    "amb_sea_waves.wav": "섬 영상 C02 2.9~7.15초 파도, 고리 처리",
-    "amb_room_tone.wav": "섬 영상 C05 0.45~6.25초 방 공기, 고리 처리",
-    "sfx_door_open.wav": "섬 영상 C04 2.45~5.05초 문 손잡이·경첩",
-    "sfx_step_wood.wav": "섬 영상 C03 1.82~2.22초 나무 발소리",
-    "sfx_step_wood_2.wav": "섬 영상 C03 3.10~3.50초 나무 발소리"
+  "P2": {
+   "name": "데이터 연결",
+   "ambient": [
+    "wind",
+    "pad"
+   ],
+   "sfx": {
+    "연결 완료": "confirm"
+   }
   },
-  "mindi_voice": {
-    "base": 10,
-    "ending": 3,
-    "reaction": 4,
-    "event": 5,
-    "rate_by_tone": {
-      "quiet": 0.85,
-      "warm": 0.9,
-      "plain": 1.1,
-      "dry": 1.0
-    },
-    "samples": {
-      "a": {
-        "file": "mindi_voice_a.wav",
-        "source": "cheongryongsa_E08_VOICE_CHORUS_MOCKUP_A_260922.wav",
-        "pitch": "+2 반음",
-        "units": 18
-      },
-      "b": {
-        "file": "mindi_voice_b.wav",
-        "source": "cheongryongsa_E08_VOICE_HONGDONGJI_AB_AUDITION_260922.wav",
-        "pitch": "+5 반음",
-        "units": 18
-      },
-      "default": "a"
-    }
+  "P3": {
+   "name": "관측소",
+   "ambient": [
+    "scene: lantern(기본)=lantern+drip / rain=rain+lantern / wind=wind+pad / none"
+   ],
+   "sfx": {
+    "기능 버튼 5개": "tap",
+    "관측소의 문": "door"
+   },
+   "mindi": [
+    "hello",
+    "say"
+   ]
   },
-  "events": {
-    "전역": [
-      {
-        "event": "레일 주 메뉴 4개 (관측소·민디·나의 공간·설정)",
-        "sound": "sfx:tap",
-        "source": "v6 §5",
-        "status": "v1"
-      },
-      {
-        "event": "좌상단 ‹ 뒤로 가기",
-        "sound": "sfx:back",
-        "source": "v6 §5",
-        "status": "v1"
-      },
-      {
-        "event": "우상단 [?] → ?-안내 창 열기·닫기",
-        "sound": "overlay:help",
-        "source": "사이트맵 §3",
-        "status": "v1.1"
-      },
-      {
-        "event": "우상단 [⚙] → P13 설정",
-        "sound": "sfx:tap",
-        "source": "v6 §5",
-        "status": "v1"
-      },
-      {
-        "event": "우상단 [관측소의 문] → 문-창 (바탕 35%로 낮춤, 효과음 없음)",
-        "sound": "overlay:door",
-        "source": "사이트맵 §3",
-        "status": "v1.1"
-      },
-      {
-        "event": "문-창 「지금 나가기」",
-        "sound": "sfx:back",
-        "source": "사이트맵 §4",
-        "status": "v1.1"
-      },
-      {
-        "event": "소리 켜기·끄기 (P13-7 · 관측소 좌상단)",
-        "sound": "toggle",
-        "source": "v6 P13",
-        "status": "v1"
-      },
-      {
-        "event": "연출 줄이기 → 바탕 소리 절반",
-        "sound": "reduced",
-        "source": "v6 P13",
-        "status": "v1"
-      },
-      {
-        "event": "마우스 올리기·툴팁",
-        "sound": "none",
-        "source": "v6 P3",
-        "status": "무음(의도)"
-      }
-    ],
-    "P0": [
-      {
-        "event": "바탕: 안개 바람 + 낮은 패드",
-        "sound": "zone:P0",
-        "source": "설계 v1 §1-5",
-        "status": "v1"
-      },
-      {
-        "event": "음악: 안개 (종, 드문드문)",
-        "sound": "music:P0",
-        "source": "설계 v1 §1 C층",
-        "status": "v1.2"
-      },
-      {
-        "event": "안내 카드 4장 넘김",
-        "sound": "sfx:card",
-        "source": "v6 P0",
-        "status": "v1.1"
-      },
-      {
-        "event": "카드 [건너뛰기]",
-        "sound": "sfx:back",
-        "source": "튜토리얼 0-1",
-        "status": "v1.1"
-      },
-      {
-        "event": "ENTER",
-        "sound": "sfx:door",
-        "source": "버튼배치 §3",
-        "status": "v1"
-      },
-      {
-        "event": "ENTER 뒤 안개 걷힘",
-        "sound": "sfx:fog_clear",
-        "source": "v6 P0",
-        "status": "v1.1"
-      },
-      {
-        "event": "QUIT",
-        "sound": "sfx:back",
-        "source": "v6 P0",
-        "status": "v1.1"
-      }
-    ],
-    "P1": [
-      {
-        "event": "바탕: 안개 (작게)",
-        "sound": "zone:P1",
-        "source": "—",
-        "status": "v1"
-      },
-      {
-        "event": "음악: 안개 (작게)",
-        "sound": "music:P1",
-        "source": "설계 v1 §1 C층",
-        "status": "v1.2"
-      },
-      {
-        "event": "「내 기록으로 시작」 「샘플로 둘러보기」",
-        "sound": "sfx:tap",
-        "source": "v6 P1",
-        "status": "v1"
-      },
-      {
-        "event": "샘플 데이터 띠 「나가기」",
-        "sound": "sfx:back",
-        "source": "v6 P1",
-        "status": "v1.1"
-      }
-    ],
-    "P2": [
-      {
-        "event": "바탕: 안개 (작게)",
-        "sound": "zone:P2",
-        "source": "—",
-        "status": "v1"
-      },
-      {
-        "event": "음악: 안개 (작게)",
-        "sound": "music:P2",
-        "source": "설계 v1 §1 C층",
-        "status": "v1.2"
-      },
-      {
-        "event": "자동 연결 스위치 켜기",
-        "sound": "sfx:toggle_on",
-        "source": "v6 P2",
-        "status": "v1.1"
-      },
-      {
-        "event": "자동 연결 스위치 끄기 · 모두 끄기",
-        "sound": "sfx:toggle_off",
-        "source": "v6 P2",
-        "status": "v1.1"
-      },
-      {
-        "event": "P2-a 파일 올리기 창 열기·닫기",
-        "sound": "overlay:panel",
-        "source": "사이트맵 §4",
-        "status": "v1.1"
-      },
-      {
-        "event": "가져오기 완료 · 관측소로 가기",
-        "sound": "sfx:confirm",
-        "source": "v6 P2",
-        "status": "v1"
-      },
-      {
-        "event": "나중에 연결",
-        "sound": "sfx:back",
-        "source": "버튼배치 §3",
-        "status": "v1.1"
-      }
-    ],
-    "P3": [
-      {
-        "event": "바탕: 고른 장면 (등불·비·바람·소리 없음)",
-        "sound": "zone:P3",
-        "source": "v6 P3",
-        "status": "v1.1"
-      },
-      {
-        "event": "음악: 등불 (뜯는 줄)",
-        "sound": "music:P3",
-        "source": "설계 v1 §1 C층",
-        "status": "v1.2"
-      },
-      {
-        "event": "좌상단 배경·소리 바꾸기 → 비",
-        "sound": "scene:rain",
-        "source": "v6 P3",
-        "status": "v1.1"
-      },
-      {
-        "event": "좌상단 배경·소리 바꾸기 → 바람",
-        "sound": "scene:wind",
-        "source": "v6 P3",
-        "status": "v1.1"
-      },
-      {
-        "event": "좌상단 배경·소리 바꾸기 → 등불(기본)",
-        "sound": "scene:lantern",
-        "source": "v6 P3",
-        "status": "v1.1"
-      },
-      {
-        "event": "첫 방문: 민디가 굴에서 걸어 나옴",
-        "sound": "sfx:mindi_steps",
-        "source": "v6 P3 · 튜토리얼 3-1",
-        "status": "v1.1"
-      },
-      {
-        "event": "첫 방문: 민디 인사",
-        "sound": "cue:hello",
-        "source": "튜토리얼 3-1",
-        "status": "v1"
-      },
-      {
-        "event": "오늘의 한 마디 말풍선",
-        "sound": "say",
-        "source": "v6 P3",
-        "status": "v1"
-      },
-      {
-        "event": "말풍선 × 닫기",
-        "sound": "sfx:close",
-        "source": "v6 P3",
-        "status": "v1.1"
-      },
-      {
-        "event": "호칭 칩 고르기 · 직접 쓰기",
-        "sound": "sfx:tap",
-        "source": "튜토리얼 3-3",
-        "status": "v1"
-      },
-      {
-        "event": "호칭 「다시 꺼내 보기 ↻」",
-        "sound": "sfx:shuffle",
-        "source": "튜토리얼 3-3",
-        "status": "v1.1"
-      },
-      {
-        "event": "기능 버튼 Ⓐ→Ⓔ 차례로 나타남 (T1)",
-        "sound": "sfx:appear",
-        "source": "튜토리얼 3-5b",
-        "status": "v1.1"
-      },
-      {
-        "event": "기능 버튼 Ⓐ Ⓑ Ⓒ Ⓓ 누름",
-        "sound": "sfx:tap",
-        "source": "v6 P3",
-        "status": "v1"
-      },
-      {
-        "event": "Ⓔ 나의 공간 잠김 (1/3)",
-        "sound": "sfx:locked",
-        "source": "v6 P3",
-        "status": "v1.1"
-      },
-      {
-        "event": "튜토리얼 등불 비춤",
-        "sound": "sfx:spotlight",
-        "source": "튜토리얼 §4",
-        "status": "v1.1"
-      },
-      {
-        "event": "튜토리얼 안내띠 ⓘ",
-        "sound": "none",
-        "source": "튜토리얼 §4",
-        "status": "무음(의도)"
-      }
-    ],
-    "P4": [
-      {
-        "event": "바탕: 관측소와 같음",
-        "sound": "zone:P4",
-        "source": "—",
-        "status": "v1"
-      },
-      {
-        "event": "음악: 등불 (작게)",
-        "sound": "music:P4",
-        "source": "설계 v1 §1 C층",
-        "status": "v1.2"
-      },
-      {
-        "event": "날짜 ‹ ›",
-        "sound": "sfx:floor_tick",
-        "source": "v6 P4",
-        "status": "v1.1"
-      },
-      {
-        "event": "P4-a 달력 열기·닫기",
-        "sound": "overlay:panel",
-        "source": "사이트맵 §4",
-        "status": "v1.1"
-      },
-      {
-        "event": "비슷한 주 찾기 · 지층에서 보기",
-        "sound": "sfx:confirm",
-        "source": "v6 P4",
-        "status": "v1"
-      },
-      {
-        "event": "⋯ 이 기간 숨기기",
-        "sound": "sfx:hide",
-        "source": "v6 P4",
-        "status": "v1.1"
-      }
-    ],
-    "P5": [
-      {
-        "event": "출발 덜컹 → 기계음·깊이 이동 → 도착 종",
-        "sound": "descend",
-        "source": "v6 P5",
-        "status": "v1"
-      },
-      {
-        "event": "음악 없음 (지하는 소리만)",
-        "sound": "none",
-        "source": "v6 P6 「음악 없음」",
-        "status": "무음(의도)"
-      },
-      {
-        "event": "층 표시기 ▲▼ · 층 고르기",
-        "sound": "sfx:floor_tick",
-        "source": "버튼배치 §1-3",
-        "status": "v1.1"
-      },
-      {
-        "event": "「○○년으로 내려간다」",
-        "sound": "sfx:confirm",
-        "source": "v6 P5",
-        "status": "v1"
-      },
-      {
-        "event": "「돌아가기」",
-        "sound": "sfx:back",
-        "source": "v6 P5",
-        "status": "v1"
-      },
-      {
-        "event": "민디 기다림",
-        "sound": "cue:wait",
-        "source": "—",
-        "status": "v1"
-      },
-      {
-        "event": "연출 줄이기 켜면 하강 없이 바로 전환",
-        "sound": "reduced",
-        "source": "v6 P5",
-        "status": "v1"
-      }
-    ],
-    "P6": [
-      {
-        "event": "바탕: 깊이에 따라 바람↓ 저주파·물방울↑",
-        "sound": "zone:P6",
-        "source": "설계 v1 §1-2",
-        "status": "v1"
-      },
-      {
-        "event": "◁ 연도 ▷ 넘김",
-        "sound": "sfx:floor_tick",
-        "source": "v6 P6",
-        "status": "v1.1"
-      },
-      {
-        "event": "광석 있는 층 (민디 찾았다)",
-        "sound": "cue:found",
-        "source": "—",
-        "status": "v1"
-      },
-      {
-        "event": "광석 말풍선 「캐기」 · 「이 주 고르기」",
-        "sound": "sfx:confirm",
-        "source": "버튼배치 §3",
-        "status": "v1"
-      }
-    ],
-    "P7": [
-      {
-        "event": "곡괭이 3번 (연출 줄이기면 1번)",
-        "sound": "sfx:pick",
-        "source": "v6 P7",
-        "status": "v1"
-      },
-      {
-        "event": "깨짐 「쨍」 (모든 광석 같은 소리)",
-        "sound": "sfx:ore_crack",
-        "source": "설계 v1 §1-5",
-        "status": "v1"
-      },
-      {
-        "event": "민디 탭마다 한 줄 · 캐기 성공",
-        "sound": "cue:mined",
-        "source": "튜토리얼 7-2",
-        "status": "v1"
-      },
-      {
-        "event": "관측소로 가져가기 (역방향: 위로 올라감)",
-        "sound": "ascend",
-        "source": "v6 P7",
-        "status": "v1.1"
-      },
-      {
-        "event": "여기서 바로 보기",
-        "sound": "sfx:confirm",
-        "source": "v6 P7",
-        "status": "v1"
-      }
-    ],
-    "P8": [
-      {
-        "event": "바탕: 지층 소리 70%",
-        "sound": "zone:P8",
-        "source": "—",
-        "status": "v1"
-      },
-      {
-        "event": "민디 해설 말풍선",
-        "sound": "say",
-        "source": "v6 P8",
-        "status": "v1"
-      },
-      {
-        "event": "P8-a 광석 읽는 법 카드",
-        "sound": "overlay:panel",
-        "source": "사이트맵 §3",
-        "status": "v1.1"
-      },
-      {
-        "event": "빛점 누름 → P8-b 그날 기록",
-        "sound": "sfx:glint",
-        "source": "사이트맵 §3",
-        "status": "v1.1"
-      },
-      {
-        "event": "VIBE 네 버튼 → P8-c 근거 펼침",
-        "sound": "overlay:panel",
-        "source": "사이트맵 §3",
-        "status": "v1.1"
-      },
-      {
-        "event": "P8-d 이름 붙이기 · 예시 「다시 꺼내 보기 ↻」",
-        "sound": "sfx:shuffle",
-        "source": "사이트맵 §3",
-        "status": "v1.1"
-      },
-      {
-        "event": "이름 저장",
-        "sound": "sfx:name_save",
-        "source": "설계 v1 §4",
-        "status": "v1"
-      },
-      {
-        "event": "이름 「그대로 두기」",
-        "sound": "sfx:close",
-        "source": "사이트맵 §3",
-        "status": "v1.1"
-      },
-      {
-        "event": "⋯ 이 주 숨기기",
-        "sound": "sfx:hide",
-        "source": "사이트맵 §3",
-        "status": "v1.1"
-      },
-      {
-        "event": "보관함에 넣기",
-        "sound": "sfx:keep",
-        "source": "—",
-        "status": "v1"
-      },
-      {
-        "event": "입력창 보내기 → P9",
-        "sound": "sfx:send",
-        "source": "v6 P8",
-        "status": "v1.1"
-      },
-      {
-        "event": "‹ 되돌아가기 (관측소 / Quit / ★나의 공간)",
-        "sound": "sfx:back",
-        "source": "v6 P8",
-        "status": "v1"
-      }
-    ],
-    "P9": [
-      {
-        "event": "바탕: 고른 장면 55%",
-        "sound": "zone:P9",
-        "source": "—",
-        "status": "v1"
-      },
-      {
-        "event": "음악: 등불 (대화 방해 않게 아주 작게)",
-        "sound": "music:P9",
-        "source": "설계 v1 §1 C층",
-        "status": "v1.2"
-      },
-      {
-        "event": "첫 대화 고지 (바탕 60%로 낮춤, 효과음 없음)",
-        "sound": "overlay:notice",
-        "source": "튜토리얼 5-5",
-        "status": "v1.1"
-      },
-      {
-        "event": "「설명 듣기 | 이야기 나누기」",
-        "sound": "sfx:tap",
-        "source": "v6 P9",
-        "status": "v1"
-      },
-      {
-        "event": "보내기",
-        "sound": "sfx:send",
-        "source": "v6 P9",
-        "status": "v1.1"
-      },
-      {
-        "event": "민디 답마다",
-        "sound": "say",
-        "source": "v6 P9",
-        "status": "v1"
-      },
-      {
-        "event": "맞장구",
-        "sound": "react:eung",
-        "source": "설계 v1 §1-4",
-        "status": "v1"
-      },
-      {
-        "event": "근거 보기 ▸ → P9-a 근거 패널",
-        "sound": "overlay:panel",
-        "source": "v6 P9",
-        "status": "v1.1"
-      },
-      {
-        "event": "「민디가 이것을 기억했어요」",
-        "sound": "sfx:memory_note",
-        "source": "v6 P9",
-        "status": "v1.1"
-      },
-      {
-        "event": "P9-b 기억 지우기 · 「함께 보는 기록」 칩 ×",
-        "sound": "sfx:erase",
-        "source": "v6 P9",
-        "status": "v1.1"
-      }
-    ],
-    "P10": [
-      {
-        "event": "바탕: 고른 장면 75%",
-        "sound": "zone:P10",
-        "source": "—",
-        "status": "v1"
-      },
-      {
-        "event": "음악: 등불 (작게)",
-        "sound": "music:P10",
-        "source": "설계 v1 §1 C층",
-        "status": "v1.2"
-      },
-      {
-        "event": "필터 연도·지표",
-        "sound": "sfx:tap",
-        "source": "v6 P10",
-        "status": "v1"
-      },
-      {
-        "event": "광석 칸 → P8",
-        "sound": "sfx:tap",
-        "source": "v6 P10",
-        "status": "v1"
-      },
-      {
-        "event": "나의 공간 보기 2/3 (잠김)",
-        "sound": "sfx:locked",
-        "source": "버튼배치 §3",
-        "status": "v1.1"
-      }
-    ],
-    "P11": [
-      {
-        "event": "바탕: 고른 환경 미리 듣기 60%",
-        "sound": "zone:P11",
-        "source": "v6 P11",
-        "status": "v1"
-      },
-      {
-        "event": "음악: 열린 곳 (종 + 줄)",
-        "sound": "music:P11",
-        "source": "설계 v1 §1 C층",
-        "status": "v1.2"
-      },
-      {
-        "event": "환경 카드: 바다",
-        "sound": "env:sea",
-        "source": "v6 P11",
-        "status": "v1"
-      },
-      {
-        "event": "환경 카드: 산",
-        "sound": "env:mountain",
-        "source": "v6 P11",
-        "status": "v1.1"
-      },
-      {
-        "event": "환경 카드: 하늘",
-        "sound": "env:sky",
-        "source": "v6 P11",
-        "status": "v1.1"
-      },
-      {
-        "event": "환경 카드: 정글",
-        "sound": "env:jungle",
-        "source": "v6 P11",
-        "status": "v1.1"
-      },
-      {
-        "event": "환경 카드: 작은 방",
-        "sound": "env:room",
-        "source": "v6 P11",
-        "status": "v1"
-      },
-      {
-        "event": "단어 고르기 · 직접 쓰기 · 이전/다음",
-        "sound": "sfx:tap",
-        "source": "v6 P11",
-        "status": "v1"
-      },
-      {
-        "event": "다른 단어 보기 ↻",
-        "sound": "sfx:shuffle",
-        "source": "v6 P11",
-        "status": "v1.1"
-      },
-      {
-        "event": "이름 붙이기",
-        "sound": "sfx:name_save",
-        "source": "v6 P11",
-        "status": "v1"
-      },
-      {
-        "event": "⑤ 안개가 걷히며 열림",
-        "sound": "sfx:fog_clear",
-        "source": "v6 P11",
-        "status": "v1.1"
-      },
-      {
-        "event": "열림 종",
-        "sound": "sfx:space_open",
-        "source": "—",
-        "status": "v1"
-      }
-    ],
-    "P12": [
-      {
-        "event": "바탕: 고른 환경",
-        "sound": "zone:P12",
-        "source": "v6 P12",
-        "status": "v1"
-      },
-      {
-        "event": "음악: 열린 곳",
-        "sound": "music:P12",
-        "source": "설계 v1 §1 C층",
-        "status": "v1.2"
-      },
-      {
-        "event": "「내려다보기 | 걸어 보기」",
-        "sound": "sfx:tap",
-        "source": "v6 P12",
-        "status": "v1"
-      },
-      {
-        "event": "걷기",
-        "sound": "sfx:step",
-        "source": "v6 P12",
-        "status": "v1"
-      },
-      {
-        "event": "소품 놓기",
-        "sound": "sfx:keep",
-        "source": "v6 P12",
-        "status": "v1"
-      },
-      {
-        "event": "기억 바로가기 (화분·앨범·메모·창문)",
-        "sound": "overlay:panel",
-        "source": "v6 P12",
-        "status": "v1.1"
-      },
-      {
-        "event": "꾸밀 자리 생김 (안개 한 겹 걷힘)",
-        "sound": "sfx:fog_clear",
-        "source": "v6 P12",
-        "status": "v1.1"
-      },
-      {
-        "event": "‹ 나가기 → P3",
-        "sound": "sfx:back",
-        "source": "v6 P12",
-        "status": "v1"
-      }
-    ],
-    "P13": [
-      {
-        "event": "바탕: 바꾸지 않음",
-        "sound": "zone:P13",
-        "source": "—",
-        "status": "v1"
-      },
-      {
-        "event": "음악: 그대로 두고 낮추기만",
-        "sound": "none",
-        "source": "설계 v1 §1 C층",
-        "status": "무음(의도)"
-      },
-      {
-        "event": "스위치 켜기·끄기",
-        "sound": "sfx:toggle_on",
-        "source": "v6 P13",
-        "status": "v1.1"
-      },
-      {
-        "event": "말투 고르기 → 그 말투로 맞장구 미리 듣기",
-        "sound": "react:eung",
-        "source": "v6 P13-2",
-        "status": "v1.1"
-      },
-      {
-        "event": "삭제 · 모두 지우기 · 계정 삭제 (확인 뒤)",
-        "sound": "sfx:erase",
-        "source": "v6 P13",
-        "status": "v1.1"
-      },
-      {
-        "event": "내려받기",
-        "sound": "sfx:confirm",
-        "source": "v6 P13",
-        "status": "v1.1"
-      }
-    ]
+  "P4": {
+   "name": "하루 고르기",
+   "ambient": [
+    "lantern",
+    "drip"
+   ],
+   "sfx": {
+    "하루 고르기": "tap"
+   },
+   "mindi": [
+    "say"
+   ]
   },
-  "call_syntax": "sfx:이름 → MineDSound.sfx(이름) · zone:Px → setZone · scene:x → setScene · env:x → setZone('P12',{env}) · overlay:x → overlay(x,true/false) · cue/react/say → 민디 · descend/ascend → descend(깊이) · reduced → setReduced · none → 일부러 무음",
-  "scenes": {
-    "lantern": [
-      "lantern",
-      "drip"
-    ],
-    "rain": [
-      "rain",
-      "lantern"
-    ],
-    "wind": [
-      "wind",
-      "pad"
-    ],
-    "none": []
+  "P5": {
+   "name": "엘리베이터",
+   "ambient": [
+    "hum(이동 중)",
+    "depth"
+   ],
+   "sfx": {
+    "내려간다": "confirm",
+    "돌아가기": "back",
+    "출발": "lift_start",
+    "도착": "lift_arrive"
+   },
+   "mindi": [
+    "wait"
+   ]
   },
-  "envs": {
-    "sea": [
-      "sea",
-      "surf"
-    ],
-    "mountain": [
-      "wind",
-      "birds"
-    ],
-    "sky": [
-      "air",
-      "pad"
-    ],
-    "jungle": [
-      "insects",
-      "birds",
-      "rain"
-    ],
-    "room": [
-      "room"
-    ],
-    "none": []
+  "P6": {
+   "name": "연도 지층",
+   "ambient": [
+    "depth"
+   ],
+   "sfx": {
+    "층 넘김": "tap"
+   },
+   "mindi": [
+    "found"
+   ]
   },
-  "overlays": {
-    "door": "바탕 35%",
-    "help": "바탕 70%",
-    "panel": "바탕 80%",
-    "notice": "바탕 60%",
-    "note": "창이 겹치면 가장 낮은 값. 문-창·첫 대화 고지는 효과음 없음"
+  "P7": {
+   "name": "광석 캐기",
+   "ambient": [
+    "depth"
+   ],
+   "sfx": {
+    "곡괭이(3번)": "pick",
+    "깨짐": "ore_crack"
+   },
+   "mindi": [
+    "mined"
+   ]
   },
-  "silent_on_purpose": [
-    "마우스 올리기·툴팁",
-    "튜토리얼 안내띠 ⓘ"
-  ],
-  "music": {
-    "source": "MineD_stage_v4 배경음 (8/22 Suno, 168초, F단조 5음, 약 76 BPM)",
-    "tracks": {
-      "fog": {
-        "file": "mus_home.mp3",
-        "cut": "0~168초 전체",
-        "zones": [
-          "P0",
-          "P1",
-          "P2"
-        ]
-      },
-      "hearth": {
-        "file": "mus_hearth.mp3",
-        "cut": "34.35~101.8초, lowpass 2.2kHz",
-        "zones": [
-          "P3",
-          "P4",
-          "P9",
-          "P10"
-        ]
-      },
-      "open": {
-        "file": "mus_open.mp3",
-        "cut": "105.6~150.2초",
-        "zones": [
-          "P11",
-          "P12"
-        ]
-      }
-    },
-    "none": [
-      "P5",
-      "P6",
-      "P7",
-      "P8"
-    ],
-    "keep": [
-      "P13"
-    ]
+  "P8": {
+   "name": "광석 상세",
+   "ambient": [
+    "depth x0.7"
+   ],
+   "sfx": {
+    "VIBE 버튼": "tap",
+    "이름 붙이기": "name_save",
+    "보관": "keep"
+   },
+   "mindi": [
+    "say"
+   ]
+  },
+  "P9": {
+   "name": "민디와 이야기",
+   "ambient": [
+    "lantern"
+   ],
+   "sfx": {
+    "보내기": "tap"
+   },
+   "mindi": [
+    "say",
+    "react"
+   ]
+  },
+  "P10": {
+   "name": "캔 광석 보관함",
+   "ambient": [
+    "lantern",
+    "drip"
+   ],
+   "sfx": {
+    "넣기": "keep"
+   }
+  },
+  "P11": {
+   "name": "나의 공간 만들기",
+   "ambient": [
+    "env x0.6"
+   ],
+   "sfx": {
+    "환경 고르기": "tap",
+    "열림": "space_open"
+   },
+   "mindi": [
+    "say"
+   ]
+  },
+  "P12": {
+   "name": "나의 공간",
+   "ambient": [
+    "env: sea / mountain / sky / jungle / room / none"
+   ],
+   "sfx": {
+    "걷기": "step",
+    "소품 놓기": "keep"
+   }
+  },
+  "P13": {
+   "name": "설정",
+   "ambient": [
+    "유지"
+   ],
+   "sfx": {
+    "토글": "toggle"
+   }
   }
+ },
+ "depth": {
+  "gain": [
+   1.0,
+   0.55
+  ],
+  "lowpass_hz": [
+   18000,
+   2500
+  ],
+  "reverb_sec": [
+   0.4,
+   2.8
+  ],
+  "reverb_mix": [
+   0.1,
+   0.45
+  ],
+  "transition_sec": 1.5
+ },
+ "files": {
+  "amb_sea_waves.wav": "섬 영상 C02 2.9~7.15초 파도, 고리 처리",
+  "amb_room_tone.wav": "섬 영상 C05 0.45~6.25초 방 공기, 고리 처리",
+  "sfx_door_open.wav": "섬 영상 C04 2.45~5.05초 문 손잡이·경첩",
+  "sfx_step_wood.wav": "섬 영상 C03 1.82~2.22초 나무 발소리",
+  "sfx_step_wood_2.wav": "섬 영상 C03 3.10~3.50초 나무 발소리"
+ },
+ "mindi_voice": {
+  "base": 10,
+  "ending": 3,
+  "reaction": 4,
+  "event": 5,
+  "rate_by_tone": {
+   "quiet": 0.85,
+   "warm": 0.9,
+   "plain": 1.1,
+   "dry": 1.0
+  },
+  "samples": {
+   "alien": {
+    "file": "mindi_voice_alien.wav",
+    "source": "로컬 TTS Kokoro v1.0 목소리 zf_xiaoyi(후보 B) + Praat 포먼트 x1.32, 430Hz",
+    "kind": "외계어 낱말",
+    "units": 40
+   },
+   "default": "alien"
+  },
+  "moods": {
+   "explain": {
+    "ko": "설명·담백",
+    "st": [
+     0,
+     2,
+     0,
+     2,
+     -1,
+     -3
+    ],
+    "rate": 1.0
+   },
+   "hello": {
+    "ko": "인사",
+    "st": [
+     0,
+     4,
+     7,
+     2
+    ],
+    "rate": 1.0
+   },
+   "ask": {
+    "ko": "질문 (끝 올림)",
+    "st": [
+     0,
+     -1,
+     0,
+     1,
+     2,
+     7
+    ],
+    "rate": 0.95
+   },
+   "cheer": {
+    "ko": "응원·밝음",
+    "st": [
+     0,
+     2,
+     4,
+     7,
+     4,
+     9
+    ],
+    "rate": 1.05
+   },
+   "comfort": {
+    "ko": "위로·조용히",
+    "st": [
+     0,
+     -1,
+     -3,
+     -2,
+     -5
+    ],
+    "rate": 0.85
+   },
+   "think": {
+    "ko": "생각·말끝 흐림 …",
+    "st": [
+     0,
+     -1,
+     -2,
+     -3,
+     -4
+    ],
+    "rate": 0.82
+   },
+   "surprise": {
+    "ko": "놀람",
+    "st": [
+     7,
+     12,
+     5
+    ],
+    "rate": 1.15
+   },
+   "found": {
+    "ko": "찾았다",
+    "st": [
+     0,
+     3,
+     5,
+     7,
+     12
+    ],
+    "rate": 1.1
+   },
+   "mined": {
+    "ko": "캐기 성공",
+    "st": [
+     0,
+     4,
+     7,
+     12,
+     12
+    ],
+    "rate": 1.1
+   },
+   "wait": {
+    "ko": "기다림",
+    "st": [
+     -2,
+     -3,
+     -5
+    ],
+    "rate": 0.8
+   },
+   "effort": {
+    "ko": "영차·힘쓰기",
+    "st": [
+     0,
+     5
+    ],
+    "rate": 1.2
+   },
+   "notice": {
+    "ko": "안내·고지 (평평)",
+    "st": [
+     0,
+     0,
+     0,
+     0,
+     -2
+    ],
+    "rate": 0.95
+   }
+  },
+  "mood_clips": {
+   "explain": "audio/mindi_moods/mindi_explain.mp3",
+   "hello": "audio/mindi_moods/mindi_hello.mp3",
+   "ask": "audio/mindi_moods/mindi_ask.mp3",
+   "cheer": "audio/mindi_moods/mindi_cheer.mp3",
+   "comfort": "audio/mindi_moods/mindi_comfort.mp3",
+   "think": "audio/mindi_moods/mindi_think.mp3",
+   "surprise": "audio/mindi_moods/mindi_surprise.mp3",
+   "found": "audio/mindi_moods/mindi_found.mp3",
+   "mined": "audio/mindi_moods/mindi_mined.mp3",
+   "wait": "audio/mindi_moods/mindi_wait.mp3",
+   "effort": "audio/mindi_moods/mindi_effort.mp3",
+   "notice": "audio/mindi_moods/mindi_notice.mp3"
+  },
+  "mood_rule": "mood 를 주지 않으면 말풍선 끝 글자: ? ask · ! cheer · … think · 그 밖 explain"
+ },
+ "events": {
+  "전역": [
+   {
+    "event": "레일 주 메뉴 4개 (관측소·민디·나의 공간·설정)",
+    "sound": "sfx:tap",
+    "source": "v6 §5",
+    "status": "v1"
+   },
+   {
+    "event": "좌상단 ‹ 뒤로 가기",
+    "sound": "sfx:back",
+    "source": "v6 §5",
+    "status": "v1"
+   },
+   {
+    "event": "우상단 [?] → ?-안내 창 열기·닫기",
+    "sound": "overlay:help",
+    "source": "사이트맵 §3",
+    "status": "v1.1"
+   },
+   {
+    "event": "우상단 [⚙] → P13 설정",
+    "sound": "sfx:tap",
+    "source": "v6 §5",
+    "status": "v1"
+   },
+   {
+    "event": "우상단 [관측소의 문] → 문-창 (바탕 35%로 낮춤, 효과음 없음)",
+    "sound": "overlay:door",
+    "source": "사이트맵 §3",
+    "status": "v1.1"
+   },
+   {
+    "event": "문-창 「지금 나가기」",
+    "sound": "sfx:back",
+    "source": "사이트맵 §4",
+    "status": "v1.1"
+   },
+   {
+    "event": "소리 켜기·끄기 (P13-7 · 관측소 좌상단)",
+    "sound": "toggle",
+    "source": "v6 P13",
+    "status": "v1"
+   },
+   {
+    "event": "연출 줄이기 → 바탕 소리 절반",
+    "sound": "reduced",
+    "source": "v6 P13",
+    "status": "v1"
+   },
+   {
+    "event": "마우스 올리기·툴팁",
+    "sound": "none",
+    "source": "v6 P3",
+    "status": "무음(의도)"
+   }
+  ],
+  "P0": [
+   {
+    "event": "바탕: 안개 바람 + 낮은 패드",
+    "sound": "zone:P0",
+    "source": "설계 v1 §1-5",
+    "status": "v1"
+   },
+   {
+    "event": "음악: 안개 (종, 드문드문)",
+    "sound": "music:P0",
+    "source": "설계 v1 §1 C층",
+    "status": "v1.2"
+   },
+   {
+    "event": "안내 카드 4장 넘김",
+    "sound": "sfx:card",
+    "source": "v6 P0",
+    "status": "v1.1"
+   },
+   {
+    "event": "카드 [건너뛰기]",
+    "sound": "sfx:back",
+    "source": "튜토리얼 0-1",
+    "status": "v1.1"
+   },
+   {
+    "event": "ENTER",
+    "sound": "sfx:door",
+    "source": "버튼배치 §3",
+    "status": "v1"
+   },
+   {
+    "event": "ENTER 뒤 안개 걷힘",
+    "sound": "sfx:fog_clear",
+    "source": "v6 P0",
+    "status": "v1.1"
+   },
+   {
+    "event": "QUIT",
+    "sound": "sfx:back",
+    "source": "v6 P0",
+    "status": "v1.1"
+   }
+  ],
+  "P1": [
+   {
+    "event": "바탕: 안개 (작게)",
+    "sound": "zone:P1",
+    "source": "—",
+    "status": "v1"
+   },
+   {
+    "event": "음악: 안개 (작게)",
+    "sound": "music:P1",
+    "source": "설계 v1 §1 C층",
+    "status": "v1.2"
+   },
+   {
+    "event": "「내 기록으로 시작」 「샘플로 둘러보기」",
+    "sound": "sfx:tap",
+    "source": "v6 P1",
+    "status": "v1"
+   },
+   {
+    "event": "샘플 데이터 띠 「나가기」",
+    "sound": "sfx:back",
+    "source": "v6 P1",
+    "status": "v1.1"
+   }
+  ],
+  "P2": [
+   {
+    "event": "바탕: 안개 (작게)",
+    "sound": "zone:P2",
+    "source": "—",
+    "status": "v1"
+   },
+   {
+    "event": "음악: 안개 (작게)",
+    "sound": "music:P2",
+    "source": "설계 v1 §1 C층",
+    "status": "v1.2"
+   },
+   {
+    "event": "자동 연결 스위치 켜기",
+    "sound": "sfx:toggle_on",
+    "source": "v6 P2",
+    "status": "v1.1"
+   },
+   {
+    "event": "자동 연결 스위치 끄기 · 모두 끄기",
+    "sound": "sfx:toggle_off",
+    "source": "v6 P2",
+    "status": "v1.1"
+   },
+   {
+    "event": "P2-a 파일 올리기 창 열기·닫기",
+    "sound": "overlay:panel",
+    "source": "사이트맵 §4",
+    "status": "v1.1"
+   },
+   {
+    "event": "가져오기 완료 · 관측소로 가기",
+    "sound": "sfx:confirm",
+    "source": "v6 P2",
+    "status": "v1"
+   },
+   {
+    "event": "나중에 연결",
+    "sound": "sfx:back",
+    "source": "버튼배치 §3",
+    "status": "v1.1"
+   }
+  ],
+  "P3": [
+   {
+    "event": "바탕: 고른 장면 (등불·비·바람·소리 없음)",
+    "sound": "zone:P3",
+    "source": "v6 P3",
+    "status": "v1.1"
+   },
+   {
+    "event": "음악: 등불 (뜯는 줄)",
+    "sound": "music:P3",
+    "source": "설계 v1 §1 C층",
+    "status": "v1.2"
+   },
+   {
+    "event": "좌상단 배경·소리 바꾸기 → 비",
+    "sound": "scene:rain",
+    "source": "v6 P3",
+    "status": "v1.1"
+   },
+   {
+    "event": "좌상단 배경·소리 바꾸기 → 바람",
+    "sound": "scene:wind",
+    "source": "v6 P3",
+    "status": "v1.1"
+   },
+   {
+    "event": "좌상단 배경·소리 바꾸기 → 등불(기본)",
+    "sound": "scene:lantern",
+    "source": "v6 P3",
+    "status": "v1.1"
+   },
+   {
+    "event": "첫 방문: 민디가 굴에서 걸어 나옴",
+    "sound": "sfx:mindi_steps",
+    "source": "v6 P3 · 튜토리얼 3-1",
+    "status": "v1.1"
+   },
+   {
+    "event": "첫 방문: 민디 인사",
+    "sound": "cue:hello",
+    "source": "튜토리얼 3-1",
+    "status": "v1"
+   },
+   {
+    "event": "오늘의 한 마디 말풍선",
+    "sound": "say",
+    "source": "v6 P3",
+    "status": "v1"
+   },
+   {
+    "event": "말풍선 × 닫기",
+    "sound": "sfx:close",
+    "source": "v6 P3",
+    "status": "v1.1"
+   },
+   {
+    "event": "호칭 칩 고르기 · 직접 쓰기",
+    "sound": "sfx:tap",
+    "source": "튜토리얼 3-3",
+    "status": "v1"
+   },
+   {
+    "event": "호칭 「다시 꺼내 보기 ↻」",
+    "sound": "sfx:shuffle",
+    "source": "튜토리얼 3-3",
+    "status": "v1.1"
+   },
+   {
+    "event": "기능 버튼 Ⓐ→Ⓔ 차례로 나타남 (T1)",
+    "sound": "sfx:appear",
+    "source": "튜토리얼 3-5b",
+    "status": "v1.1"
+   },
+   {
+    "event": "기능 버튼 Ⓐ Ⓑ Ⓒ Ⓓ 누름",
+    "sound": "sfx:tap",
+    "source": "v6 P3",
+    "status": "v1"
+   },
+   {
+    "event": "Ⓔ 나의 공간 잠김 (1/3)",
+    "sound": "sfx:locked",
+    "source": "v6 P3",
+    "status": "v1.1"
+   },
+   {
+    "event": "튜토리얼 등불 비춤",
+    "sound": "sfx:spotlight",
+    "source": "튜토리얼 §4",
+    "status": "v1.1"
+   },
+   {
+    "event": "튜토리얼 안내띠 ⓘ",
+    "sound": "none",
+    "source": "튜토리얼 §4",
+    "status": "무음(의도)"
+   }
+  ],
+  "P4": [
+   {
+    "event": "바탕: 관측소와 같음",
+    "sound": "zone:P4",
+    "source": "—",
+    "status": "v1"
+   },
+   {
+    "event": "음악: 등불 (작게)",
+    "sound": "music:P4",
+    "source": "설계 v1 §1 C층",
+    "status": "v1.2"
+   },
+   {
+    "event": "날짜 ‹ ›",
+    "sound": "sfx:floor_tick",
+    "source": "v6 P4",
+    "status": "v1.1"
+   },
+   {
+    "event": "P4-a 달력 열기·닫기",
+    "sound": "overlay:panel",
+    "source": "사이트맵 §4",
+    "status": "v1.1"
+   },
+   {
+    "event": "비슷한 주 찾기 · 지층에서 보기",
+    "sound": "sfx:confirm",
+    "source": "v6 P4",
+    "status": "v1"
+   },
+   {
+    "event": "⋯ 이 기간 숨기기",
+    "sound": "sfx:hide",
+    "source": "v6 P4",
+    "status": "v1.1"
+   }
+  ],
+  "P5": [
+   {
+    "event": "출발 덜컹 → 기계음·깊이 이동 → 도착 종",
+    "sound": "descend",
+    "source": "v6 P5",
+    "status": "v1"
+   },
+   {
+    "event": "음악 없음 (지하는 소리만)",
+    "sound": "none",
+    "source": "v6 P6 「음악 없음」",
+    "status": "무음(의도)"
+   },
+   {
+    "event": "층 표시기 ▲▼ · 층 고르기",
+    "sound": "sfx:floor_tick",
+    "source": "버튼배치 §1-3",
+    "status": "v1.1"
+   },
+   {
+    "event": "「○○년으로 내려간다」",
+    "sound": "sfx:confirm",
+    "source": "v6 P5",
+    "status": "v1"
+   },
+   {
+    "event": "「돌아가기」",
+    "sound": "sfx:back",
+    "source": "v6 P5",
+    "status": "v1"
+   },
+   {
+    "event": "민디 기다림",
+    "sound": "cue:wait",
+    "source": "—",
+    "status": "v1"
+   },
+   {
+    "event": "연출 줄이기 켜면 하강 없이 바로 전환",
+    "sound": "reduced",
+    "source": "v6 P5",
+    "status": "v1"
+   }
+  ],
+  "P6": [
+   {
+    "event": "바탕: 깊이에 따라 바람↓ 저주파·물방울↑",
+    "sound": "zone:P6",
+    "source": "설계 v1 §1-2",
+    "status": "v1"
+   },
+   {
+    "event": "◁ 연도 ▷ 넘김",
+    "sound": "sfx:floor_tick",
+    "source": "v6 P6",
+    "status": "v1.1"
+   },
+   {
+    "event": "광석 있는 층 (민디 찾았다)",
+    "sound": "cue:found",
+    "source": "—",
+    "status": "v1"
+   },
+   {
+    "event": "광석 말풍선 「캐기」 · 「이 주 고르기」",
+    "sound": "sfx:confirm",
+    "source": "버튼배치 §3",
+    "status": "v1"
+   }
+  ],
+  "P7": [
+   {
+    "event": "곡괭이 3번 (연출 줄이기면 1번)",
+    "sound": "sfx:pick",
+    "source": "v6 P7",
+    "status": "v1"
+   },
+   {
+    "event": "깨짐 「쨍」 (모든 광석 같은 소리)",
+    "sound": "sfx:ore_crack",
+    "source": "설계 v1 §1-5",
+    "status": "v1"
+   },
+   {
+    "event": "민디 탭마다 한 줄 · 캐기 성공",
+    "sound": "cue:mined",
+    "source": "튜토리얼 7-2",
+    "status": "v1"
+   },
+   {
+    "event": "관측소로 가져가기 (역방향: 위로 올라감)",
+    "sound": "ascend",
+    "source": "v6 P7",
+    "status": "v1.1"
+   },
+   {
+    "event": "여기서 바로 보기",
+    "sound": "sfx:confirm",
+    "source": "v6 P7",
+    "status": "v1"
+   }
+  ],
+  "P8": [
+   {
+    "event": "바탕: 지층 소리 70%",
+    "sound": "zone:P8",
+    "source": "—",
+    "status": "v1"
+   },
+   {
+    "event": "민디 해설 말풍선",
+    "sound": "say",
+    "source": "v6 P8",
+    "status": "v1"
+   },
+   {
+    "event": "P8-a 광석 읽는 법 카드",
+    "sound": "overlay:panel",
+    "source": "사이트맵 §3",
+    "status": "v1.1"
+   },
+   {
+    "event": "빛점 누름 → P8-b 그날 기록",
+    "sound": "sfx:glint",
+    "source": "사이트맵 §3",
+    "status": "v1.1"
+   },
+   {
+    "event": "VIBE 네 버튼 → P8-c 근거 펼침",
+    "sound": "overlay:panel",
+    "source": "사이트맵 §3",
+    "status": "v1.1"
+   },
+   {
+    "event": "P8-d 이름 붙이기 · 예시 「다시 꺼내 보기 ↻」",
+    "sound": "sfx:shuffle",
+    "source": "사이트맵 §3",
+    "status": "v1.1"
+   },
+   {
+    "event": "이름 저장",
+    "sound": "sfx:name_save",
+    "source": "설계 v1 §4",
+    "status": "v1"
+   },
+   {
+    "event": "이름 「그대로 두기」",
+    "sound": "sfx:close",
+    "source": "사이트맵 §3",
+    "status": "v1.1"
+   },
+   {
+    "event": "⋯ 이 주 숨기기",
+    "sound": "sfx:hide",
+    "source": "사이트맵 §3",
+    "status": "v1.1"
+   },
+   {
+    "event": "보관함에 넣기",
+    "sound": "sfx:keep",
+    "source": "—",
+    "status": "v1"
+   },
+   {
+    "event": "입력창 보내기 → P9",
+    "sound": "sfx:send",
+    "source": "v6 P8",
+    "status": "v1.1"
+   },
+   {
+    "event": "‹ 되돌아가기 (관측소 / Quit / ★나의 공간)",
+    "sound": "sfx:back",
+    "source": "v6 P8",
+    "status": "v1"
+   }
+  ],
+  "P9": [
+   {
+    "event": "바탕: 고른 장면 55%",
+    "sound": "zone:P9",
+    "source": "—",
+    "status": "v1"
+   },
+   {
+    "event": "음악: 등불 (대화 방해 않게 아주 작게)",
+    "sound": "music:P9",
+    "source": "설계 v1 §1 C층",
+    "status": "v1.2"
+   },
+   {
+    "event": "첫 대화 고지 (바탕 60%로 낮춤, 효과음 없음)",
+    "sound": "overlay:notice",
+    "source": "튜토리얼 5-5",
+    "status": "v1.1"
+   },
+   {
+    "event": "「설명 듣기 | 이야기 나누기」",
+    "sound": "sfx:tap",
+    "source": "v6 P9",
+    "status": "v1"
+   },
+   {
+    "event": "보내기",
+    "sound": "sfx:send",
+    "source": "v6 P9",
+    "status": "v1.1"
+   },
+   {
+    "event": "민디 답마다",
+    "sound": "say",
+    "source": "v6 P9",
+    "status": "v1"
+   },
+   {
+    "event": "맞장구",
+    "sound": "react:eung",
+    "source": "설계 v1 §1-4",
+    "status": "v1"
+   },
+   {
+    "event": "근거 보기 ▸ → P9-a 근거 패널",
+    "sound": "overlay:panel",
+    "source": "v6 P9",
+    "status": "v1.1"
+   },
+   {
+    "event": "「민디가 이것을 기억했어요」",
+    "sound": "sfx:memory_note",
+    "source": "v6 P9",
+    "status": "v1.1"
+   },
+   {
+    "event": "P9-b 기억 지우기 · 「함께 보는 기록」 칩 ×",
+    "sound": "sfx:erase",
+    "source": "v6 P9",
+    "status": "v1.1"
+   }
+  ],
+  "P10": [
+   {
+    "event": "바탕: 고른 장면 75%",
+    "sound": "zone:P10",
+    "source": "—",
+    "status": "v1"
+   },
+   {
+    "event": "음악: 등불 (작게)",
+    "sound": "music:P10",
+    "source": "설계 v1 §1 C층",
+    "status": "v1.2"
+   },
+   {
+    "event": "필터 연도·지표",
+    "sound": "sfx:tap",
+    "source": "v6 P10",
+    "status": "v1"
+   },
+   {
+    "event": "광석 칸 → P8",
+    "sound": "sfx:tap",
+    "source": "v6 P10",
+    "status": "v1"
+   },
+   {
+    "event": "나의 공간 보기 2/3 (잠김)",
+    "sound": "sfx:locked",
+    "source": "버튼배치 §3",
+    "status": "v1.1"
+   }
+  ],
+  "P11": [
+   {
+    "event": "바탕: 고른 환경 미리 듣기 60%",
+    "sound": "zone:P11",
+    "source": "v6 P11",
+    "status": "v1"
+   },
+   {
+    "event": "음악: 열린 곳 (종 + 줄)",
+    "sound": "music:P11",
+    "source": "설계 v1 §1 C층",
+    "status": "v1.2"
+   },
+   {
+    "event": "환경 카드: 바다",
+    "sound": "env:sea",
+    "source": "v6 P11",
+    "status": "v1"
+   },
+   {
+    "event": "환경 카드: 산",
+    "sound": "env:mountain",
+    "source": "v6 P11",
+    "status": "v1.1"
+   },
+   {
+    "event": "환경 카드: 하늘",
+    "sound": "env:sky",
+    "source": "v6 P11",
+    "status": "v1.1"
+   },
+   {
+    "event": "환경 카드: 정글",
+    "sound": "env:jungle",
+    "source": "v6 P11",
+    "status": "v1.1"
+   },
+   {
+    "event": "환경 카드: 작은 방",
+    "sound": "env:room",
+    "source": "v6 P11",
+    "status": "v1"
+   },
+   {
+    "event": "단어 고르기 · 직접 쓰기 · 이전/다음",
+    "sound": "sfx:tap",
+    "source": "v6 P11",
+    "status": "v1"
+   },
+   {
+    "event": "다른 단어 보기 ↻",
+    "sound": "sfx:shuffle",
+    "source": "v6 P11",
+    "status": "v1.1"
+   },
+   {
+    "event": "이름 붙이기",
+    "sound": "sfx:name_save",
+    "source": "v6 P11",
+    "status": "v1"
+   },
+   {
+    "event": "⑤ 안개가 걷히며 열림",
+    "sound": "sfx:fog_clear",
+    "source": "v6 P11",
+    "status": "v1.1"
+   },
+   {
+    "event": "열림 종",
+    "sound": "sfx:space_open",
+    "source": "—",
+    "status": "v1"
+   }
+  ],
+  "P12": [
+   {
+    "event": "바탕: 고른 환경",
+    "sound": "zone:P12",
+    "source": "v6 P12",
+    "status": "v1"
+   },
+   {
+    "event": "음악: 열린 곳",
+    "sound": "music:P12",
+    "source": "설계 v1 §1 C층",
+    "status": "v1.2"
+   },
+   {
+    "event": "「내려다보기 | 걸어 보기」",
+    "sound": "sfx:tap",
+    "source": "v6 P12",
+    "status": "v1"
+   },
+   {
+    "event": "걷기",
+    "sound": "sfx:step",
+    "source": "v6 P12",
+    "status": "v1"
+   },
+   {
+    "event": "소품 놓기",
+    "sound": "sfx:keep",
+    "source": "v6 P12",
+    "status": "v1"
+   },
+   {
+    "event": "기억 바로가기 (화분·앨범·메모·창문)",
+    "sound": "overlay:panel",
+    "source": "v6 P12",
+    "status": "v1.1"
+   },
+   {
+    "event": "꾸밀 자리 생김 (안개 한 겹 걷힘)",
+    "sound": "sfx:fog_clear",
+    "source": "v6 P12",
+    "status": "v1.1"
+   },
+   {
+    "event": "‹ 나가기 → P3",
+    "sound": "sfx:back",
+    "source": "v6 P12",
+    "status": "v1"
+   }
+  ],
+  "P13": [
+   {
+    "event": "바탕: 바꾸지 않음",
+    "sound": "zone:P13",
+    "source": "—",
+    "status": "v1"
+   },
+   {
+    "event": "음악: 그대로 두고 낮추기만",
+    "sound": "none",
+    "source": "설계 v1 §1 C층",
+    "status": "무음(의도)"
+   },
+   {
+    "event": "스위치 켜기·끄기",
+    "sound": "sfx:toggle_on",
+    "source": "v6 P13",
+    "status": "v1.1"
+   },
+   {
+    "event": "말투 고르기 → 그 말투로 맞장구 미리 듣기",
+    "sound": "react:eung",
+    "source": "v6 P13-2",
+    "status": "v1.1"
+   },
+   {
+    "event": "삭제 · 모두 지우기 · 계정 삭제 (확인 뒤)",
+    "sound": "sfx:erase",
+    "source": "v6 P13",
+    "status": "v1.1"
+   },
+   {
+    "event": "내려받기",
+    "sound": "sfx:confirm",
+    "source": "v6 P13",
+    "status": "v1.1"
+   }
+  ]
+ },
+ "call_syntax": "sfx:이름 → MineDSound.sfx(이름) · zone:Px → setZone · scene:x → setScene · env:x → setZone('P12',{env}) · overlay:x → overlay(x,true/false) · cue/react/say → 민디 · descend/ascend → descend(깊이) · reduced → setReduced · none → 일부러 무음",
+ "scenes": {
+  "lantern": [
+   "lantern",
+   "drip"
+  ],
+  "rain": [
+   "rain",
+   "lantern"
+  ],
+  "wind": [
+   "wind",
+   "pad"
+  ],
+  "none": []
+ },
+ "envs": {
+  "sea": [
+   "sea",
+   "surf"
+  ],
+  "mountain": [
+   "wind",
+   "birds"
+  ],
+  "sky": [
+   "air",
+   "pad"
+  ],
+  "jungle": [
+   "insects",
+   "birds",
+   "rain"
+  ],
+  "room": [
+   "room"
+  ],
+  "none": []
+ },
+ "overlays": {
+  "door": "바탕 35%",
+  "help": "바탕 70%",
+  "panel": "바탕 80%",
+  "notice": "바탕 60%",
+  "note": "창이 겹치면 가장 낮은 값. 문-창·첫 대화 고지는 효과음 없음"
+ },
+ "silent_on_purpose": [
+  "마우스 올리기·툴팁",
+  "튜토리얼 안내띠 ⓘ"
+ ],
+ "music": {
+  "source": "MineD_stage_v4 배경음 (8/22 Suno, 168초, F단조 5음, 약 76 BPM)",
+  "tracks": {
+   "fog": {
+    "file": "mus_home.mp3",
+    "cut": "0~168초 전체",
+    "zones": [
+     "P0",
+     "P1",
+     "P2"
+    ]
+   },
+   "hearth": {
+    "file": "mus_hearth.mp3",
+    "cut": "34.35~101.8초, lowpass 2.2kHz",
+    "zones": [
+     "P3",
+     "P4",
+     "P9",
+     "P10"
+    ]
+   },
+   "open": {
+    "file": "mus_open.mp3",
+    "cut": "105.6~150.2초",
+    "zones": [
+     "P11",
+     "P12"
+    ]
+   }
+  },
+  "none": [
+   "P5",
+   "P6",
+   "P7",
+   "P8"
+  ],
+  "keep": [
+   "P13"
+  ]
+ }
 }
