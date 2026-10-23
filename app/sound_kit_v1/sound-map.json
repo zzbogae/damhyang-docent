@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "date": "2026-10-23",
   "rule": "소리는 사용자가 있는 위치(구역·깊이·고른 환경)에만 반응한다. 기록 내용·광석 종류·등급에 연동 금지.",
   "zones": {
@@ -207,6 +207,21 @@
       "warm": 0.9,
       "plain": 1.1,
       "dry": 1.0
+    },
+    "samples": {
+      "a": {
+        "file": "mindi_voice_a.wav",
+        "source": "cheongryongsa_E08_VOICE_CHORUS_MOCKUP_A_260922.wav",
+        "pitch": "+2 반음",
+        "units": 18
+      },
+      "b": {
+        "file": "mindi_voice_b.wav",
+        "source": "cheongryongsa_E08_VOICE_HONGDONGJI_AB_AUDITION_260922.wav",
+        "pitch": "+5 반음",
+        "units": 18
+      },
+      "default": "a"
     }
   },
   "events": {
@@ -274,6 +289,12 @@
         "status": "v1"
       },
       {
+        "event": "음악: 안개 (종, 드문드문)",
+        "sound": "music:P0",
+        "source": "설계 v1 §1 C층",
+        "status": "v1.2"
+      },
+      {
         "event": "안내 카드 4장 넘김",
         "sound": "sfx:card",
         "source": "v6 P0",
@@ -312,6 +333,12 @@
         "status": "v1"
       },
       {
+        "event": "음악: 안개 (작게)",
+        "sound": "music:P1",
+        "source": "설계 v1 §1 C층",
+        "status": "v1.2"
+      },
+      {
         "event": "「내 기록으로 시작」 「샘플로 둘러보기」",
         "sound": "sfx:tap",
         "source": "v6 P1",
@@ -330,6 +357,12 @@
         "sound": "zone:P2",
         "source": "—",
         "status": "v1"
+      },
+      {
+        "event": "음악: 안개 (작게)",
+        "sound": "music:P2",
+        "source": "설계 v1 §1 C층",
+        "status": "v1.2"
       },
       {
         "event": "자동 연결 스위치 켜기",
@@ -368,6 +401,12 @@
         "sound": "zone:P3",
         "source": "v6 P3",
         "status": "v1.1"
+      },
+      {
+        "event": "음악: 등불 (뜯는 줄)",
+        "sound": "music:P3",
+        "source": "설계 v1 §1 C층",
+        "status": "v1.2"
       },
       {
         "event": "좌상단 배경·소리 바꾸기 → 비",
@@ -462,6 +501,12 @@
         "status": "v1"
       },
       {
+        "event": "음악: 등불 (작게)",
+        "sound": "music:P4",
+        "source": "설계 v1 §1 C층",
+        "status": "v1.2"
+      },
+      {
         "event": "날짜 ‹ ›",
         "sound": "sfx:floor_tick",
         "source": "v6 P4",
@@ -492,6 +537,12 @@
         "sound": "descend",
         "source": "v6 P5",
         "status": "v1"
+      },
+      {
+        "event": "음악 없음 (지하는 소리만)",
+        "sound": "none",
+        "source": "v6 P6 「음악 없음」",
+        "status": "무음(의도)"
       },
       {
         "event": "층 표시기 ▲▼ · 층 고르기",
@@ -664,6 +715,12 @@
         "status": "v1"
       },
       {
+        "event": "음악: 등불 (대화 방해 않게 아주 작게)",
+        "sound": "music:P9",
+        "source": "설계 v1 §1 C층",
+        "status": "v1.2"
+      },
+      {
         "event": "첫 대화 고지 (바탕 60%로 낮춤, 효과음 없음)",
         "sound": "overlay:notice",
         "source": "튜토리얼 5-5",
@@ -720,6 +777,12 @@
         "status": "v1"
       },
       {
+        "event": "음악: 등불 (작게)",
+        "sound": "music:P10",
+        "source": "설계 v1 §1 C층",
+        "status": "v1.2"
+      },
+      {
         "event": "필터 연도·지표",
         "sound": "sfx:tap",
         "source": "v6 P10",
@@ -744,6 +807,12 @@
         "sound": "zone:P11",
         "source": "v6 P11",
         "status": "v1"
+      },
+      {
+        "event": "음악: 열린 곳 (종 + 줄)",
+        "sound": "music:P11",
+        "source": "설계 v1 §1 C층",
+        "status": "v1.2"
       },
       {
         "event": "환경 카드: 바다",
@@ -814,6 +883,12 @@
         "status": "v1"
       },
       {
+        "event": "음악: 열린 곳",
+        "sound": "music:P12",
+        "source": "설계 v1 §1 C층",
+        "status": "v1.2"
+      },
+      {
         "event": "「내려다보기 | 걸어 보기」",
         "sound": "sfx:tap",
         "source": "v6 P12",
@@ -856,6 +931,12 @@
         "sound": "zone:P13",
         "source": "—",
         "status": "v1"
+      },
+      {
+        "event": "음악: 그대로 두고 낮추기만",
+        "sound": "none",
+        "source": "설계 v1 §1 C층",
+        "status": "무음(의도)"
       },
       {
         "event": "스위치 켜기·끄기",
@@ -932,5 +1013,46 @@
   "silent_on_purpose": [
     "마우스 올리기·툴팁",
     "튜토리얼 안내띠 ⓘ"
-  ]
+  ],
+  "music": {
+    "source": "MineD_stage_v4 배경음 (8/22 Suno, 168초, F단조 5음, 약 76 BPM)",
+    "tracks": {
+      "fog": {
+        "file": "mus_home.mp3",
+        "cut": "0~168초 전체",
+        "zones": [
+          "P0",
+          "P1",
+          "P2"
+        ]
+      },
+      "hearth": {
+        "file": "mus_hearth.mp3",
+        "cut": "34.35~101.8초, lowpass 2.2kHz",
+        "zones": [
+          "P3",
+          "P4",
+          "P9",
+          "P10"
+        ]
+      },
+      "open": {
+        "file": "mus_open.mp3",
+        "cut": "105.6~150.2초",
+        "zones": [
+          "P11",
+          "P12"
+        ]
+      }
+    },
+    "none": [
+      "P5",
+      "P6",
+      "P7",
+      "P8"
+    ],
+    "keep": [
+      "P13"
+    ]
+  }
 }

@@ -1,4 +1,4 @@
-/* Mine D 사운드 키트 v1.1 (2026-10-23)
+/* Mine D 사운드 키트 v1.2 (2026-10-23)
  *
  * 한 파일, 의존성 없음. <script src="mined-sound.js"></script> 로 넣으면 window.MineDSound 가 생긴다.
  *
@@ -8,8 +8,14 @@
  *
  * 세 층 (사운드 설계 v1 §1)
  *   A. 환경음  — 구역별 바탕 소리 + 깊이(depth 0~1) 한 값으로 음량·먹먹함·울림 조절
- *   B. 민디 보이스 — 뜻 없는 음절 합성 (기본 10 · 끝맺음 3 · 맞장구 4 · 상황음 5 = 22종)
- *   C. 음악   — 아직 트랙 없음. 지금은 A층의 낮은 패드가 대신한다 (확인 필요)
+ *   B. 민디 보이스 — 뜻 없는 음절 (기본 10 · 끝맺음 3 · 맞장구 4 · 상황음 5 = 22종)
+ *               v1.2: 청룡사 인형 변말(알아들을 수 없는 미니언즈식 말) 음성을 음절 하나씩 잘라 높여 쓴다.
+ *               a = 합창 목업(+2반음), b = 홍동지(+5반음). 한 음절씩 섞어 실제 낱말은 남지 않는다.
+ *               파일이 없으면 v1.1 합성 음절로 대신한다.
+ *   C. 음악   — v1.2: 예전 홈페이지(MineD_stage_v4, 8/22 Suno 곡, 2분 48초)를 바탕으로 3곡.
+ *               안개(P0~P2) = 원곡 전체, 등불(P3·P4·P9·P10) = 원곡 34~102초 구간을 먹먹하게,
+ *               열린 곳(P11·P12) = 원곡 106~150초 구간. 지하(P5~P8)는 설계대로 음악 없음.
+ *               파일을 못 불러오면 같은 조(F단조 5음 F·A♭·B♭·C·E♭, 76 BPM)로 코드가 대신 연주한다.
  *
  * 소리 출처
  *   - 합성: 이 파일 안에서 Web Audio 로 만든다. 외부 음원 없음.
@@ -61,6 +67,24 @@
     none: {}
   };
 
+  // ── C층 음악 ──────────────────────────────────────────
+  // 구역 → [곡, 음량]. 지하(P5~P8)는 없음, P13 설정은 바꾸지 않음
+  var ZONE_MUSIC = {
+    P0: ['fog', 0.55], P1: ['fog', 0.35], P2: ['fog', 0.35],
+    P3: ['hearth', 0.5], P4: ['hearth', 0.4], P9: ['hearth', 0.28], P10: ['hearth', 0.4],
+    P11: ['open', 0.4], P12: ['open', 0.5]
+  };
+  // 원곡 분석값: F단조 5음(F·A♭·B♭·C·E♭ = 0·3·5·7·10 반음), 약 76 BPM(한 박 0.79초). root: 으뜸음 Hz
+  // 아래 값은 파일을 못 불러올 때 코드가 대신 연주하는 설정
+  var MUSIC = {
+    fog: { name: '안개', root: 174.61, inst: ['bell'], notes: [1, 2], step: [1.58, 2.37], gap: [4.7, 7.1], oct: 2, drone: [0.5, 0.75], seed: 3 },
+    hearth: { name: '등불', root: 174.61, inst: ['pluck'], notes: [3, 5], step: [0.79, 0.79], gap: [3.16, 4.74], oct: 1, drone: [0.5], seed: 5 },
+    open: { name: '열린 곳', root: 207.65, inst: ['bell', 'pluck'], notes: [3, 4], step: [0.4, 0.79], gap: [2.37, 3.95], oct: 1, drone: [0.5, 0.75], seed: 9 }
+  };
+  // 예전 홈페이지 곡에서 만든 파일. 비우면 코드 연주만 쓴다
+  var MUSIC_FILES = { fog: 'mus_home.mp3', hearth: 'mus_hearth.mp3', open: 'mus_open.mp3' };
+  var SCALE = [0, 3, 5, 7, 10];
+
   // 겹쳐 뜨는 창이 열려 있는 동안 바탕 소리를 얼마나 낮출지. 관측소의 문은 가장 조용하게
   var OVERLAYS = { door: 0.35, help: 0.7, panel: 0.8, notice: 0.6 };
 
@@ -72,12 +96,18 @@
   };
 
   var FILES = {
+    voice_a: 'mindi_voice_a.wav',
+    voice_b: 'mindi_voice_b.wav',
     sea: 'amb_sea_waves.wav',
     room: 'amb_room_tone.wav',
     door: 'sfx_door_open.wav',
     step: 'sfx_step_wood.wav',
     step2: 'sfx_step_wood_2.wav'
   };
+
+  // 민디 목소리 음절 묶음: 파일 안 [시작 초, 길이 초]. 청룡사 E08 인형 목소리 오디션(260922)에서 잘라 냄
+  var VOICE_FILES = { a: 'mindi_voice_a.wav', b: 'mindi_voice_b.wav' };
+  var VOICE_UNITS = {"a": [[0.0, 0.27], [0.32, 0.26], [0.63, 0.31], [0.99, 0.17], [1.21, 0.15], [1.4099, 0.26], [1.7199, 0.34], [2.1099, 0.27], [2.4299, 0.23], [2.7099, 0.22], [2.9799, 0.31], [3.3399, 0.31], [3.6999, 0.19], [3.9399, 0.34], [4.3299, 0.17], [4.5499, 0.28], [4.8799, 0.28], [5.2099, 0.25]], "b": [[0.0, 0.25], [0.3, 0.33], [0.68, 0.34], [1.07, 0.33], [1.45, 0.34], [1.84, 0.29], [2.18, 0.15], [2.38, 0.24], [2.67, 0.28], [3.0, 0.18], [3.23, 0.22], [3.5, 0.33], [3.88, 0.34], [4.27, 0.28], [4.6, 0.3], [4.95, 0.34], [5.34, 0.28], [5.67, 0.33]]};
 
   // 민디 말투 4종 → 속도·음높이 고정값 (설계 v1 §1-6 rate_by_tone)
   var TONES = {
@@ -118,8 +148,9 @@
   var buffers = {}; // file key → AudioBuffer | 'loading' | 'failed'
   var state = {
     on: false, volume: 0.8, zone: null, env: 'sea', scene: 'lantern', depth: 0, moving: false, overlays: {},
-    reduced: false, base: 'audio/', listeners: []
+    reduced: false, music: true, voice: 'a', base: 'audio/', listeners: []
   };
+  var musBus = null, musNow = null, musTimer = null; // 지금 흐르는 곡 { key, gain, ... }
   var dripTimer = null, lanternTimer = null, depthAnim = null;
 
   function readStored() {
@@ -134,7 +165,7 @@
     }
   }
   function snapshot() {
-    return { on: state.on, volume: state.volume, zone: state.zone, env: state.env, scene: state.scene, depth: state.depth, moving: state.moving, overlays: Object.keys(state.overlays) };
+    return { on: state.on, volume: state.volume, music: state.music, voice: state.voice, musicTrack: musNow ? musNow.key : null, zone: state.zone, env: state.env, scene: state.scene, depth: state.depth, moving: state.moving, overlays: Object.keys(state.overlays) };
   }
   function lerp(a, b, t) { return a + (b - a) * t; }
   function clamp01(x) { return Math.max(0, Math.min(1, x)); }
@@ -177,6 +208,13 @@
     sfxBus = ac.createGain();
     sfxBus.connect(master);
     sfxBus.connect(revLong);
+
+    // 음악: 깊이 필터를 거치지 않는다. 긴 울림에 조금 보낸다
+    musBus = ac.createGain();
+    musBus.gain.value = 0;
+    musBus.connect(master);
+    var musSend = ac.createGain(); musSend.gain.value = 0.35;
+    musBus.connect(musSend); musSend.connect(revLong);
 
     applyDepth(state.depth, 0);
     return ac;
@@ -397,6 +435,7 @@
       out.drip = d > 0.3 ? 0.35 : 0;
     }
     if (state.moving) out.hum = 0.7;
+    if (out.pad && state.music && ZONE_MUSIC[state.zone]) out.pad *= 0.3; // 음악이 흐르면 임시 패드는 낮춘다
     var scale = (z.scale || 1) * (state.reduced ? 0.5 : 1);
     for (k in out) out[k] *= scale;
     return out;
@@ -412,7 +451,97 @@
       g.setValueAtTime(g.value, t);
       g.linearRampToValueAtTime(v, t + (sec == null ? 1.5 : sec));
     }
+    applyMusic(sec == null ? 2 : Math.max(sec, 1.5));
   }
+
+  // ── 음악 (C층) ─────────────────────────────────────────
+  function rng(seed) { var s = seed; return function () { s = (s * 16807) % 2147483647; return s / 2147483647; }; }
+  function between(r, a) { return a[0] + (a[1] - a[0]) * r(); }
+
+  function bell(t, f, peak, out) { // 종·편경에 가까운 소리: 비정수 배음 셋
+    [[1, 1, 3.6], [2.76, 0.35, 1.6], [5.4, 0.12, 0.7]].forEach(function (p) {
+      var o = ac.createOscillator(), g = env(t, peak * p[1], 0.01, p[2]);
+      o.type = 'sine'; o.frequency.value = f * p[0];
+      o.connect(g); g.connect(out); o.start(t); o.stop(t + p[2] + 0.1);
+    });
+  }
+  function pluck(t, f, peak, out) { // 뜯는 줄(가야금 느낌): 튕길 때 살짝 높았다 내려오고, 끝에 농현처럼 떨림
+    var o = ac.createOscillator(), o2 = ac.createOscillator(), lp = ac.createBiquadFilter(), g = env(t, peak, 0.006, 1.8),
+      vib = ac.createOscillator(), vg = ac.createGain();
+    o.type = 'triangle'; o2.type = 'sine';
+    o.frequency.setValueAtTime(f * 1.025, t); o.frequency.exponentialRampToValueAtTime(f, t + 0.09);
+    o2.frequency.value = f * 2;
+    vib.frequency.value = 5; vg.gain.setValueAtTime(0, t); vg.gain.linearRampToValueAtTime(f * 0.007, t + 0.7);
+    vib.connect(vg); vg.connect(o.frequency);
+    lp.type = 'lowpass'; lp.frequency.setValueAtTime(3200, t); lp.frequency.exponentialRampToValueAtTime(900, t + 1.2);
+    var g2 = ac.createGain(); g2.gain.value = 0.25;
+    o.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(out);
+    [o, o2, vib].forEach(function (x) { x.start(t); x.stop(t + 1.9); });
+  }
+
+  function startTrack(key) {
+    var m = MUSIC[key], g = ac.createGain(), r = rng(m.seed);
+    g.gain.value = 0; g.connect(musBus);
+    var tr = { key: key, gain: g, r: r, idx: 2, left: 0, next: ac.currentTime + 1.2, n: 0, stops: [], pending: !!MUSIC_FILES[key] };
+    if (MUSIC_FILES[key]) { // 곡 파일이 있으면 그걸 고리로 튼다. 못 불러오면 아래 코드 연주로 넘어간다
+      FILES['mus_' + key] = MUSIC_FILES[key];
+      load('mus_' + key).then(function (buf) {
+        tr.pending = false;
+        if (!buf || tr.dead) { tr.next = ac.currentTime + 0.3; return; }
+        var s = ac.createBufferSource(); s.buffer = buf; s.loop = true;
+        s.loopStart = 0.06; s.loopEnd = buf.duration - 0.06; // mp3 앞뒤 빈 틈을 건너뛰어 이음매가 들리지 않게
+        s.connect(g); s.start(ac.currentTime, 0.06);
+        tr.file = true; tr.stops.push(function () { s.stop(); });
+        dg.gain.value = 0; // 파일이 흐르면 바닥 지속음은 끈다
+      });
+    }
+    // 바닥 지속음: 으뜸음과 딸림음을 아주 작게, 느리게 숨 쉬듯
+    var dl = ac.createBiquadFilter(), dg = ac.createGain(), br = ac.createOscillator(), bg = ac.createGain();
+    dl.type = 'lowpass'; dl.frequency.value = 800; dg.gain.value = 0.05;
+    br.frequency.value = 0.06; bg.gain.value = 0.02; br.connect(bg); bg.connect(dg.gain);
+    dl.connect(dg); dg.connect(g); br.start();
+    var oscs = m.drone.map(function (mul) {
+      var o = ac.createOscillator(); o.type = 'sine'; o.frequency.value = m.root * mul; // 0.5 = 한 옥타브 아래 으뜸, 0.75 = 그 위 5도
+      o.connect(dl); o.start(); return o;
+    });
+    tr.stops.push(function () { oscs.forEach(function (o) { o.stop(); }); br.stop(); });
+    return tr;
+  }
+
+  function musicTick() {
+    var tr = musNow;
+    if (!ac || !tr || tr.file || tr.pending || !state.on) return;
+    var m = MUSIC[tr.key];
+    while (tr.next < ac.currentTime + 0.5) {
+      if (tr.left <= 0) { tr.left = Math.round(between(tr.r, m.notes)); } // 새 악구
+      var move = [-1, 1, 1, -1, 2, -2, 0][Math.floor(tr.r() * 7)];
+      tr.idx = Math.max(0, Math.min(9, tr.idx + move));
+      tr.left--;
+      if (tr.left === 0) tr.idx = tr.r() < 0.6 ? 5 : 3; // 악구 끝은 궁(으뜸) 또는 치(딸림)에 내려앉는다
+      var deg = tr.idx % 5, oc = Math.floor(tr.idx / 5) + (m.oct - 1);
+      var f = m.root * Math.pow(2, oc + SCALE[deg] / 12);
+      var inst = m.inst[tr.n++ % m.inst.length];
+      (inst === 'bell' ? bell : pluck)(tr.next, f, inst === 'bell' ? 0.09 : 0.13, tr.gain);
+      tr.next += tr.left === 0 ? between(tr.r, m.gap) : between(tr.r, m.step);
+    }
+  }
+
+  function applyMusic(sec) {
+    if (!ac || !musBus) return;
+    var z = ZONES[state.zone] || {};
+    if (z.keep) { ramp(musBus.gain, musicLevel(), ac.currentTime, 0.5); return; } // 설정 창: 곡은 그대로, 낮추기만
+    var zm = ZONE_MUSIC[state.zone], key = state.music && zm ? zm[0] : null, t = ac.currentTime, T = sec == null ? 2 : sec;
+    if (musNow && musNow.key !== key) { // 이전 곡은 천천히 사라진다
+      var old = musNow; old.dead = true; ramp(old.gain.gain, 0, t, T);
+      setTimeout(function () { old.stops.forEach(function (f) { try { f(); } catch (e) { /* 이미 멈춤 */ } }); old.gain.disconnect(); }, (T + 4) * 1000);
+      musNow = null;
+    }
+    if (key && !musNow) musNow = startTrack(key);
+    if (musNow) ramp(musNow.gain.gain, zm[1], t, T);
+    ramp(musBus.gain, musicLevel(), t, 0.5);
+    if (!musTimer) musTimer = setInterval(musicTick, 150);
+  }
+  function musicLevel() { return (state.music ? 1 : 0) * duckFactor() * (state.reduced ? 0.5 : 1); }
 
   function applyDepth(d, sec) {
     if (!ac) return;
@@ -513,7 +642,29 @@
   }
 
   // ── 민디 보이스 ─────────────────────────────────────────
+  // 인형 변말 음절을 이어 붙인다. 고르는 순서는 음절 표의 값으로 정해져 같은 말은 늘 같은 소리
+  function voiceSyllables(list, t, tone_, buf, units) {
+    var tn = TONES[tone_] || TONES.quiet;
+    for (var i = 0; i < list.length; i++) {
+      var s = list[i], u = units[(i * 7 + Math.round(s[0] / 10)) % units.length];
+      var rate = Math.max(0.8, Math.min(1.3, tn.pitch * s[0] / 470)), r1 = Math.max(0.75, Math.min(1.45, rate * s[1] / s[0]));
+      var dur = Math.min(u[1], 0.12 + s[2] * 1.6) / rate / tn.rate * 1.05;
+      var src = ac.createBufferSource(), g = ac.createGain();
+      src.buffer = buf;
+      src.playbackRate.setValueAtTime(rate, t);
+      src.playbackRate.linearRampToValueAtTime(r1, t + dur); // 올림·내림 끝맺음
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.9, t + 0.012);
+      g.gain.setValueAtTime(0.9, t + dur - 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(g); g.connect(sfxBus); src.start(t, u[0], dur * rate + 0.02); src.stop(t + dur + 0.02);
+      t += dur + 0.02 / tn.rate;
+    }
+    return t;
+  }
+
   function syllables(list, t, tone_, out) {
+    var vk = state.voice, vb = VOICE_FILES[vk] && buffers['voice_' + vk];
+    if (vb && vb.getChannelData) return voiceSyllables(list, t, tone_, vb, VOICE_UNITS[vk]);
+    if (VOICE_FILES[vk] && !vb) load('voice_' + vk); // 다음 말부터 인형 목소리. 첫 말은 합성음
     var tn = TONES[tone_] || TONES.quiet;
     for (var i = 0; i < list.length; i++) {
       var s = list[i], dur = s[2] / tn.rate;
@@ -556,6 +707,7 @@
     if (!ensureContext()) return false;
     if (ac.state === 'suspended') ac.resume();
     state.on = true; writeStored(true);
+    if (VOICE_FILES[state.voice]) load('voice_' + state.voice); // 민디 목소리 미리 불러오기
     ramp(master.gain, state.volume, ac.currentTime, 0.6);
     applyDepth(state.depth, 0);
     applyLevels(1.2);
@@ -572,7 +724,7 @@
   }
 
   var api = {
-    version: '1.1.0',
+    version: '1.2.0',
     zones: ZONES,
     envs: Object.keys(ENVS),
     scenes: Object.keys(SCENES),
@@ -580,6 +732,8 @@
     sfxNames: Object.keys(SFX).filter(function (k) { return k.charAt(0) !== '_'; }),
     reactNames: Object.keys(SYL_REACT),
     cueNames: Object.keys(SYL_EVENT),
+    music: MUSIC,
+    zoneMusic: ZONE_MUSIC,
 
     /** 처음 한 번. base: audio 폴더 경로. 저장된 켜짐 상태는 다음 클릭 때 enable() 로 살린다 */
     init: function (opts) {
@@ -597,6 +751,10 @@
     isOn: function () { return state.on; },
     setVolume: function (v) { state.volume = clamp01(v); if (ac && state.on) ramp(master.gain, state.volume, ac.currentTime, 0.2); emit(); },
     /** 연출 줄이기(설정 7번)와 함께 쓰면 바탕 소리를 절반으로 */
+    /** 음악(C층)만 켜고 끈다. 바탕 소리·효과음은 그대로 */
+    /** 민디 목소리: 'a' 합창 목업 · 'b' 홍동지 · 'synth' 합성 음절 */
+    setVoice: function (v) { if (v === 'synth' || VOICE_FILES[v]) { state.voice = v; if (ac && VOICE_FILES[v]) load('voice_' + v); emit(); } },
+    setMusic: function (v) { state.music = !!v; applyMusic(1.2); emit(); },
     setReduced: function (v) { state.reduced = !!v; applyLevels(0.6); emit(); },
 
     /** 구역 바꾸기. id: 'P0'~'P13'. P13(설정)은 바탕 소리를 그대로 둔다 */
@@ -618,7 +776,7 @@
      *  열면 바탕 소리를 낮추고 panel_open, 닫으면 되돌리고 panel_close. 관측소의 문은 문 소리 없이 조용히만 낮춘다 */
     overlay: function (kind, open) {
       if (open) state.overlays[kind] = 1; else delete state.overlays[kind];
-      if (ac) applyDepth(state.depth, 0.5);
+      if (ac) { applyDepth(state.depth, 0.5); applyMusic(); }
       if (kind !== 'door' && kind !== 'notice') api.sfx(open ? 'panel_open' : 'panel_close');
       emit();
     },

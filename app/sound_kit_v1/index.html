@@ -93,12 +93,13 @@ button.play { padding: 2px 10px; font-size: .8rem; }
 
 <div class="wrap">
   <header>
-    <p class="label">MINE D · 사운드 키트 v1.1 · 2026-10-23</p>
+    <p class="label">MINE D · 사운드 키트 v1.2 · 2026-10-23</p>
     <h1>구역마다 어울리는 소리</h1>
     <p class="muted" style="max-width:65ch">화면 구역(P0~P13)을 누르면 그 자리의 바탕 소리로 바뀝니다. 아래 효과음과 민디 목소리는 버튼 하나로 들어 볼 수 있습니다. 브라우저 규칙상 첫 소리는 「소리 켜기」를 눌러야 납니다.</p>
     <div class="bar">
       <button id="power" type="button" aria-pressed="false">소리 켜기</button>
       <label class="bar" style="gap:8px">음량 <input id="vol" type="range" min="0" max="1" step="0.05" value="0.8"></label>
+      <button id="music" type="button" aria-pressed="true">음악 켜짐</button>
       <span class="now" id="now">꺼짐</span>
     </div>
     <p class="rule">소리는 사용자가 <b>어디에 있는지</b>에만 반응합니다. 기록 내용(힘들었던 주, 광석 종류·등급)으로 소리를 바꾸지 않습니다. 모든 광석은 같은 「쨍」입니다.</p>
@@ -130,9 +131,13 @@ button.play { padding: 2px 10px; font-size: .8rem; }
 
   <section aria-labelledby="h-mindi" class="mindi">
     <h2 id="h-mindi">민디 목소리 (뜻 없는 음절)</h2>
+    <p class="muted" style="font-size:.85rem">청룡사 인형 목소리 오디션(9/22)의 알아들을 수 없는 변말을 음절 하나씩 잘라 높였습니다. 음절을 섞어 쓰므로 실제 낱말은 남지 않습니다. 대사 내용은 말풍선 자막으로 보여 줍니다.</p>
     <div class="ctrl">
       <label for="tone">말투
         <select id="tone"><option value="quiet">조용한</option><option value="warm">다정한</option><option value="plain">담백한</option><option value="dry">시니컬한</option></select>
+      </label>
+      <label for="voice">목소리
+        <select id="voice"><option value="a">a · 인형 변말 (합창, +2반음)</option><option value="b">b · 인형 변말 (홍동지, +5반음)</option><option value="synth">합성 음절 (v1.1)</option></select>
       </label>
       <button id="say" type="button">말풍선 소리 내기</button>
     </div>
@@ -152,7 +157,7 @@ button.play { padding: 2px 10px; font-size: .8rem; }
 
   <section aria-labelledby="h-check">
     <h2 id="h-check">빠짐 점검표 · 화면·하위 창·버튼·상태 전환 <span id="ckcount"></span></h2>
-    <p class="muted" style="font-size:.85rem">바탕: 화면설계 v6 · 버튼배치 확정 v1 · 튜토리얼 v1.1 · 전체 사이트맵 v1. 「v1.1」은 이번 점검에서 채운 소리, 「무음(의도)」는 일부러 소리를 두지 않은 곳입니다. ▶로 바로 들어 볼 수 있습니다.</p>
+    <p class="muted" style="font-size:.85rem">바탕: 화면설계 v6 · 버튼배치 확정 v1 · 튜토리얼 v1.1 · 전체 사이트맵 v1. 「v1.1」은 빠짐 점검에서 채운 소리, 「v1.2」는 음악, 「무음(의도)」는 일부러 소리를 두지 않은 곳입니다. ▶로 바로 들어 볼 수 있습니다.</p>
     <div class="chips" id="ckfilter"></div>
     <div class="tablebox"><table>
       <thead><tr><th>화면</th><th>항목</th><th>소리</th><th>근거</th><th>상태</th><th></th></tr></thead>
@@ -184,10 +189,12 @@ MineDSound.say(bubbleText, { tone: 'quiet' });
 MineDSound.setZone('P12', { env: 'sea' });  // sea | mountain | sky | jungle | room | none
 MineDSound.setScene('rain');               // P3 관측소 바탕: lantern | rain | wind | none
 MineDSound.overlay('help', true);          // ?-안내 · 문-창(door) · 하위 창(panel) · 첫 대화 고지(notice)
-MineDSound.overlay('help', false);</pre>
+MineDSound.overlay('help', false);
+MineDSound.setMusic(false);                // 음악만 끄기
+MineDSound.setVoice('b');                  // 민디 목소리 a | b | synth</pre>
   </section>
 
-  <footer>합성음은 모두 mined-sound.js 안에서 만듭니다(외부 음원 없음). 파일 소리 4종(파도·방·문·나무 발소리)은 10/3 섬 영상 C02~C05 원음에서 잘라 냈고, 파일이 없으면 합성음으로 대신합니다. 음악 트랙(C층)은 아직 없습니다.</footer>
+  <footer>음악 3곡은 예전 홈페이지(MineD_stage_v4)에 쓰던 8/22 Suno 곡에서 만들었습니다(안개 = 전체, 등불 = 34~102초를 먹먹하게, 열린 곳 = 106~150초). 민디 목소리는 청룡사 인형 목소리 오디션 음성에서 음절을 잘라 썼습니다. 파일 소리 4종(파도·방·문·나무 발소리)은 10/3 섬 영상 원음입니다. 나머지 효과음은 mined-sound.js 안에서 합성하며, 파일이 없으면 합성음으로 대신합니다.</footer>
 </div>
 
 <script src="mined-sound.js"></script>
@@ -274,7 +281,7 @@ MineDSound.overlay('help', false);</pre>
     rows.appendChild(tr);
   });
 
-  var CK = [["전역", "레일 주 메뉴 4개 (관측소·민디·나의 공간·설정)", "sfx:tap", "v6 §5", "v1"], ["전역", "좌상단 ‹ 뒤로 가기", "sfx:back", "v6 §5", "v1"], ["전역", "우상단 [?] → ?-안내 창 열기·닫기", "overlay:help", "사이트맵 §3", "v1.1"], ["전역", "우상단 [⚙] → P13 설정", "sfx:tap", "v6 §5", "v1"], ["전역", "우상단 [관측소의 문] → 문-창 (바탕 35%로 낮춤, 효과음 없음)", "overlay:door", "사이트맵 §3", "v1.1"], ["전역", "문-창 「지금 나가기」", "sfx:back", "사이트맵 §4", "v1.1"], ["전역", "소리 켜기·끄기 (P13-7 · 관측소 좌상단)", "toggle", "v6 P13", "v1"], ["전역", "연출 줄이기 → 바탕 소리 절반", "reduced", "v6 P13", "v1"], ["전역", "마우스 올리기·툴팁", "none", "v6 P3", "무음(의도)"], ["P0", "바탕: 안개 바람 + 낮은 패드", "zone:P0", "설계 v1 §1-5", "v1"], ["P0", "안내 카드 4장 넘김", "sfx:card", "v6 P0", "v1.1"], ["P0", "카드 [건너뛰기]", "sfx:back", "튜토리얼 0-1", "v1.1"], ["P0", "ENTER", "sfx:door", "버튼배치 §3", "v1"], ["P0", "ENTER 뒤 안개 걷힘", "sfx:fog_clear", "v6 P0", "v1.1"], ["P0", "QUIT", "sfx:back", "v6 P0", "v1.1"], ["P1", "바탕: 안개 (작게)", "zone:P1", "—", "v1"], ["P1", "「내 기록으로 시작」 「샘플로 둘러보기」", "sfx:tap", "v6 P1", "v1"], ["P1", "샘플 데이터 띠 「나가기」", "sfx:back", "v6 P1", "v1.1"], ["P2", "바탕: 안개 (작게)", "zone:P2", "—", "v1"], ["P2", "자동 연결 스위치 켜기", "sfx:toggle_on", "v6 P2", "v1.1"], ["P2", "자동 연결 스위치 끄기 · 모두 끄기", "sfx:toggle_off", "v6 P2", "v1.1"], ["P2", "P2-a 파일 올리기 창 열기·닫기", "overlay:panel", "사이트맵 §4", "v1.1"], ["P2", "가져오기 완료 · 관측소로 가기", "sfx:confirm", "v6 P2", "v1"], ["P2", "나중에 연결", "sfx:back", "버튼배치 §3", "v1.1"], ["P3", "바탕: 고른 장면 (등불·비·바람·소리 없음)", "zone:P3", "v6 P3", "v1.1"], ["P3", "좌상단 배경·소리 바꾸기 → 비", "scene:rain", "v6 P3", "v1.1"], ["P3", "좌상단 배경·소리 바꾸기 → 바람", "scene:wind", "v6 P3", "v1.1"], ["P3", "좌상단 배경·소리 바꾸기 → 등불(기본)", "scene:lantern", "v6 P3", "v1.1"], ["P3", "첫 방문: 민디가 굴에서 걸어 나옴", "sfx:mindi_steps", "v6 P3 · 튜토리얼 3-1", "v1.1"], ["P3", "첫 방문: 민디 인사", "cue:hello", "튜토리얼 3-1", "v1"], ["P3", "오늘의 한 마디 말풍선", "say", "v6 P3", "v1"], ["P3", "말풍선 × 닫기", "sfx:close", "v6 P3", "v1.1"], ["P3", "호칭 칩 고르기 · 직접 쓰기", "sfx:tap", "튜토리얼 3-3", "v1"], ["P3", "호칭 「다시 꺼내 보기 ↻」", "sfx:shuffle", "튜토리얼 3-3", "v1.1"], ["P3", "기능 버튼 Ⓐ→Ⓔ 차례로 나타남 (T1)", "sfx:appear", "튜토리얼 3-5b", "v1.1"], ["P3", "기능 버튼 Ⓐ Ⓑ Ⓒ Ⓓ 누름", "sfx:tap", "v6 P3", "v1"], ["P3", "Ⓔ 나의 공간 잠김 (1/3)", "sfx:locked", "v6 P3", "v1.1"], ["P3", "튜토리얼 등불 비춤", "sfx:spotlight", "튜토리얼 §4", "v1.1"], ["P3", "튜토리얼 안내띠 ⓘ", "none", "튜토리얼 §4", "무음(의도)"], ["P4", "바탕: 관측소와 같음", "zone:P4", "—", "v1"], ["P4", "날짜 ‹ ›", "sfx:floor_tick", "v6 P4", "v1.1"], ["P4", "P4-a 달력 열기·닫기", "overlay:panel", "사이트맵 §4", "v1.1"], ["P4", "비슷한 주 찾기 · 지층에서 보기", "sfx:confirm", "v6 P4", "v1"], ["P4", "⋯ 이 기간 숨기기", "sfx:hide", "v6 P4", "v1.1"], ["P5", "출발 덜컹 → 기계음·깊이 이동 → 도착 종", "descend", "v6 P5", "v1"], ["P5", "층 표시기 ▲▼ · 층 고르기", "sfx:floor_tick", "버튼배치 §1-3", "v1.1"], ["P5", "「○○년으로 내려간다」", "sfx:confirm", "v6 P5", "v1"], ["P5", "「돌아가기」", "sfx:back", "v6 P5", "v1"], ["P5", "민디 기다림", "cue:wait", "—", "v1"], ["P5", "연출 줄이기 켜면 하강 없이 바로 전환", "reduced", "v6 P5", "v1"], ["P6", "바탕: 깊이에 따라 바람↓ 저주파·물방울↑", "zone:P6", "설계 v1 §1-2", "v1"], ["P6", "◁ 연도 ▷ 넘김", "sfx:floor_tick", "v6 P6", "v1.1"], ["P6", "광석 있는 층 (민디 찾았다)", "cue:found", "—", "v1"], ["P6", "광석 말풍선 「캐기」 · 「이 주 고르기」", "sfx:confirm", "버튼배치 §3", "v1"], ["P7", "곡괭이 3번 (연출 줄이기면 1번)", "sfx:pick", "v6 P7", "v1"], ["P7", "깨짐 「쨍」 (모든 광석 같은 소리)", "sfx:ore_crack", "설계 v1 §1-5", "v1"], ["P7", "민디 탭마다 한 줄 · 캐기 성공", "cue:mined", "튜토리얼 7-2", "v1"], ["P7", "관측소로 가져가기 (역방향: 위로 올라감)", "ascend", "v6 P7", "v1.1"], ["P7", "여기서 바로 보기", "sfx:confirm", "v6 P7", "v1"], ["P8", "바탕: 지층 소리 70%", "zone:P8", "—", "v1"], ["P8", "민디 해설 말풍선", "say", "v6 P8", "v1"], ["P8", "P8-a 광석 읽는 법 카드", "overlay:panel", "사이트맵 §3", "v1.1"], ["P8", "빛점 누름 → P8-b 그날 기록", "sfx:glint", "사이트맵 §3", "v1.1"], ["P8", "VIBE 네 버튼 → P8-c 근거 펼침", "overlay:panel", "사이트맵 §3", "v1.1"], ["P8", "P8-d 이름 붙이기 · 예시 「다시 꺼내 보기 ↻」", "sfx:shuffle", "사이트맵 §3", "v1.1"], ["P8", "이름 저장", "sfx:name_save", "설계 v1 §4", "v1"], ["P8", "이름 「그대로 두기」", "sfx:close", "사이트맵 §3", "v1.1"], ["P8", "⋯ 이 주 숨기기", "sfx:hide", "사이트맵 §3", "v1.1"], ["P8", "보관함에 넣기", "sfx:keep", "—", "v1"], ["P8", "입력창 보내기 → P9", "sfx:send", "v6 P8", "v1.1"], ["P8", "‹ 되돌아가기 (관측소 / Quit / ★나의 공간)", "sfx:back", "v6 P8", "v1"], ["P9", "바탕: 고른 장면 55%", "zone:P9", "—", "v1"], ["P9", "첫 대화 고지 (바탕 60%로 낮춤, 효과음 없음)", "overlay:notice", "튜토리얼 5-5", "v1.1"], ["P9", "「설명 듣기 | 이야기 나누기」", "sfx:tap", "v6 P9", "v1"], ["P9", "보내기", "sfx:send", "v6 P9", "v1.1"], ["P9", "민디 답마다", "say", "v6 P9", "v1"], ["P9", "맞장구", "react:eung", "설계 v1 §1-4", "v1"], ["P9", "근거 보기 ▸ → P9-a 근거 패널", "overlay:panel", "v6 P9", "v1.1"], ["P9", "「민디가 이것을 기억했어요」", "sfx:memory_note", "v6 P9", "v1.1"], ["P9", "P9-b 기억 지우기 · 「함께 보는 기록」 칩 ×", "sfx:erase", "v6 P9", "v1.1"], ["P10", "바탕: 고른 장면 75%", "zone:P10", "—", "v1"], ["P10", "필터 연도·지표", "sfx:tap", "v6 P10", "v1"], ["P10", "광석 칸 → P8", "sfx:tap", "v6 P10", "v1"], ["P10", "나의 공간 보기 2/3 (잠김)", "sfx:locked", "버튼배치 §3", "v1.1"], ["P11", "바탕: 고른 환경 미리 듣기 60%", "zone:P11", "v6 P11", "v1"], ["P11", "환경 카드: 바다", "env:sea", "v6 P11", "v1"], ["P11", "환경 카드: 산", "env:mountain", "v6 P11", "v1.1"], ["P11", "환경 카드: 하늘", "env:sky", "v6 P11", "v1.1"], ["P11", "환경 카드: 정글", "env:jungle", "v6 P11", "v1.1"], ["P11", "환경 카드: 작은 방", "env:room", "v6 P11", "v1"], ["P11", "단어 고르기 · 직접 쓰기 · 이전/다음", "sfx:tap", "v6 P11", "v1"], ["P11", "다른 단어 보기 ↻", "sfx:shuffle", "v6 P11", "v1.1"], ["P11", "이름 붙이기", "sfx:name_save", "v6 P11", "v1"], ["P11", "⑤ 안개가 걷히며 열림", "sfx:fog_clear", "v6 P11", "v1.1"], ["P11", "열림 종", "sfx:space_open", "—", "v1"], ["P12", "바탕: 고른 환경", "zone:P12", "v6 P12", "v1"], ["P12", "「내려다보기 | 걸어 보기」", "sfx:tap", "v6 P12", "v1"], ["P12", "걷기", "sfx:step", "v6 P12", "v1"], ["P12", "소품 놓기", "sfx:keep", "v6 P12", "v1"], ["P12", "기억 바로가기 (화분·앨범·메모·창문)", "overlay:panel", "v6 P12", "v1.1"], ["P12", "꾸밀 자리 생김 (안개 한 겹 걷힘)", "sfx:fog_clear", "v6 P12", "v1.1"], ["P12", "‹ 나가기 → P3", "sfx:back", "v6 P12", "v1"], ["P13", "바탕: 바꾸지 않음", "zone:P13", "—", "v1"], ["P13", "스위치 켜기·끄기", "sfx:toggle_on", "v6 P13", "v1.1"], ["P13", "말투 고르기 → 그 말투로 맞장구 미리 듣기", "react:eung", "v6 P13-2", "v1.1"], ["P13", "삭제 · 모두 지우기 · 계정 삭제 (확인 뒤)", "sfx:erase", "v6 P13", "v1.1"], ["P13", "내려받기", "sfx:confirm", "v6 P13", "v1.1"]];
+  var CK = [["전역", "레일 주 메뉴 4개 (관측소·민디·나의 공간·설정)", "sfx:tap", "v6 §5", "v1"], ["전역", "좌상단 ‹ 뒤로 가기", "sfx:back", "v6 §5", "v1"], ["전역", "우상단 [?] → ?-안내 창 열기·닫기", "overlay:help", "사이트맵 §3", "v1.1"], ["전역", "우상단 [⚙] → P13 설정", "sfx:tap", "v6 §5", "v1"], ["전역", "우상단 [관측소의 문] → 문-창 (바탕 35%로 낮춤, 효과음 없음)", "overlay:door", "사이트맵 §3", "v1.1"], ["전역", "문-창 「지금 나가기」", "sfx:back", "사이트맵 §4", "v1.1"], ["전역", "소리 켜기·끄기 (P13-7 · 관측소 좌상단)", "toggle", "v6 P13", "v1"], ["전역", "연출 줄이기 → 바탕 소리 절반", "reduced", "v6 P13", "v1"], ["전역", "마우스 올리기·툴팁", "none", "v6 P3", "무음(의도)"], ["P0", "바탕: 안개 바람 + 낮은 패드", "zone:P0", "설계 v1 §1-5", "v1"], ["P0", "음악: 안개 (종, 드문드문)", "music:P0", "설계 v1 §1 C층", "v1.2"], ["P0", "안내 카드 4장 넘김", "sfx:card", "v6 P0", "v1.1"], ["P0", "카드 [건너뛰기]", "sfx:back", "튜토리얼 0-1", "v1.1"], ["P0", "ENTER", "sfx:door", "버튼배치 §3", "v1"], ["P0", "ENTER 뒤 안개 걷힘", "sfx:fog_clear", "v6 P0", "v1.1"], ["P0", "QUIT", "sfx:back", "v6 P0", "v1.1"], ["P1", "바탕: 안개 (작게)", "zone:P1", "—", "v1"], ["P1", "음악: 안개 (작게)", "music:P1", "설계 v1 §1 C층", "v1.2"], ["P1", "「내 기록으로 시작」 「샘플로 둘러보기」", "sfx:tap", "v6 P1", "v1"], ["P1", "샘플 데이터 띠 「나가기」", "sfx:back", "v6 P1", "v1.1"], ["P2", "바탕: 안개 (작게)", "zone:P2", "—", "v1"], ["P2", "음악: 안개 (작게)", "music:P2", "설계 v1 §1 C층", "v1.2"], ["P2", "자동 연결 스위치 켜기", "sfx:toggle_on", "v6 P2", "v1.1"], ["P2", "자동 연결 스위치 끄기 · 모두 끄기", "sfx:toggle_off", "v6 P2", "v1.1"], ["P2", "P2-a 파일 올리기 창 열기·닫기", "overlay:panel", "사이트맵 §4", "v1.1"], ["P2", "가져오기 완료 · 관측소로 가기", "sfx:confirm", "v6 P2", "v1"], ["P2", "나중에 연결", "sfx:back", "버튼배치 §3", "v1.1"], ["P3", "바탕: 고른 장면 (등불·비·바람·소리 없음)", "zone:P3", "v6 P3", "v1.1"], ["P3", "음악: 등불 (뜯는 줄)", "music:P3", "설계 v1 §1 C층", "v1.2"], ["P3", "좌상단 배경·소리 바꾸기 → 비", "scene:rain", "v6 P3", "v1.1"], ["P3", "좌상단 배경·소리 바꾸기 → 바람", "scene:wind", "v6 P3", "v1.1"], ["P3", "좌상단 배경·소리 바꾸기 → 등불(기본)", "scene:lantern", "v6 P3", "v1.1"], ["P3", "첫 방문: 민디가 굴에서 걸어 나옴", "sfx:mindi_steps", "v6 P3 · 튜토리얼 3-1", "v1.1"], ["P3", "첫 방문: 민디 인사", "cue:hello", "튜토리얼 3-1", "v1"], ["P3", "오늘의 한 마디 말풍선", "say", "v6 P3", "v1"], ["P3", "말풍선 × 닫기", "sfx:close", "v6 P3", "v1.1"], ["P3", "호칭 칩 고르기 · 직접 쓰기", "sfx:tap", "튜토리얼 3-3", "v1"], ["P3", "호칭 「다시 꺼내 보기 ↻」", "sfx:shuffle", "튜토리얼 3-3", "v1.1"], ["P3", "기능 버튼 Ⓐ→Ⓔ 차례로 나타남 (T1)", "sfx:appear", "튜토리얼 3-5b", "v1.1"], ["P3", "기능 버튼 Ⓐ Ⓑ Ⓒ Ⓓ 누름", "sfx:tap", "v6 P3", "v1"], ["P3", "Ⓔ 나의 공간 잠김 (1/3)", "sfx:locked", "v6 P3", "v1.1"], ["P3", "튜토리얼 등불 비춤", "sfx:spotlight", "튜토리얼 §4", "v1.1"], ["P3", "튜토리얼 안내띠 ⓘ", "none", "튜토리얼 §4", "무음(의도)"], ["P4", "바탕: 관측소와 같음", "zone:P4", "—", "v1"], ["P4", "음악: 등불 (작게)", "music:P4", "설계 v1 §1 C층", "v1.2"], ["P4", "날짜 ‹ ›", "sfx:floor_tick", "v6 P4", "v1.1"], ["P4", "P4-a 달력 열기·닫기", "overlay:panel", "사이트맵 §4", "v1.1"], ["P4", "비슷한 주 찾기 · 지층에서 보기", "sfx:confirm", "v6 P4", "v1"], ["P4", "⋯ 이 기간 숨기기", "sfx:hide", "v6 P4", "v1.1"], ["P5", "출발 덜컹 → 기계음·깊이 이동 → 도착 종", "descend", "v6 P5", "v1"], ["P5", "음악 없음 (지하는 소리만)", "none", "v6 P6 「음악 없음」", "무음(의도)"], ["P5", "층 표시기 ▲▼ · 층 고르기", "sfx:floor_tick", "버튼배치 §1-3", "v1.1"], ["P5", "「○○년으로 내려간다」", "sfx:confirm", "v6 P5", "v1"], ["P5", "「돌아가기」", "sfx:back", "v6 P5", "v1"], ["P5", "민디 기다림", "cue:wait", "—", "v1"], ["P5", "연출 줄이기 켜면 하강 없이 바로 전환", "reduced", "v6 P5", "v1"], ["P6", "바탕: 깊이에 따라 바람↓ 저주파·물방울↑", "zone:P6", "설계 v1 §1-2", "v1"], ["P6", "◁ 연도 ▷ 넘김", "sfx:floor_tick", "v6 P6", "v1.1"], ["P6", "광석 있는 층 (민디 찾았다)", "cue:found", "—", "v1"], ["P6", "광석 말풍선 「캐기」 · 「이 주 고르기」", "sfx:confirm", "버튼배치 §3", "v1"], ["P7", "곡괭이 3번 (연출 줄이기면 1번)", "sfx:pick", "v6 P7", "v1"], ["P7", "깨짐 「쨍」 (모든 광석 같은 소리)", "sfx:ore_crack", "설계 v1 §1-5", "v1"], ["P7", "민디 탭마다 한 줄 · 캐기 성공", "cue:mined", "튜토리얼 7-2", "v1"], ["P7", "관측소로 가져가기 (역방향: 위로 올라감)", "ascend", "v6 P7", "v1.1"], ["P7", "여기서 바로 보기", "sfx:confirm", "v6 P7", "v1"], ["P8", "바탕: 지층 소리 70%", "zone:P8", "—", "v1"], ["P8", "민디 해설 말풍선", "say", "v6 P8", "v1"], ["P8", "P8-a 광석 읽는 법 카드", "overlay:panel", "사이트맵 §3", "v1.1"], ["P8", "빛점 누름 → P8-b 그날 기록", "sfx:glint", "사이트맵 §3", "v1.1"], ["P8", "VIBE 네 버튼 → P8-c 근거 펼침", "overlay:panel", "사이트맵 §3", "v1.1"], ["P8", "P8-d 이름 붙이기 · 예시 「다시 꺼내 보기 ↻」", "sfx:shuffle", "사이트맵 §3", "v1.1"], ["P8", "이름 저장", "sfx:name_save", "설계 v1 §4", "v1"], ["P8", "이름 「그대로 두기」", "sfx:close", "사이트맵 §3", "v1.1"], ["P8", "⋯ 이 주 숨기기", "sfx:hide", "사이트맵 §3", "v1.1"], ["P8", "보관함에 넣기", "sfx:keep", "—", "v1"], ["P8", "입력창 보내기 → P9", "sfx:send", "v6 P8", "v1.1"], ["P8", "‹ 되돌아가기 (관측소 / Quit / ★나의 공간)", "sfx:back", "v6 P8", "v1"], ["P9", "바탕: 고른 장면 55%", "zone:P9", "—", "v1"], ["P9", "음악: 등불 (대화 방해 않게 아주 작게)", "music:P9", "설계 v1 §1 C층", "v1.2"], ["P9", "첫 대화 고지 (바탕 60%로 낮춤, 효과음 없음)", "overlay:notice", "튜토리얼 5-5", "v1.1"], ["P9", "「설명 듣기 | 이야기 나누기」", "sfx:tap", "v6 P9", "v1"], ["P9", "보내기", "sfx:send", "v6 P9", "v1.1"], ["P9", "민디 답마다", "say", "v6 P9", "v1"], ["P9", "맞장구", "react:eung", "설계 v1 §1-4", "v1"], ["P9", "근거 보기 ▸ → P9-a 근거 패널", "overlay:panel", "v6 P9", "v1.1"], ["P9", "「민디가 이것을 기억했어요」", "sfx:memory_note", "v6 P9", "v1.1"], ["P9", "P9-b 기억 지우기 · 「함께 보는 기록」 칩 ×", "sfx:erase", "v6 P9", "v1.1"], ["P10", "바탕: 고른 장면 75%", "zone:P10", "—", "v1"], ["P10", "음악: 등불 (작게)", "music:P10", "설계 v1 §1 C층", "v1.2"], ["P10", "필터 연도·지표", "sfx:tap", "v6 P10", "v1"], ["P10", "광석 칸 → P8", "sfx:tap", "v6 P10", "v1"], ["P10", "나의 공간 보기 2/3 (잠김)", "sfx:locked", "버튼배치 §3", "v1.1"], ["P11", "바탕: 고른 환경 미리 듣기 60%", "zone:P11", "v6 P11", "v1"], ["P11", "음악: 열린 곳 (종 + 줄)", "music:P11", "설계 v1 §1 C층", "v1.2"], ["P11", "환경 카드: 바다", "env:sea", "v6 P11", "v1"], ["P11", "환경 카드: 산", "env:mountain", "v6 P11", "v1.1"], ["P11", "환경 카드: 하늘", "env:sky", "v6 P11", "v1.1"], ["P11", "환경 카드: 정글", "env:jungle", "v6 P11", "v1.1"], ["P11", "환경 카드: 작은 방", "env:room", "v6 P11", "v1"], ["P11", "단어 고르기 · 직접 쓰기 · 이전/다음", "sfx:tap", "v6 P11", "v1"], ["P11", "다른 단어 보기 ↻", "sfx:shuffle", "v6 P11", "v1.1"], ["P11", "이름 붙이기", "sfx:name_save", "v6 P11", "v1"], ["P11", "⑤ 안개가 걷히며 열림", "sfx:fog_clear", "v6 P11", "v1.1"], ["P11", "열림 종", "sfx:space_open", "—", "v1"], ["P12", "바탕: 고른 환경", "zone:P12", "v6 P12", "v1"], ["P12", "음악: 열린 곳", "music:P12", "설계 v1 §1 C층", "v1.2"], ["P12", "「내려다보기 | 걸어 보기」", "sfx:tap", "v6 P12", "v1"], ["P12", "걷기", "sfx:step", "v6 P12", "v1"], ["P12", "소품 놓기", "sfx:keep", "v6 P12", "v1"], ["P12", "기억 바로가기 (화분·앨범·메모·창문)", "overlay:panel", "v6 P12", "v1.1"], ["P12", "꾸밀 자리 생김 (안개 한 겹 걷힘)", "sfx:fog_clear", "v6 P12", "v1.1"], ["P12", "‹ 나가기 → P3", "sfx:back", "v6 P12", "v1"], ["P13", "바탕: 바꾸지 않음", "zone:P13", "—", "v1"], ["P13", "음악: 그대로 두고 낮추기만", "none", "설계 v1 §1 C층", "무음(의도)"], ["P13", "스위치 켜기·끄기", "sfx:toggle_on", "v6 P13", "v1.1"], ["P13", "말투 고르기 → 그 말투로 맞장구 미리 듣기", "react:eung", "v6 P13-2", "v1.1"], ["P13", "삭제 · 모두 지우기 · 계정 삭제 (확인 뒤)", "sfx:erase", "v6 P13", "v1.1"], ["P13", "내려받기", "sfx:confirm", "v6 P13", "v1.1"]];
   var OV_KO = { door: '문-창', help: '?-안내', panel: '하위 창', notice: '첫 대화 고지' };
   var ovs = $('ovs');
   Object.keys(OV_KO).forEach(function (k) {
@@ -287,7 +294,7 @@ MineDSound.overlay('help', false);</pre>
     if (k === 'none') return false;
     need();
     if (k === 'sfx') S.sfx(v);
-    else if (k === 'zone') S.setZone(v, { env: $('env').value });
+    else if (k === 'zone' || k === 'music') S.setZone(v, { env: $('env').value });
     else if (k === 'scene') { S.setZone('P3'); S.setScene(v); $('scene').value = v; }
     else if (k === 'env') { S.setZone('P12', { env: v }); $('env').value = v; }
     else if (k === 'overlay') { S.overlay(v, true); setTimeout(function () { S.overlay(v, false); }, 2500); }
@@ -304,7 +311,7 @@ MineDSound.overlay('help', false);</pre>
   CK.forEach(function (r) {
     counts[r[4]] = (counts[r[4]] || 0) + 1;
     var tr = document.createElement('tr'); tr.dataset.st = r[4];
-    tr.innerHTML = '<td>' + r[0] + '</td><td>' + r[1] + '</td><td><code>' + r[2] + '</code></td><td>' + r[3] + '</td><td><span class="st st-' + (r[4] === 'v1' ? 'a' : r[4] === 'v1.1' ? 'b' : 'c') + '">' + r[4] + '</span></td><td></td>';
+    tr.innerHTML = '<td>' + r[0] + '</td><td>' + r[1] + '</td><td><code>' + r[2] + '</code></td><td>' + r[3] + '</td><td><span class="st st-' + (r[4] === 'v1' ? 'a' : r[4].indexOf('v1.') === 0 ? 'b' : 'c') + '">' + r[4] + '</span></td><td></td>';
     if (r[2] !== 'none') { var b = document.createElement('button'); b.type = 'button'; b.className = 'play'; b.textContent = '▶'; b.setAttribute('aria-label', r[1] + ' 듣기'); b.onclick = function () { play(r[2]); }; tr.lastChild.appendChild(b); }
     ckrows.appendChild(tr);
   });
@@ -317,6 +324,8 @@ MineDSound.overlay('help', false);</pre>
   });
 
   $('power').onclick = function () { S.toggle(); };
+  $('music').onclick = function () { need(); S.setMusic(!S.state().music); };
+  $('voice').onchange = function (e) { need(); S.setVoice(e.target.value); };
   $('vol').oninput = function (e) { S.setVolume(+e.target.value); };
   $('depth').oninput = function (e) { need(); S.setDepth(+e.target.value); };
   $('env').onchange = function (e) { S.setEnvironment(e.target.value); };
@@ -327,8 +336,11 @@ MineDSound.overlay('help', false);</pre>
   S.onChange(function (st) {
     $('power').setAttribute('aria-pressed', st.on ? 'true' : 'false');
     $('power').textContent = st.on ? '소리 끄기' : '소리 켜기';
+    $('music').setAttribute('aria-pressed', st.music ? 'true' : 'false');
+    $('music').textContent = st.music ? '음악 켜짐' : '음악 꺼짐';
     var z = st.zone ? st.zone + ' ' + S.zones[st.zone].name : '구역 없음';
-    $('now').textContent = st.on ? '재생 중 · ' + z + (st.moving ? ' · 이동 중' : '') : '꺼짐';
+    var MK = { fog: '안개', hearth: '등불', open: '열린 곳' };
+    $('now').textContent = st.on ? '재생 중 · ' + z + (st.musicTrack ? ' · 음악 ' + MK[st.musicTrack] : '') + (st.moving ? ' · 이동 중' : '') : '꺼짐';
     $('depth').value = st.depth;
     $('depthv').textContent = st.depth.toFixed(2) + (st.depth < 0.1 ? ' · 지상' : st.depth < 0.5 ? ' · 얕은 층' : ' · 깊은 층');
     document.querySelectorAll('.zone').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.zone === st.zone ? 'true' : 'false'); });
