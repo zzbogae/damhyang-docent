@@ -48,15 +48,16 @@ from gyeol.channels import FEATURE_FAMILY   # noqa: E402
 #   2) 부호는 「축이 올라가는 방향」입니다.
 #      답장 지연은 길수록 덜 남긴 것이므로 −1 입니다.
 #
+# 10/23: gyeol/axes.py 와 같은 지표 넷(수면·걸음·언어·소통). 이 스크립트를 실데이터로 돌려 lang·talk τ 를 새로 잽니다
 AXES = {
-    'move':  {'label': '움직임', 'feats': {'avg_steps': +1}},
-    'rest':  {'label': '쉼',     'feats': {'avg_sleep': +1}},
-    'watch': {'label': '보기',   'feats': {'yt_total': +1, 'yt_search': +1}},
-    'leave': {'label': '남기기', 'feats': {
+    'move': {'label': '걸음', 'feats': {'avg_steps': +1}},
+    'rest': {'label': '수면', 'feats': {'avg_sleep': +1}},
+    'lang': {'label': '언어', 'feats': {
         'notes_count': +1, 'notes_avg_length': +1,
-        'photo_count': +1,
-        'avg_length': +1, 'avg_reply_delay_min': -1,
         'ai_count': +1,
+    }},
+    'talk': {'label': '소통', 'feats': {
+        'avg_length': +1, 'avg_reply_delay_min': -1,
     }},
 }
 
@@ -71,8 +72,8 @@ RATIO_FEATS = {
 GEM = {
     ('move',  'up'):   '호박',   ('move',  'down'): '황철석',
     ('rest',  'up'):   '청금석', ('rest',  'down'): '월장석',
-    ('watch', 'up'):   '자수정', ('watch', 'down'): '홍옥',
-    ('leave', 'up'):   '흑요석', ('leave', 'down'): '석류석',
+    ('lang',  'up'):   '자수정', ('lang',  'down'): '홍옥',
+    ('talk',  'up'):   '흑요석', ('talk',  'down'): '석류석',
 }
 GEM_COMPLEX = '형석'
 
@@ -509,15 +510,15 @@ def main():
     A(f'- **엄격** — 2축 모두 τ 초과 + 계열 2종 이상')
     A(f'- **계단식** — 최대 축이 τ 초과 + 다른 축이 **{args.step:g}×τ** 초과 + 계열 2종 이상')
     A('')
-    A('| 상위 % | 움직임 τ | 쉼 τ | 보기 τ | 남기기 τ | 광물 생김 | 그중 1축 | 형석(엄격) | 형석(계단식) |')
+    A('| 상위 % | 걸음 τ | 수면 τ | 언어 τ | 소통 τ | 광물 생김 | 그중 1축 | 형석(엄격) | 형석(계단식) |')
     A('|---|---|---|---|---|---|---|---|---|')
     for pct in (99, 97.5, 95, 92.5, 90, 85, 80):
         t = tau_at(A52, weeks, pct)
         c = evaluate_tau(A52, weeks, t, args.step)
         got = len(weeks) - c['none']
         fmt = lambda ax: ('—' if t[ax] is None else f'{t[ax]:.2f}')
-        A(f"| 상위 {100-pct:g}% | {fmt('move')} | {fmt('rest')} | {fmt('watch')} | "
-          f"{fmt('leave')} | {got}주 ({100.0*got/len(weeks):.0f}%) | {c['one']}주 | "
+        A(f"| 상위 {100-pct:g}% | {fmt('move')} | {fmt('rest')} | {fmt('lang')} | "
+          f"{fmt('talk')} | {got}주 ({100.0*got/len(weeks):.0f}%) | {c['one']}주 | "
           f"**{c['strict']}주** | **{c['stepped']}주** |")
     A('')
     A('**고르는 법**')

@@ -91,19 +91,19 @@ export function answer(q: QuestionId, w: WeekRecord, ctx: {
 }
 
 // 축 × 방향 질문(광물 8종과 같은 칸). 언제였는지·몇 번이었는지·남은 글 수만 말하고, 이유나 그때의 마음은 말하지 않는다.
-export const AXIS_IDS: Record<Axis, string[]> = { move: ['steps'], rest: ['sleep'], watch: ['yt_watch', 'yt_search', 'ai_msg', 'screen_time'], leave: ['memo_n', 'photo_n', 'cal_n', 'sns_post', 'git_commits'] };
-const AXIS_MEASURE: Record<Axis, string> = { move: '걸음을 잰', rest: '잠을 잰', watch: '화면 기록이 있는', leave: '남긴 기록이 있는' };
+export const AXIS_IDS: Record<Axis, string[]> = { move: ['steps'], rest: ['sleep'], lang: ['memo_n', 'ai_msg', 'sns_post', 'git_commits'], talk: ['kakao_n', 'sns_dm'] };
+const AXIS_MEASURE: Record<Axis, string> = { move: '걸음을 잰', rest: '잠을 잰', lang: '글로 남긴 기록이 있는', talk: '주고받은 기록이 있는' };
 const AXIS_PHRASE: Record<Axis, { up: string; down: string }> = {
   move: { up: '걸음이 평소보다 크게 많았던', down: '걸음이 평소보다 크게 적었던' },
   rest: { up: '잠이 평소보다 크게 길었던', down: '잠이 평소보다 크게 짧았던' },
-  watch: { up: '화면을 평소보다 크게 많이 본', down: '화면을 평소보다 크게 적게 본' },
-  leave: { up: '기록을 평소보다 크게 많이 남긴', down: '기록을 평소보다 크게 적게 남긴' },
+  lang: { up: '글을 평소보다 크게 많이 남긴', down: '글을 평소보다 크게 적게 남긴' },
+  talk: { up: '주고받은 말이 평소보다 크게 많았던', down: '주고받은 말이 평소보다 크게 적었던' },
 };
 export const AXIS_DIR_QUESTION: Record<Axis, { up: string; down: string }> = {
   move: { up: '많이 걸은 주는 언제였어?', down: '적게 걸은 주는 언제였어?' },
   rest: { up: '잠을 길게 잔 주는 언제였어?', down: '잠을 못 잔 주는 언제였어?' },
-  watch: { up: '화면을 많이 본 주는 언제였어?', down: '화면을 적게 본 주는 언제였어?' },
-  leave: { up: '기록을 많이 남긴 주는 언제였어?', down: '기록을 적게 남긴 주는 언제였어?' },
+  lang: { up: '글을 많이 남긴 주는 언제였어?', down: '글을 적게 남긴 주는 언제였어?' },
+  talk: { up: '연락을 많이 주고받은 주는 언제였어?', down: '연락이 뜸했던 주는 언제였어?' },
 };
 
 export function axisDirAnswer(ax: Axis, dir: 'up' | 'down', w: WeekRecord, ctx: {

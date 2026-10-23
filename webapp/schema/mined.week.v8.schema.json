@@ -131,8 +131,8 @@
       "required": [
         "move",
         "rest",
-        "watch",
-        "leave"
+        "lang",
+        "talk"
       ],
       "additionalProperties": {
         "oneOf": [
@@ -198,8 +198,8 @@
             "enum": [
               "move",
               "rest",
-              "watch",
-              "leave"
+              "lang",
+              "talk"
             ]
           }
         }

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-gyeol/axes.py — 4축 판정의 정본 (확정 기록 v2 · 2026.09.11)
+gyeol/axes.py — 4축 판정의 정본 (확정 기록 v2 · 2026.09.11 · 10/23 지표 넷 수면·걸음·언어·소통으로 교체)
 
     from gyeol.axes import build_axes, week_record
 
@@ -45,18 +45,24 @@ from .channels import FEATURE_FAMILY
 #          ⚠ rest 에는 밤 무기록 구간 대체 지표가 들어올 예정이라
 #            「잠」으로 고정하면 이름이 내용보다 좁아집니다.
 # ─────────────────────────────────────────────────────────
+# 10/23 교체 (10/22 결정: 지표 넷 = 수면 · 걸음 · 언어 · 소통)
+#   보기(유튜브)는 축에서 뺐고, 남기기는 언어(메모·AI)와 소통(카톡)으로 나눴습니다.
+#   사진 수는 어느 축에도 넣지 않습니다 — 열린 광석의 근거로만 씁니다.
 AXES = {
-    'move':  {'label': '움직임', 'screen': '움직임', 'feats': {'avg_steps': +1}},
-    'rest':  {'label': '쉼',     'screen': '쉼',     'feats': {'avg_sleep': +1}},
-    'watch': {'label': '보기',   'screen': '보기',   'feats': {'yt_total': +1, 'yt_search': +1}},
-    'leave': {'label': '남기기', 'screen': '남기기', 'feats': {
+    'move': {'label': '걸음', 'screen': '걸음', 'feats': {'avg_steps': +1}},
+    'rest': {'label': '수면', 'screen': '수면', 'feats': {'avg_sleep': +1}},
+    'lang': {'label': '언어', 'screen': '언어', 'feats': {
         'notes_count': +1, 'notes_avg_length': +1,
-        'photo_count': +1,
-        'avg_length': +1, 'avg_reply_delay_min': -1,
         'ai_count': +1,
     }},
+    'talk': {'label': '소통', 'screen': '소통', 'feats': {
+        'avg_length': +1, 'avg_reply_delay_min': -1,
+    }},
 }
-AXIS_ORDER = ['move', 'rest', 'watch', 'leave']   # 동점일 때의 고정 순서
+AXIS_ORDER = ['move', 'rest', 'lang', 'talk']   # 동점일 때의 고정 순서
+
+# 축에서 빠진 양 지표 — 근거(열린 광석의 사진·수치)로만 씁니다
+EVIDENCE_FEATS = {'yt_total', 'yt_search', 'photo_count'}
 
 # 축 밖 — 근거 문장 전용
 RATIO_FEATS = {
@@ -89,11 +95,12 @@ MIN_PERIODS_SHORT = 4
 # 이건 상수입니다. 사용자마다 같은 값을 씁니다 —
 # 개인화는 τ가 아니라 z 계산 안에 이미 있습니다
 # (z = 그 사람의 직전 52주 중위·MAD 대비).
+# ⚠ lang·talk 는 옛 남기기(leave) 값을 임시로 옮겼습니다. calibrate_axes.py 를 실데이터로 다시 돌려 바꿉니다
 TAU = {
     'move':  3.03,
     'rest':  2.36,
-    'watch': 1.99,
-    'leave': 2.16,
+    'lang':  2.16,   # 임시
+    'talk':  2.16,   # 임시
 }
 TAU_PCT = 7.5          # 재캘리브레이션할 때 쓸 백분위
 
@@ -115,14 +122,14 @@ TAU_PCT = 7.5          # 재캘리브레이션할 때 쓸 백분위
 TAU_UP = {
     'move':  4.91,
     'rest':  2.21,
-    'watch': 2.48,
-    'leave': 2.85,
+    'lang':  2.85,   # 임시
+    'talk':  2.85,   # 임시
 }
 TAU_DOWN = {
     'move':  1.60,
     'rest':  2.99,
-    'watch': 1.44,
-    'leave': 1.37,
+    'lang':  1.37,   # 임시
+    'talk':  1.37,   # 임시
 }
 STEP = 0.6             # 계단식 복합 조건의 두 번째 문턱 비율
 
@@ -240,8 +247,8 @@ GRAIN = {
 GEM = {
     ('move',  'up'): 'amber',     ('move',  'down'): 'pyrite',
     ('rest',  'up'): 'lapis',     ('rest',  'down'): 'moonstone',
-    ('watch', 'up'): 'amethyst',  ('watch', 'down'): 'rose',
-    ('leave', 'up'): 'obsidian',  ('leave', 'down'): 'garnet',
+    ('lang',  'up'): 'amethyst',  ('lang',  'down'): 'rose',
+    ('talk',  'up'): 'obsidian',  ('talk',  'down'): 'garnet',
 }
 GEM_COMPLEX = 'fluorite'   # 형석 — 교차검증된 주에만
 

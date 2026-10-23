@@ -7,8 +7,8 @@ function week(badges: Partial<Badge>[] = []): WeekRecord {
   return {
     schema: 'mined.week/8', week: '2017-W07', date_start: '2017-02-13', date_end: '2017-02-19', candidate: true,
     coverage: { health: 'observed', memo: 'observed', photo: 'observed', yt: 'observed', cal: 'observed', kakao: 'observed', sns: 'structural_missing', ai: 'structural_missing', quiet: 'structural_missing', screen: 'structural_missing', git: 'structural_missing' },
-    ind: {}, axes: { move: null, rest: null, watch: null, leave: null },
-    badges: badges.map((b) => ({ indicator: 'memo_night', label: '', family: 'memo', axis: 'leave', direction: 'up', pr: 0.98, rank: 1, n_base: 52, extreme: 2, ...b }) as Badge),
+    ind: {}, axes: { move: null, rest: null, lang: null, talk: null },
+    badges: badges.map((b) => ({ indicator: 'memo_night', label: '', family: 'memo', axis: 'lang', direction: 'up', pr: 0.98, rank: 1, n_base: 52, extreme: 2, ...b }) as Badge),
     evidence: { families: ['memo'], independent: 1, cross_validated: false },
     grade: 'open', grade_history: [], access: 'auto', era: null, mineral: null, shape: null, similar: [], sentence: null,
   };

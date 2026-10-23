@@ -76,12 +76,13 @@ export interface PhotoRecord {
 // 확인 등급(팀 9/23 확정). broken·not_returned 는 팀이 화면 문안을 정할 때까지 문장을 붙이지 않는다.
 export type Grade = 'held' | 'returned' | 'open' | 'insufficient' | 'broken' | 'not_returned';
 export const GRADES: Grade[] = ['held', 'returned', 'open', 'insufficient', 'broken', 'not_returned'];
-export type Axis = 'move' | 'rest' | 'watch' | 'leave';
-export const AXES: Axis[] = ['move', 'rest', 'watch', 'leave'];
+/** 지표 넷(10/22 화면설계 v6 §8): 수면 · 걸음 · 언어 · 소통. 유튜브·사진·일정은 근거 전용이라 축이 없다 */
+export type Axis = 'move' | 'rest' | 'lang' | 'talk';
+export const AXES: Axis[] = ['move', 'rest', 'lang', 'talk'];
 /** 축 이름 두 층: label 은 문서·회의용 약칭, screen 이 화면에 나가는 말 */
 export const AXIS_NAMES: Record<Axis, { label: string; screen: string }> = {
-  move: { label: '움직임', screen: '걸음' }, rest: { label: '쉼', screen: '쉼' },
-  watch: { label: '보기', screen: '화면' }, leave: { label: '남기기', screen: '기록' },
+  move: { label: '걸음', screen: '걸음' }, rest: { label: '수면', screen: '수면' },
+  lang: { label: '언어', screen: '언어' }, talk: { label: '소통', screen: '소통' },
 };
 export const axisScreen = (ax: Axis) => AXIS_NAMES[ax].screen;
 export type Gyeol = 'mixed' | 'coarse' | 'regular';

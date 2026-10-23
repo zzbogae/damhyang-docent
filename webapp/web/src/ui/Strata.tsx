@@ -6,6 +6,7 @@ import type { WeekRecord } from '../types';
 import { rangeLabel } from '../mindi/templates';
 
 import { MINERAL_BY_AXIS_DIR } from './minerals';
+import { oreLabel } from './oreName';
 import { playCue } from '../mindi/sound';
 import { AXES, axisScreen } from '../types';
 
@@ -37,7 +38,7 @@ export function describeWeek(w: WeekRecord): string {
   const n = observedCount(w);
   const base = `${rangeLabel(w)} · 기록 ${n}종`;
   if (!w.candidate) return n === 0 ? `${rangeLabel(w)} · 기록 없음` : base;
-  return `${base} · 광물${w.mineral ? ` · ${w.mineral}` : ''}${w.evidence.cross_validated ? '' : ' · 근거가 얇음'}`;
+  return `${base} · 광물${w.mineral ? ` · ${oreLabel(w)}` : ''}${w.evidence.cross_validated ? '' : ' · 근거가 얇음'}`;
 }
 
 export function Strata() {

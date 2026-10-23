@@ -10,6 +10,7 @@ import { rangeLabel } from '../mindi/templates';
 import { playCue } from '../mindi/sound';
 import { MINERAL_IMG, ART, stratumFor } from './design';
 import { MINERAL_HEX, type Mineral } from './minerals';
+import { oreLabel } from './oreName';
 import { MindiGreeting } from './Mindi';
 import type { WeekRecord } from '../types';
 
@@ -123,7 +124,7 @@ export function MineField() {
           {card && cardPos && (
             <div className="mf-card" style={cardPos} role="dialog" aria-label="기록 조각">
               <button className="mf-card-x" onClick={() => setCard(undefined)} aria-label="닫기">✕</button>
-              <div className="mf-card-eyebrow">{rangeLabel(card.w)} · {card.w.mineral}</div>
+              <div className="mf-card-eyebrow">{rangeLabel(card.w)} · {oreLabel(card.w)}</div>
               <p className="mf-card-line">{card.w.sentence_plain ?? card.w.sentence}</p>
               <button className="mf-card-next" onClick={() => select(card.w.week)}>상세 페이지에서 이어보기 →</button>
             </div>
