@@ -1,0 +1,267 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></head><body>
+<title>Mine D 사운드 창</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* 레이아웃: 위에서 아래로 「지상 → 지하」. 구역 카드가 깊이 순서로 내려가고, 효과음·민디 목소리·매핑표가 뒤따른다 */
+:root {
+  --bg: #eef0ec;        /* 안개 낀 아침 */
+  --surface: #f8f9f6;
+  --ink: #23292a;
+  --muted: #5d6764;
+  --line: #cfd5d0;
+  --lantern: #b0621b;   /* 관측소 등불 */
+  --lantern-soft: #f3e2cf;
+  --deep: #34505a;      /* 지층 아래 */
+  --on: #2f7a5a;
+  --f-display: "Gowun Batang", "Nanum Myeongjo", serif;
+  --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141a1c; --surface: #1c2427; --ink: #e4e8e5; --muted: #9aa6a2; --line: #2f3a3d;
+  --lantern: #e39a55; --lantern-soft: #3a2a1c; --deep: #8fb3c0; --on: #6cc59b; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #141a1c; --surface: #1c2427; --ink: #e4e8e5; --muted: #9aa6a2; --line: #2f3a3d;
+  --lantern: #e39a55; --lantern-soft: #3a2a1c; --deep: #8fb3c0; --on: #6cc59b; color-scheme: dark }
+
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 64px; }
+.wrap { max-width: 1040px; margin: 0 auto; display: grid; gap: 40px; }
+h1, h2 { font-family: var(--f-display); font-weight: 700; text-wrap: balance; margin: 0; }
+h1 { font-size: 2rem; line-height: 1.2; }
+h2 { font-size: 1.35rem; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.mono { font-family: var(--f-mono); font-size: .82rem; }
+.label { font-size: .75rem; letter-spacing: .06em; color: var(--muted); }
+section { display: grid; gap: 14px; }
+button, select, input { font: inherit; color: inherit; }
+button { cursor: pointer; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 12px; }
+button:hover { border-color: var(--lantern); }
+:focus-visible { outline: 2px solid var(--lantern); outline-offset: 2px; }
+
+header { display: grid; gap: 12px; }
+.bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+#power { background: var(--lantern); color: #fff; border-color: var(--lantern); font-weight: 600; padding: 10px 18px; }
+#power[aria-pressed="true"] { background: var(--on); border-color: var(--on); }
+.now { font-family: var(--f-mono); font-size: .85rem; color: var(--muted); }
+.rule { border-left: 3px solid var(--lantern); padding: 6px 0 6px 12px; max-width: 65ch; }
+
+.zones { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.zone { text-align: left; display: grid; gap: 4px; padding: 12px; min-width: 0; }
+.zone .id { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); }
+.zone .nm { font-weight: 600; }
+.zone .ly { font-size: .8rem; color: var(--muted); }
+.zone[aria-pressed="true"] { border-color: var(--lantern); background: var(--lantern-soft); }
+.zone.under .id { color: var(--deep); }
+
+.ctrl { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.ctrl label { display: flex; gap: 8px; align-items: center; }
+#depth { width: min(260px, 60vw); accent-color: var(--deep); }
+#vol { width: 120px; accent-color: var(--lantern); }
+.meter { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: .82rem; color: var(--deep); }
+
+.pad { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+.pad button { text-align: left; display: grid; gap: 2px; min-width: 0; }
+.pad .k { font-family: var(--f-mono); font-size: .78rem; color: var(--lantern); }
+.pad .w { font-size: .8rem; color: var(--muted); }
+.src { display: inline-block; font-size: .7rem; padding: 0 6px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); }
+.src.file { border-color: var(--deep); color: var(--deep); }
+
+.mindi { display: grid; gap: 10px; }
+#line { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); box-sizing: border-box; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { padding: 6px 10px; font-size: .85rem; }
+
+.tablebox { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; min-width: 720px; font-size: .85rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; background: var(--surface); }
+td:first-child { font-family: var(--f-mono); white-space: nowrap; }
+pre { margin: 0; overflow-x: auto; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; font-family: var(--f-mono); font-size: .8rem; line-height: 1.55; }
+footer { font-size: .8rem; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="label">MINE D · 사운드 키트 v1 · 2026-10-23</p>
+    <h1>구역마다 어울리는 소리</h1>
+    <p class="muted" style="max-width:65ch">화면 구역(P0~P13)을 누르면 그 자리의 바탕 소리로 바뀝니다. 아래 효과음과 민디 목소리는 버튼 하나로 들어 볼 수 있습니다. 브라우저 규칙상 첫 소리는 「소리 켜기」를 눌러야 납니다.</p>
+    <div class="bar">
+      <button id="power" type="button" aria-pressed="false">소리 켜기</button>
+      <label class="bar" style="gap:8px">음량 <input id="vol" type="range" min="0" max="1" step="0.05" value="0.8"></label>
+      <span class="now" id="now">꺼짐</span>
+    </div>
+    <p class="rule">소리는 사용자가 <b>어디에 있는지</b>에만 반응합니다. 기록 내용(힘들었던 주, 광석 종류·등급)으로 소리를 바꾸지 않습니다. 모든 광석은 같은 「쨍」입니다.</p>
+  </header>
+
+  <section aria-labelledby="h-zone">
+    <h2 id="h-zone">구역별 바탕 소리</h2>
+    <div class="zones" id="zones"></div>
+    <div class="ctrl">
+      <label for="depth">깊이 <input id="depth" type="range" min="0" max="1" step="0.01" value="0"></label>
+      <span class="meter" id="depthv">0.00 · 지상</span>
+      <button id="descend" type="button">엘리베이터로 내려가기</button>
+      <button id="ascend" type="button">올라오기</button>
+      <label for="env">나의 공간 환경
+        <select id="env"><option value="sea">바다</option><option value="room">방</option><option value="none">소리 없음</option></select>
+      </label>
+    </div>
+    <p class="muted" style="font-size:.85rem">깊이는 P5~P8에서만 작동합니다. 0 → 1로 갈수록 음량 100%→55%, 고음 18 kHz→2.5 kHz, 울림 0.4초→2.8초. 바람이 사라지고 저주파와 물방울이 나옵니다.</p>
+  </section>
+
+  <section aria-labelledby="h-sfx">
+    <h2 id="h-sfx">효과음</h2>
+    <div class="pad" id="pad"></div>
+  </section>
+
+  <section aria-labelledby="h-mindi" class="mindi">
+    <h2 id="h-mindi">민디 목소리 (뜻 없는 음절)</h2>
+    <div class="ctrl">
+      <label for="tone">말투
+        <select id="tone"><option value="quiet">조용한</option><option value="warm">다정한</option><option value="plain">담백한</option><option value="dry">시니컬한</option></select>
+      </label>
+      <button id="say" type="button">말풍선 소리 내기</button>
+    </div>
+    <label for="line" class="label">말풍선 문장 (글자 4~5개당 음절 1개, 끝 글자 ? . … 로 끝맺음)</label>
+    <input id="line" type="text" value="2021년 4월이네요. 이 주는 잠이 짧게 적혀 있어요. …그 무렵 이야기, 들어볼까요?">
+    <div><p class="label">상황음</p><div class="chips" id="cues"></div></div>
+    <div><p class="label">맞장구</p><div class="chips" id="reacts"></div></div>
+  </section>
+
+  <section aria-labelledby="h-map">
+    <h2 id="h-map">매핑표</h2>
+    <div class="tablebox"><table>
+      <thead><tr><th>구역</th><th>바탕 소리</th><th>효과음 (이벤트 → 이름)</th><th>민디</th></tr></thead>
+      <tbody id="maprows"></tbody>
+    </table></div>
+  </section>
+
+  <section aria-labelledby="h-code">
+    <h2 id="h-code">페이지에 붙이는 법</h2>
+    <pre>&lt;script src="sound/mined-sound.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  MineDSound.init({ base: 'sound/audio/' }).bind(document);
+&lt;/script&gt;
+
+&lt;!-- 1. 버튼에 효과음 --&gt;
+&lt;button data-sound-toggle&gt;소리 켜기&lt;/button&gt;
+&lt;button data-sfx="door"&gt;ENTER&lt;/button&gt;
+&lt;button data-sfx="confirm"&gt;내려간다&lt;/button&gt;
+
+&lt;!-- 2. 화면 구역: 60% 이상 보이면 자동 전환 --&gt;
+&lt;section data-sound-zone="P3"&gt;관측소…&lt;/section&gt;
+
+&lt;!-- 3. 앱 상태에 맞춰 직접 부르기 (React 등) --&gt;
+MineDSound.setZone('P6');                 // 연도 지층
+MineDSound.setDepth(layerIndex / layerCount); // 몇 번째 층인지로만
+await MineDSound.descend(0.6, 3.5);        // 엘리베이터
+MineDSound.sfx('pick'); MineDSound.sfx('ore_crack');
+MineDSound.say(bubbleText, { tone: 'quiet' });
+MineDSound.setZone('P12', { env: 'sea' });</pre>
+  </section>
+
+  <footer>합성음은 모두 mined-sound.js 안에서 만듭니다(외부 음원 없음). 파일 소리 4종(파도·방·문·나무 발소리)은 10/3 섬 영상 C02~C05 원음에서 잘라 냈고, 파일이 없으면 합성음으로 대신합니다. 음악 트랙(C층)은 아직 없습니다.</footer>
+</div>
+
+<script src="mined-sound.js"></script>
+<script>
+(function () {
+  var S = MineDSound.init({ base: 'audio/' });
+  S.setZone('P0');
+  var $ = function (id) { return document.getElementById(id); };
+
+  var LAYER_KO = { wind: '안개 바람', pad: '낮은 패드', lantern: '등불', drip: '먼 물방울', hum: '기계음', rumble: '저주파', sea: '파도(섬 영상)', surf: '물결', room: '방 공기(섬 영상)' };
+  var MAP = {
+    P0: ['안개 바람 + 낮은 패드', 'ENTER → door', '—'],
+    P1: ['안개 (작게)', '버튼 → tap', '—'],
+    P2: ['안개 (작게)', '연결 완료 → confirm', '—'],
+    P3: ['등불 + 먼 물방울, 선율 없음', '기능 버튼 5개 → tap · 관측소의 문 → door', '첫 만남 hello · 말풍선 say()'],
+    P4: ['관측소와 같음', '하루 고르기 → tap', 'say()'],
+    P5: ['출발 덜컹 → 기계음 + 깊이 이동 → 도착 종', '내려간다 → confirm · 돌아가기 → back', 'wait'],
+    P6: ['깊이에 따라 바람↓ 저주파·물방울↑, 음악 없음', '층 넘김 → tap', 'found (광석 있는 층)'],
+    P7: ['지층 소리 그대로', '곡괭이 3번 → pick ×3 · 깨짐 → ore_crack (모두 같은 소리)', 'mined'],
+    P8: ['지층 소리 70%', 'VIBE 버튼 → tap · 이름 붙이기 → name_save · 보관 → keep', 'say()'],
+    P9: ['등불 (작게)', '보내기 → tap', '답마다 say() · 맞장구 react()'],
+    P10: ['등불 + 물방울 (작게)', '광석 넣기 → keep', '—'],
+    P11: ['고른 환경 미리 듣기 (60%)', '환경 고르기 → tap · 열림 → space_open', 'say()'],
+    P12: ['바다=파도+물결 / 방=방 공기', '걷기 → step · 소품 놓기 → keep', '—'],
+    P13: ['바꾸지 않음 (겹쳐 뜨는 창)', '토글 → toggle', '—']
+  };
+  var SFX_INFO = {
+    tap: ['버튼 누름', 0], confirm: ['내려간다 · 확인', 0], back: ['돌아가기', 0], door: ['ENTER · 관측소의 문', 1],
+    lift_start: ['엘리베이터 출발', 0], lift_arrive: ['엘리베이터 도착 종', 0], pick: ['곡괭이 한 번', 0], ore_crack: ['광석 깨짐 「쨍」', 0],
+    keep: ['보관함에 넣기', 0], name_save: ['이름 붙이기 저장', 0], space_open: ['나의 공간 열림', 0], step: ['나의 공간 걷기', 1], toggle: ['설정 토글', 0]
+  };
+  var CUE_KO = { found: '찾았다', wait: '기다림', mined: '캐기 성공', surprise: '놀람', hello: '인사' };
+  var REACT_KO = { eung: '응', eo: '어', a: '아', eum: '음' };
+  var UNDER = { P5: 1, P6: 1, P7: 1, P8: 1 };
+
+  function need() { if (!S.isOn()) S.enable(); }
+
+  var zones = $('zones');
+  Object.keys(S.zones).forEach(function (id) {
+    var z = S.zones[id], b = document.createElement('button');
+    b.type = 'button'; b.className = 'zone' + (UNDER[id] ? ' under' : ''); b.dataset.zone = id; b.setAttribute('aria-pressed', 'false');
+    var ly = Object.keys(z.layers).map(function (k) { return LAYER_KO[k]; });
+    if (z.depthDriven) ly.push('깊이로 변함');
+    if (z.env) ly.push('고른 환경');
+    if (z.keep) ly.push('이전 소리 유지');
+    b.innerHTML = '<span class="id">' + id + '</span><span class="nm">' + z.name + '</span><span class="ly">' + (ly.join(' · ') || '—') + '</span>';
+    b.onclick = function () {
+      need();
+      if (id === 'P5' || id === 'P6' || id === 'P7' || id === 'P8') { if (S.state().depth < 0.2) S.setDepth(0.5, 1.2); }
+      S.setZone(id, { env: $('env').value });
+    };
+    zones.appendChild(b);
+  });
+
+  var pad = $('pad');
+  S.sfxNames.forEach(function (k) {
+    var info = SFX_INFO[k] || [k, 0], b = document.createElement('button');
+    b.type = 'button';
+    b.innerHTML = '<span class="k">' + k + '</span><span>' + info[0] + '</span><span class="w"><span class="src' + (info[1] ? ' file' : '') + '">' + (info[1] ? '섬 영상 원음' : '합성') + '</span></span>';
+    b.onclick = function () {
+      need();
+      if (k === 'pick') { S.sfx('pick'); setTimeout(function () { S.sfx('pick'); }, 380); setTimeout(function () { S.sfx('pick'); }, 760); setTimeout(function () { S.sfx('ore_crack'); }, 1200); return; }
+      S.sfx(k);
+    };
+    pad.appendChild(b);
+  });
+
+  function chips(el, names, ko, fn) {
+    names.forEach(function (k) { var b = document.createElement('button'); b.type = 'button'; b.textContent = ko[k] + ' · ' + k; b.onclick = function () { need(); fn(k); }; el.appendChild(b); });
+  }
+  chips($('cues'), S.cueNames, CUE_KO, function (k) { S.cue(k, { tone: $('tone').value }); });
+  chips($('reacts'), S.reactNames, REACT_KO, function (k) { S.react(k, { tone: $('tone').value }); });
+  $('say').onclick = function () { need(); S.say($('line').value, { tone: $('tone').value }); };
+
+  var rows = $('maprows');
+  Object.keys(MAP).forEach(function (id) {
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + id + ' ' + S.zones[id].name + '</td><td>' + MAP[id][0] + '</td><td>' + MAP[id][1] + '</td><td>' + MAP[id][2] + '</td>';
+    rows.appendChild(tr);
+  });
+
+  $('power').onclick = function () { S.toggle(); };
+  $('vol').oninput = function (e) { S.setVolume(+e.target.value); };
+  $('depth').oninput = function (e) { need(); S.setDepth(+e.target.value); };
+  $('env').onchange = function (e) { S.setEnvironment(e.target.value); };
+  $('descend').onclick = function () { need(); S.setZone('P5'); S.descend(0.85, 3.5).then(function () { S.setZone('P6'); }); };
+  $('ascend').onclick = function () { need(); S.setZone('P5'); S.descend(0.05, 2.5).then(function () { S.setZone('P3'); }); };
+
+  S.onChange(function (st) {
+    $('power').setAttribute('aria-pressed', st.on ? 'true' : 'false');
+    $('power').textContent = st.on ? '소리 끄기' : '소리 켜기';
+    var z = st.zone ? st.zone + ' ' + S.zones[st.zone].name : '구역 없음';
+    $('now').textContent = st.on ? '재생 중 · ' + z + (st.moving ? ' · 이동 중' : '') : '꺼짐';
+    $('depth').value = st.depth;
+    $('depthv').textContent = st.depth.toFixed(2) + (st.depth < 0.1 ? ' · 지상' : st.depth < 0.5 ? ' · 얕은 층' : ' · 깊은 층');
+    document.querySelectorAll('.zone').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.zone === st.zone ? 'true' : 'false'); });
+  });
+})();
+</script>
+</body></html>

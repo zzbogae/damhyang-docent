@@ -1,0 +1,30 @@
+{
+  "version": "1.0.0",
+  "date": "2026-10-23",
+  "rule": "소리는 사용자가 있는 위치(구역·깊이·고른 환경)에만 반응한다. 기록 내용·광석 종류·등급에 연동 금지.",
+  "zones": {
+    "P0":  { "name": "첫 화면 · 안개", "ambient": ["wind", "pad"], "sfx": { "ENTER": "door" } },
+    "P1":  { "name": "로그인", "ambient": ["wind", "pad"], "sfx": { "버튼": "tap" } },
+    "P2":  { "name": "데이터 연결", "ambient": ["wind", "pad"], "sfx": { "연결 완료": "confirm" } },
+    "P3":  { "name": "관측소", "ambient": ["lantern", "drip"], "sfx": { "기능 버튼 5개": "tap", "관측소의 문": "door" }, "mindi": ["hello", "say"] },
+    "P4":  { "name": "하루 고르기", "ambient": ["lantern", "drip"], "sfx": { "하루 고르기": "tap" }, "mindi": ["say"] },
+    "P5":  { "name": "엘리베이터", "ambient": ["hum(이동 중)", "depth"], "sfx": { "내려간다": "confirm", "돌아가기": "back", "출발": "lift_start", "도착": "lift_arrive" }, "mindi": ["wait"] },
+    "P6":  { "name": "연도 지층", "ambient": ["depth"], "sfx": { "층 넘김": "tap" }, "mindi": ["found"] },
+    "P7":  { "name": "광석 캐기", "ambient": ["depth"], "sfx": { "곡괭이(3번)": "pick", "깨짐": "ore_crack" }, "mindi": ["mined"] },
+    "P8":  { "name": "광석 상세", "ambient": ["depth x0.7"], "sfx": { "VIBE 버튼": "tap", "이름 붙이기": "name_save", "보관": "keep" }, "mindi": ["say"] },
+    "P9":  { "name": "민디와 이야기", "ambient": ["lantern"], "sfx": { "보내기": "tap" }, "mindi": ["say", "react"] },
+    "P10": { "name": "캔 광석 보관함", "ambient": ["lantern", "drip"], "sfx": { "넣기": "keep" } },
+    "P11": { "name": "나의 공간 만들기", "ambient": ["env x0.6"], "sfx": { "환경 고르기": "tap", "열림": "space_open" }, "mindi": ["say"] },
+    "P12": { "name": "나의 공간", "ambient": ["env: sea=sea+surf / room=room"], "sfx": { "걷기": "step", "소품 놓기": "keep" } },
+    "P13": { "name": "설정", "ambient": ["유지"], "sfx": { "토글": "toggle" } }
+  },
+  "depth": { "gain": [1.0, 0.55], "lowpass_hz": [18000, 2500], "reverb_sec": [0.4, 2.8], "reverb_mix": [0.10, 0.45], "transition_sec": 1.5 },
+  "files": {
+    "amb_sea_waves.wav": "섬 영상 C02 2.9~7.15초 파도, 고리 처리",
+    "amb_room_tone.wav": "섬 영상 C05 0.45~6.25초 방 공기, 고리 처리",
+    "sfx_door_open.wav": "섬 영상 C04 2.45~5.05초 문 손잡이·경첩",
+    "sfx_step_wood.wav": "섬 영상 C03 1.82~2.22초 나무 발소리",
+    "sfx_step_wood_2.wav": "섬 영상 C03 3.10~3.50초 나무 발소리"
+  },
+  "mindi_voice": { "base": 10, "ending": 3, "reaction": 4, "event": 5, "rate_by_tone": { "quiet": 0.85, "warm": 0.9, "plain": 1.1, "dry": 1.0 } }
+}
