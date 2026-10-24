@@ -19,6 +19,15 @@ calibrate_axes.py — 4축 robust z 캘리브레이션 (과제 ① 검증용)
 
 결과물
   out/calibration_report.md  ← 이 파일만 채팅 창에 붙이면 됩니다 (에어갭 유지)
+
+10/23 지표 넷 교체 뒤 — lang·talk τ 다시 재기 (한 줄)
+    python3 calibrate_axes.py --name "표시되는이름" --write
+
+  리포트 맨 앞 「τ 다시 재기」 절에 새 τ·광물 주 수·결 주 수와 붙여 넣을 값이 나오고,
+  --write 를 붙이면 gyeol/axes.py · webapp/core/mined_core/judge.py · docs/NOW.md 의
+  lang·talk τ 와 결 주 수를 직접 고칩니다(팀 저장소 안에서 돌릴 때. 키트만 있으면 axes.py 만).
+  move·rest 까지 다시 재려면 --axes move,rest,lang,talk.
+  이때만 파일을 고칩니다. --write 가 없으면 아무 파일도 바꾸지 않습니다.
 """
 from __future__ import annotations
 import argparse
@@ -33,6 +42,7 @@ sys.path.insert(0, HERE)
 
 import run_gyeol as RG                      # noqa: E402
 from gyeol import detect                    # noqa: E402
+from gyeol import retune                    # noqa: E402
 from gyeol.channels import FEATURE_FAMILY   # noqa: E402
 
 
@@ -275,8 +285,18 @@ def evidence_families(week_row):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--name', default=None, help='카톡에 표시되는 본인 이름')
-    ap.add_argument('--data', default=os.path.join(HERE, 'data'))
+    # data/ 는 키트 안(gyeol_kit/data)이나 키트 위(run_gyeol.py 와 같은 자리) 어느 쪽이든 찾습니다
+    default_data = os.path.join(HERE, 'data')
+    if not os.path.isdir(default_data):
+        default_data = os.path.join(RG.ROOT, 'data')
+    ap.add_argument('--data', default=default_data)
     ap.add_argument('--out', default=os.path.join(HERE, 'out'))
+    ap.add_argument('--write', action='store_true',
+                    help='새 τ·결 주 수를 gyeol/axes.py · webapp core · docs/NOW.md 에 직접 씀')
+    ap.add_argument('--axes', default=','.join(retune.DEFAULT_AXES),
+                    help='다시 잴 축 (기본 lang,talk — move·rest 는 9/11 확정값)')
+    ap.add_argument('--repo', default=os.path.dirname(os.path.dirname(HERE)),
+                    help='팀 저장소 최상단 (webapp/·docs/ 가 있는 곳)')
     ap.add_argument('--tau', type=float, default=None,
                     help='τ 를 직접 지정 (축 공통). 보통은 --tau-pct 를 씁니다')
     ap.add_argument('--tau-pct', type=float, default=5.0, metavar='7.5',
@@ -428,6 +448,10 @@ def main():
     A('')
     A('> 이 파일에는 원문도 원값도 없습니다. 비율과 개수뿐입니다.')
     A('')
+    print('▸ τ 다시 재기 (axes.py 정본 축 기준)…')
+    rt = retune.compute(merged, weeks,
+                        axes_to_update=[a.strip() for a in args.axes.split(',') if a.strip()])
+    A(retune.render(rt))
     A('## 1. 축별 요약 — τ 후보가 여기 있습니다')
     A('')
     tau_raw = tau_at(A52r, weeks, PCT)
@@ -585,6 +609,12 @@ def main():
         f.write('\n'.join(L))
     print(f'\n✅ {path}')
     print('   이 파일만 채팅 창에 붙이시면 됩니다. 원본은 올리지 마세요.')
+    print('\n' + retune.render(rt).split('### 광물')[0].strip())
+    if args.write:
+        print('\n▸ --write: 새 τ 를 파일에 씁니다')
+        retune.write_all(rt, HERE, args.repo)
+    else:
+        print('\n   파일은 바꾸지 않았습니다. 바로 반영하려면 같은 명령에 --write 를 붙이세요.')
     return 0
 
 

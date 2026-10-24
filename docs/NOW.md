@@ -76,7 +76,7 @@
 | lang | 2.85 ⚠ | 1.37 ⚠ |
 | talk | 2.85 ⚠ | 1.37 ⚠ |
 
-⚠ 옛 `leave` 값을 임시로 씁니다. 맥에서 `pipeline/gyeol_kit/calibrate_axes.py`를 실데이터로 돌려 다시 재야 합니다.
+⚠ 옛 `leave` 값을 임시로 씁니다. 실데이터가 있는 맥에서 `cd pipeline/gyeol_kit && python3 calibrate_axes.py --name "카톡 표시 이름" --write` 한 줄이면 이 표·아래 결 주 수·코드(`gyeol/axes.py`, `webapp/core/mined_core/judge.py`)가 함께 바뀝니다.
 
 ### 광석 — 축이 정하고, 이름은 사용자가 붙입니다
 
@@ -139,7 +139,7 @@ robust z (MAD=0이면 평균절대편차 × 1.2533) · 기준선 직전 52주 ·
 
 | \# | 무엇 | 누가 |
 | :---- | :---- | :---- |
-| 1 | **0순위 기술 부채** — `apply_principles.py`·`add_relics.py`를 `run_gyeol.py`에 흡수 | 데이터 창 |
+| 1 | ~~**0순위 기술 부채** — `apply_principles.py`·`add_relics.py`를 `run_gyeol.py`에 흡수~~ 10/24 완료: `run_gyeol.py` 한 번으로 리포트·벽·앱 데이터(원칙 v6·원문 포함). 두 파일은 하위호환 래퍼 | 데이터 창 |
 | 2 | `pickGem(week.week)` → `pickGem(dominant_axis, direction, cross_validated)` | 데이터 창 |
 | 3 | `insufficient` 등급의 앱 자리 | 창 B |
 | 4 | `rest` 축 — 밤 무기록 구간 대체 지표 | 데이터 창 |
