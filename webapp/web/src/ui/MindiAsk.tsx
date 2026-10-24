@@ -9,6 +9,7 @@ import { useEn } from '../i18n/useEn';
 import { answerEn, axisDirEn, DONT_KNOW_EN, FEELING_EN, UNCLEAR_EN, UNKNOWN_EN } from '../i18n/en';
 import { DONT_KNOW } from '../mindi/templates';
 import { applyVoice, speakAs, useVoice, type Voice } from '../mindi/voices';
+import { fixedKind, fixedLine, scriptedReply } from '../mindi/talk';
 import { MindiMark } from './Icons';
 import { VoiceChip } from './VoiceChip';
 import type { Axis, WeekRecord } from '../types';
@@ -16,7 +17,8 @@ import type { Axis, WeekRecord } from '../types';
 const EXAMPLES = ['이 주에 무엇이 달랐어?', '이 주와 닮은 주는 언제야?', '잠을 못 잔 주는 언제였어?'];
 
 /** voiceChip: 말투 칩을 이 머리에 둘지(민디와 이야기 화면은 위쪽 줄에 따로 둔다) */
-export function MindiAsk({ w, voiceChip = true }: { w: WeekRecord; voiceChip?: boolean }) {
+/** onAsk: 사용자가 먼저 물었을 때(민디와 이야기의 첫 한 마디를 거둔다) */
+export function MindiAsk({ w, voiceChip = true, onAsk }: { w: WeekRecord; voiceChip?: boolean; onAsk?: () => void }) {
   const { result, byKey, memosByWeek, select, settings } = useStore();
   const [q, setQ] = useState<QuestionId | null>(null);
   const [a, setA] = useState<(Answer & { used?: string }) | null>(null);
@@ -30,7 +32,12 @@ export function MindiAsk({ w, voiceChip = true }: { w: WeekRecord; voiceChip?: b
   const [voice, setVoice] = useVoice();
   // 말투를 입히기 전의 답(판정값으로 만든 문장). 말투를 바꾸면 이것을 다시 말한다
   const [base, setBase] = useState<Answer | null>(null);
-  useEffect(() => { if (base) voiced(base, voice); }, [voice]);
+  // 대본집 문장으로 받은 말(공감·돌려 답하기). 말투를 바꾸면 같은 줄의 다른 결로
+  const [said, setSaid] = useState<string | null>(null);
+  useEffect(() => {
+    if (said) { const r = scriptedReply(said, voice); if (r) setA({ text: r, dontKnow: false }); }
+    else if (base) voiced(base, voice);
+  }, [voice]);
   // 답이 나올 때마다 같은 소리 하나(답의 내용과 상관없이)
   useEffect(() => { if (a && settings.sound && !mindiSay(a.text)) playCue('found'); }, [a]);
   if (!result) return null;
@@ -46,7 +53,18 @@ export function MindiAsk({ w, voiceChip = true }: { w: WeekRecord; voiceChip?: b
 
   function show(b: Answer) {
     setBase(b);
+    setSaid(null);
     return voiced(b);
+  }
+
+  // 대본집 문장을 그대로(말투 규칙을 다시 입히지 않는다)
+  function sayScripted(t: string, raw: string | null) {
+    setBase(null);
+    setSaid(raw);
+    setSrc(null);
+    setChoices([]);
+    setHeard(null);
+    setA({ text: t, dontKnow: false });
   }
 
   function askAxis(axis: Axis, dir: 'up' | 'down') {
@@ -58,6 +76,13 @@ export function MindiAsk({ w, voiceChip = true }: { w: WeekRecord; voiceChip?: b
 
   // 자유 질문: 기기 안 규칙으로 정해진 질문에 잇는다. 어떻게 알아들었는지 함께 보여 준다
   function askFree(q = text) {
+    // 진단·치료·위기는 고정형(대본집 §17): 다른 무엇보다 먼저, 어떤 말투에서도 같은 문장
+    onAsk?.();
+    const fk = fixedKind(q);
+    if (fk) { setQ(null); return sayScripted(fixedLine(fk), null); }
+    // 사용자가 먼저 꺼낸 마음·판정을 묻는 말(§11-5 · §11-6)
+    const sr = scriptedReply(q, voice);
+    if (sr) { setQ(null); return sayScripted(sr, q); }
     const it = parseIntent(q);
     setQ(null);
     setChoices([]);

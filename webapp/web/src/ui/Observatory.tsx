@@ -11,6 +11,9 @@ import { MindiGreeting } from './Mindi';
 import { MindiAsk } from './MindiAsk';
 import { MindiMark } from './Icons';
 import { applyVoice, useVoice } from '../mindi/voices';
+import { NOTICE_FIRST_CHAT } from '../mindi/scripts.gen';
+import { dailyLine, openerLine } from '../mindi/talk';
+import type { Voice } from '../mindi/voices';
 import { VoiceChip } from './VoiceChip';
 import { requestNewSpace, SpaceButton } from './SpaceButton';
 import { GYEOL_TEXT } from './Gyeol';
@@ -26,25 +29,16 @@ export function latestObserved(weeks: WeekRecord[]): WeekRecord | undefined {
   return weeks[weeks.length - 1];
 }
 
-/** 오늘의 한 마디: 날짜마다 돌아가는 사실 문장. 같은 날 같은 기록이면 같은 문장이다 */
-export function todayLine(weeks: WeekRecord[], collected: number, today = new Date()): string {
+/** 오늘의 한 마디(전체 대본집 v1.1 §5-5, 44개 × 말투 4종): 날짜마다 돌아가고, 같은 날이면 같은 문장이다.
+ *  지표를 평가하지 않고, 질문하지 않고, 이용 시간·방문 빈도를 말하지 않는 줄만 대본집에 있다 */
+export function todayLine(weeks: WeekRecord[], _collected: number, today = new Date(), voice: Voice = 'quiet'): string {
   if (!weeks.length) return '아직 내려갈 지층이 없습니다.';
-  const first = Number(weeks[0].week.slice(0, 4));
-  const last = Number(weeks[weeks.length - 1].week.slice(0, 4));
-  const ores = weeks.filter((w) => w.candidate).length;
-  const latest = latestObserved(weeks);
-  const lines = [
-    `지층은 ${first}년부터 ${last}년까지, ${last - first + 1}해 깊이입니다.`,
-    `지금까지 캔 광석은 ${collected}개입니다.`,
-    latest ? `기록이 남은 가장 최근 주는 ${dateLabel(latest.date_start)}부터의 한 주입니다.` : `지층에 남은 주는 ${weeks.length}주입니다.`,
-    `기록이 평소 범위를 크게 벗어나 광석으로 박힌 주는 ${ores}주입니다.`,
-  ];
-  const day = Math.floor(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) / 86400000);
-  return lines[day % lines.length];
+  return dailyLine(voice, today);
 }
 
 export function Observatory({ onGo }: { onGo: (to: HubGo) => void }) {
   const { weeks, greeted } = useStore();
+  const [hubVoice] = useVoice();
   const collected = useCollected();
   const open = collected.length >= SPACE_NEED;
   // 첫 인사는 「찾아가 보기」를 누르는 순간 greeted 가 되므로, 이 화면에 들어올 때 인사 중이었으면 답이 나올 때까지 인사 칸을 남겨 둔다
@@ -55,7 +49,7 @@ export function Observatory({ onGo }: { onGo: (to: HubGo) => void }) {
       {greeting && <MindiGreeting />}
       {greeted && (
         <div className="mindi-panel" role="note" aria-label="민디의 오늘 한 마디">
-          <div className="mindi"><MindiMark /><p className="say">{todayLine(weeks, collected.length)}</p></div>
+          <div className="mindi"><MindiMark /><p className="say">{todayLine(weeks, collected.length, undefined, hubVoice)}</p></div>
         </div>
       )}
       <nav className="hub-buttons" aria-label="관측소에서 갈 곳">
@@ -108,6 +102,8 @@ export function Today({ onDescend }: { onDescend: (week: string) => void }) {
   );
 }
 
+const NOTICE_KEY = 'mined.chat.notice.v1';
+
 /** Ⓒ 민디와 이야기: 설명 듣기 / 그냥 이야기하기. 상관없는 이야기도 받아 준다(지어내지 않고 모른다고 답한다) */
 export function Talk({ onSpace }: { onSpace?: () => void }) {
   const { weeks } = useStore();
@@ -116,6 +112,10 @@ export function Talk({ onSpace }: { onSpace?: () => void }) {
   const [voice, setVoice] = useVoice();
   const collected = useCollected();
   const v = (s: string) => applyVoice(s, voice);
+  // 첫 대화 전 고지(대본집 §11-1): 처음 한 번 반드시, 건너뛸 수 없고 한 번 눌러 닫는다
+  const [noticed, setNoticed] = useState(() => { try { return localStorage.getItem(NOTICE_KEY) === '1'; } catch { return false; } });
+  // 첫 한 마디(§11-2): 이 화면에 들어올 때 한 번. 사용자가 먼저 말하거나 「그냥 둘러볼게요」를 누르면 거둔다
+  const [opener, setOpener] = useState(true);
   return (
     <section className="stack" aria-labelledby="talk-title">
       <h2 id="talk-title" className="h2">민디와 이야기</h2>
@@ -130,13 +130,34 @@ export function Talk({ onSpace }: { onSpace?: () => void }) {
         <div className="bubble"><MindiMark size={36} /><div className="stack">
           <p>{v('이곳은 당신의 기록이 해마다 한 겹씩 쌓인 광산입니다. 아래로 내려갈수록 오래된 해입니다.')}</p>
           <p>{v('모든 주는 지층의 결로 남아 있습니다. 걸음·수면·언어·소통 넷 가운데 기록이 직전 1년의 당신과 견주어 크게 벗어난 주에는 광석이 박혀 있습니다. 아무 주나 골라 캐도 광석이 됩니다.')}</p>
-          <p>{v('광석을 캐면 그때 남긴 사진과 글과 숫자가 그대로 열립니다. 저는 그 기록을 꺼내 보여 드릴 뿐, 좋았다거나 나빴다고 말하지 않습니다.')}</p>
-          <p>{v(`광석이 ${SPACE_NEED}개 모이면 안개가 걷히고 나의 공간을 지을 수 있습니다.`)}</p>
+          <p>{v('광석을 캐면 그때 남긴 사진과 글과 숫자가 그대로 열립니다.')}</p>
+          <p>{v(`광석이 ${SPACE_NEED}개 모이면 안개 옆에 나만의 섬을 놓을 자리가 생깁니다.`)}</p>
           <p className="small muted">기록은 이 브라우저 밖으로 나가지 않습니다.</p>
         </div></div>
-      ) : cur ? <MindiAsk w={cur} voiceChip={false} /> : <p className="muted">아직 기록이 없습니다.</p>}
-      {/* 나의 공간 만들기: 자리는 잠정(「함께 보는 기록」 줄 오른쪽 끝). 열려 있으면 새 공간 짓기부터 연다 */}
-      {onSpace && <div className="talk-foot"><SpaceButton count={collected.length} onOpen={() => { requestNewSpace(); onSpace(); }} /></div>}
+      ) : (
+        <div className="talk-chat">
+          <p className="ai-tag">민디 · AI</p>
+          {!noticed ? (
+            <div className="bubble notice" role="dialog" aria-label="민디와 처음 이야기하기 전에"><MindiMark size={36} /><div className="stack">
+              {NOTICE_FIRST_CHAT.split('\n').map((l) => <p key={l}>{l}</p>)}
+              <div><button className="btn primary" onClick={() => { try { localStorage.setItem(NOTICE_KEY, '1'); } catch { /* 이번 화면에서만 */ } setNoticed(true); }}>알겠어요</button></div>
+            </div></div>
+          ) : (
+            <>
+              {opener && (
+                <div className="bubble opener"><MindiMark size={36} /><div className="stack">
+                  <p>{openerLine(voice)}</p>
+                  <div><button className="btn quiet" onClick={() => setOpener(false)}>그냥 둘러볼게요</button></div>
+                </div></div>
+              )}
+              {cur ? <MindiAsk w={cur} voiceChip={false} onAsk={() => setOpener(false)} /> : <p className="muted">아직 기록이 없습니다.</p>}
+            </>
+          )}
+          <p className="talk-band" role="note"><span aria-hidden="true">ⓘ</span> 이 서비스는 의학적 평가나 진단이 아닙니다.</p>
+        </div>
+      )}
+      {/* 나만의 섬으로 가기: 자리는 잠정(대화 아래 줄 오른쪽 끝). 열려 있으면 새 공간 짓기부터 연다 */}
+      {onSpace && <div className="talk-foot"><SpaceButton count={collected.length} voice={voice} onOpen={() => { requestNewSpace(); onSpace(); }} /></div>}
     </section>
   );
 }

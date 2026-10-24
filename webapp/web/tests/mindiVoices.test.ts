@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { applyVoice, checkVoice, toHae, toHaeyo, toPlain, VOICES, type Voice } from '../src/mindi/voices';
+import { applyVoice, checkVoice, toHaeyo, toPlain, VOICES, type Voice } from '../src/mindi/voices';
 import { facts } from '../src/mindi/tone';
 import { nextVoice, VoicePicker, VoiceChip } from '../src/ui/VoiceChip';
 import { SpaceButton, spaceState } from '../src/ui/SpaceButton';
@@ -9,9 +9,9 @@ import { SpaceButton, spaceState } from '../src/ui/SpaceButton';
 const T = '2019년 3월 4일부터의 한 주가 이번 주와 가장 닮았습니다. 두 주 모두 걸음수·수면 시간은 평소보다 적은 편이었습니다. 그 주에 쓴 글이 3개 남아 있습니다. 그때는 약 5주 뒤부터 평소의 흐름이 이어졌습니다.';
 const ALL: Voice[] = VOICES.map((v) => v.id);
 
-describe('말투 5종', () => {
-  it('다섯 가지, 기본은 조용한', () => {
-    expect(ALL).toEqual(['quiet', 'warm', 'plain', 'dry', 'casual']);
+describe('말투 4종(대본집 v1.1 §18)', () => {
+  it('네 가지, 기본은 조용한', () => {
+    expect(ALL).toEqual(['quiet', 'warm', 'plain', 'dry']);
     expect(applyVoice(T, 'quiet')).toBe(T);
   });
 
@@ -49,15 +49,6 @@ describe('말투 5종', () => {
     expect(toHaeyo('평소와 같습니다. 기분이 좋습니다.')).toBe('평소와 같아요. 기분이 좋아요.');
   });
 
-  it('반말', () => {
-    expect(toHae('평소보다 많았습니다.')).toBe('평소보다 많았어.');
-    expect(toHae('벗어난 주입니다.')).toBe('벗어난 주야.');
-    expect(toHae('그 산입니다.')).toBe('그 산이야.');
-    expect(toHae('진단이 아닙니다.')).toBe('진단이 아니야.');
-    expect(toHae('찾아가볼까요?')).toBe('찾아가볼까?');
-    expect(toHae('세 번 두드리면 열려요.')).toBe('세 번 두드리면 열려.');
-  });
-
   it('담백한은 「입니다」 문장을 명사로 끝낸다', () => {
     expect(toPlain('평소 범위 위로 벗어난 주입니다. 기록이 없습니다.')).toBe('평소 범위 위로 벗어난 주. 기록이 없습니다.');
     expect(toPlain('진단이 아닙니다.')).toBe('진단이 아닙니다.');
@@ -73,8 +64,8 @@ describe('말투 5종', () => {
 describe('말투 칩', () => {
   it('방향키로 돌아가며 고른다', () => {
     expect(nextVoice('quiet', 'ArrowRight')).toBe('warm');
-    expect(nextVoice('quiet', 'ArrowUp')).toBe('casual');
-    expect(nextVoice('dry', 'End')).toBe('casual');
+    expect(nextVoice('quiet', 'ArrowUp')).toBe('dry');
+    expect(nextVoice('warm', 'End')).toBe('dry');
     expect(nextVoice('dry', 'a')).toBeNull();
   });
 
@@ -84,30 +75,32 @@ describe('말투 칩', () => {
     expect(chip).toContain('aria-haspopup="dialog"');
     const list = renderToStaticMarkup(createElement(VoicePicker, { value: 'dry', onChange: () => {}, withSample: true }));
     expect(list).toContain('role="radiogroup"');
-    expect(list.match(/role="radio"/g)).toHaveLength(5);
+    expect(list.match(/role="radio"/g)).toHaveLength(4);
     expect(list.match(/aria-checked="true"/g)).toHaveLength(1);
     expect(list).toContain('세 번이요.');
   });
 });
 
-describe('나의 공간 만들기', () => {
+describe('나만의 섬으로 가기', () => {
   it('광석 3개로 열린다', () => {
     expect(spaceState(2)).toEqual({ open: false, have: 2, need: 3 });
     expect(spaceState(3)).toEqual({ open: true });
     expect(spaceState(7)).toEqual({ open: true });
   });
 
-  it('잠김은 N/3 과 이유만, 남은 개수·카운트다운은 없다', () => {
-    const html = renderToStaticMarkup(createElement(SpaceButton, { count: 1, onOpen: () => {} }));
-    expect(html).toContain('🔒</span> 1/3');
-    expect(html).toContain('aria-disabled="true"');
-    expect(html).toContain('광석을 모으면 열려요');
-    expect(html).not.toMatch(/남은|더 모으|까지/);
+  it('잠김은 N/3 과 대본집 §13 민디 한 줄(말투 따라), 카운트다운은 없다', () => {
+    const one = renderToStaticMarkup(createElement(SpaceButton, { count: 1, onOpen: () => {} }));
+    expect(one).toContain('나만의 섬 · <span aria-hidden="true">🔒</span> 1/3');
+    expect(one).toContain('aria-disabled="true"');
+    expect(one).toContain('아직 자리가 안 생겼어요. 조금만 더 파 보죠.');
+    const two = renderToStaticMarkup(createElement(SpaceButton, { count: 2, onOpen: () => {}, voice: 'plain' }));
+    expect(two).toContain('광석 두 개. 하나 더면 열림.');
+    for (const h of [one, two]) expect(h).not.toMatch(/남았|빨리|까지/);
   });
 
   it('열리면 대화로 만들기', () => {
     const html = renderToStaticMarkup(createElement(SpaceButton, { count: 3, onOpen: () => {} }));
-    expect(html).toContain('이 대화로 나의 공간 만들기');
+    expect(html).toContain('나만의 섬으로 가기');
     expect(html).not.toContain('aria-disabled');
   });
 });
