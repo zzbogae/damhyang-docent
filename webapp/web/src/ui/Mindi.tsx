@@ -2,7 +2,7 @@
 import { useRef, useState } from 'react';
 import { useStore } from '../state/store';
 import { DONT_KNOW, GREETING, similarTemplate } from '../mindi/templates';
-import { polishTone } from '../mindi/tone';
+import { applyVoice, speakAs, useVoice } from '../mindi/voices';
 import { MindiMark } from './Icons';
 import { playCue } from '../mindi/sound';
 import { mindiSay } from '../mindi/soundKit';
@@ -24,6 +24,7 @@ export function MindiGreeting() {
   const [busy, setBusy] = useState(false);
   const en = useEn();
   const abort = useRef<AbortController | null>(null);
+  const [voice] = useVoice();
 
   if (greeted && !answer && !busy) return null;
 
@@ -31,7 +32,7 @@ export function MindiGreeting() {
     const cur = latestWithSimilar(weeks);
     markGreeted();
     if (!cur) {
-      setAnswer({ text: '아직 비교할 만큼 기록이 쌓이지 않았습니다.', used: 'template', target: '' });
+      setAnswer({ text: applyVoice('아직 비교할 만큼 기록이 쌓이지 않았습니다.', voice), used: 'template', target: '' });
       return;
     }
     const best = cur.similar[0];
@@ -40,13 +41,13 @@ export function MindiGreeting() {
     setBusy(true);
     if (settings.sound) playCue('wait');
     abort.current = new AbortController();
-    const r = settings.tone ? await polishTone(tpl, abort.current.signal) : { text: tpl, used: 'template' as const };
+    const r = await speakAs(tpl, voice, { useLlm: settings.tone, signal: abort.current.signal });
     setBusy(false);
     setAnswer({ text: r.text, used: r.used, target: sim.week });
     if (settings.sound && !mindiSay(r.text)) playCue('found');
   }
 
-  const say = answer ? answer.text : GREETING;
+  const say = answer ? answer.text : applyVoice(GREETING, voice);
   return (
     <div className="mindi-panel" role="region" aria-label="민디">
       <div className="mindi">
@@ -54,7 +55,7 @@ export function MindiGreeting() {
         <div>
           <p className="say">
             {say}
-            {answer && answer.target && <> <span className="dk">{DONT_KNOW}</span></>}
+            {answer && answer.target && <> <span className="dk">{applyVoice(DONT_KNOW, voice)}</span></>}
           </p>
           {en && (
             <p className="sub-en" lang="en">
