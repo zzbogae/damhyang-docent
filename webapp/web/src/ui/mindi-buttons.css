@@ -1,0 +1,116 @@
+/* 민디 말투 칩(VoiceChip·VoicePicker)과 「나의 공간 만들기」(SpaceButton).
+   styles.css 의 팀 토큰(--mined-*)만 쓴다. 버튼은 UI 시트 1·2 규칙대로 알약 모양, 주 버튼은 호박색 테두리.
+   화면 자리: 화면설계 v6 P9 — 말투 칩은 대화창 왼쪽 위(⋯ 반대편), 나의 공간 버튼은 「함께 보는 기록」 칩 줄 오른쪽 끝(잠정). */
+
+/* ---------- 말투 칩 ---------- */
+.voice-chip { position: relative; display: inline-block; }
+
+.chip-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 34px; padding: 0 12px 0 14px;
+  border-radius: var(--mined-r-pill); border: 1px solid var(--mined-line-strong);
+  background: var(--mined-btn-bg); color: var(--mined-ink);
+  font-size: 14px; line-height: 1; cursor: pointer; white-space: nowrap;
+  transition: background .18s var(--mined-ease-out), border-color .18s, transform .18s var(--mined-ease-out);
+}
+.chip-btn:hover { background: var(--mined-btn-bg-hi); border-color: rgba(255, 236, 214, .22); transform: translateY(-1px); }
+.chip-btn .chip-key { color: var(--mined-ink-mute); }
+.chip-btn .chip-key::after { content: '·'; margin-left: 6px; color: var(--mined-ink-mute); }
+.chip-btn .chip-val { font-weight: 600; color: var(--mined-core-light); }
+.chip-btn .chip-caret { font-size: 11px; color: var(--mined-ink-soft); transition: transform .18s var(--mined-ease-out); }
+.chip-btn.open { border-color: rgba(242, 170, 85, .55); background: var(--mined-amber-soft); }
+.chip-btn.open .chip-caret { transform: rotate(180deg); }
+.chip-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+/* 외부 모델이 다듬는 중: 값 옆에 호박색 점 세 개가 천천히 */
+.chip-btn.busy .chip-val::after { content: ''; display: inline-block; width: 14px; height: 4px; margin-left: 6px; vertical-align: middle;
+  background: radial-gradient(circle, var(--mined-amber) 1.6px, transparent 2px) 0 0 / 5px 4px repeat-x; animation: voice-busy 1.2s steps(3) infinite; }
+@keyframes voice-busy { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+
+.voice-pop {
+  position: absolute; z-index: 20; top: calc(100% + 8px); left: 0;
+  width: min(300px, calc(100vw - 32px)); padding: 8px;
+  background: var(--mined-panel); border-radius: var(--mined-r-md);
+  box-shadow: 0 0 0 1px var(--mined-line-strong), 0 16px 40px rgba(0, 0, 0, .45);
+  transform-origin: 24px -8px; animation: voice-pop .2s var(--mined-ease-pop);
+}
+@keyframes voice-pop { from { opacity: 0; transform: scale(.96) translateY(-4px); } }
+.voice-note { margin: 6px 8px 4px; font-size: 12px; line-height: 1.5; color: var(--mined-ink-mute); }
+
+/* ---------- 말투 목록(칩 안 · 설정 › 민디 공용) ---------- */
+.voice-list { display: grid; gap: 2px; }
+.voice-opt {
+  position: relative; display: grid; grid-template-columns: 18px 1fr; column-gap: 10px; align-items: center;
+  width: 100%; padding: 9px 10px; text-align: left;
+  border: 1px solid transparent; border-radius: var(--mined-r-sm); background: transparent;
+  color: var(--mined-ink); cursor: pointer; transition: background .15s, border-color .15s;
+}
+/* 라디오 동그라미 */
+.voice-opt::before { content: ''; grid-row: 1 / span 3; width: 14px; height: 14px; border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--mined-ink-mute); transition: box-shadow .15s; }
+.voice-opt:hover { background: var(--mined-btn-bg-hi); }
+.voice-opt.on { background: var(--mined-amber-soft); border-color: rgba(242, 170, 85, .35); }
+.voice-opt.on::before { box-shadow: inset 0 0 0 1.5px var(--mined-amber), inset 0 0 0 4px var(--mined-panel), inset 0 0 0 7px var(--mined-amber); }
+.voice-opt:disabled { opacity: .5; cursor: not-allowed; }
+.voice-name { font-size: 15px; font-weight: 600; line-height: 1.35; }
+.voice-name small { font-size: 12px; font-weight: 400; color: var(--mined-ink-mute); }
+.voice-opt.on .voice-name { color: var(--mined-core-light); }
+.voice-hint { grid-column: 2; font-size: 13px; line-height: 1.45; color: var(--mined-ink-soft); }
+.voice-sample { grid-column: 2; margin-top: 4px; font-size: 14px; line-height: 1.55; color: var(--mined-ink); opacity: .85; }
+
+/* 설정 › 민디: 예시까지 펼친 넓은 목록 */
+.voice-list.with-sample { gap: 6px; }
+.voice-list.with-sample .voice-opt { padding: 12px 14px; border-color: var(--mined-line); background: var(--mined-btn-bg); }
+.voice-list.with-sample .voice-opt.on { background: var(--mined-amber-soft); border-color: rgba(242, 170, 85, .45); }
+
+/* ---------- 나의 공간 만들기 ---------- */
+.space-btn-wrap { position: relative; display: inline-block; }
+.space-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 34px; padding: 0 14px;
+  border-radius: var(--mined-r-pill); font-size: 14px; line-height: 1; white-space: nowrap; cursor: pointer;
+  transition: background .18s var(--mined-ease-out), border-color .18s, transform .18s var(--mined-ease-out);
+}
+/* 열림: 주 버튼(호박색 테두리) */
+.space-btn.open { border: 1px solid rgba(242, 170, 85, .55); background: rgba(242, 170, 85, .16); color: var(--mined-amber); font-weight: 600; }
+.space-btn.open:hover { background: rgba(242, 170, 85, .24); transform: translateY(-1px); }
+.space-btn.open span { transition: transform .18s var(--mined-ease-out); }
+.space-btn.open:hover span { transform: translateX(2px); }
+/* 잠김: 관측소 Ⓔ 와 같은 조용한 표기. 진행은 숫자만, 막대·재촉 없음 */
+.space-btn.locked { border: 1px dashed var(--mined-line-strong); background: transparent; color: var(--mined-ink-soft); cursor: help; }
+.space-btn.locked:hover { border-color: rgba(255, 236, 214, .26); color: var(--mined-ink); }
+.space-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+.space-tip {
+  position: absolute; right: 0; bottom: calc(100% + 8px); z-index: 20;
+  padding: 7px 11px; border-radius: var(--mined-r-sm); white-space: nowrap;
+  background: var(--mined-layer); color: var(--mined-ink); font-size: 13px; line-height: 1.4;
+  box-shadow: 0 0 0 1px var(--mined-line-strong), 0 8px 20px rgba(0, 0, 0, .4);
+  opacity: 0; transform: translateY(4px); pointer-events: none; transition: opacity .15s, transform .15s var(--mined-ease-out);
+}
+/* 데스크톱: 마우스를 올리거나 키보드로 오면 0.5초 뒤(v6 툴팁 초안). 누르면 바로 */
+.space-btn-wrap:hover .space-tip, .space-btn.locked:focus-visible + .space-tip { opacity: 1; transform: none; transition-delay: .5s; }
+.space-btn-wrap .space-tip.show { opacity: 1; transform: none; transition-delay: 0s; }
+
+/* ---------- 화면에 붙이는 자리 ---------- */
+/* 민디와 이야기: 말투 칩(왼쪽) · 두 칸 전환 */
+.talk-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.talk-head .label-row { margin: 0; }
+/* 나의 공간 만들기: 대화 아래 줄 오른쪽 끝(잠정) */
+.talk-foot { display: flex; justify-content: flex-end; }
+/* 민디에게 묻기 머리: 제목 · 말투 칩(광석 상세에서) */
+.ask-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+/* 설정 › 민디 말투 */
+.voice-setting { display: grid; gap: 8px; }
+
+/* 휴대폰: 대화창 머리(말투 칩 · 두 칸 전환 · ⋯)가 한 줄에 들어가도록 칩은 값만 보인다(화면 읽기는 aria-label 로 「민디 말투」) */
+@media (max-width: 480px) {
+  .chip-btn { padding: 0 10px 0 12px; }
+  .chip-btn .chip-key { display: none; }
+  .space-tip { white-space: normal; width: max-content; max-width: min(240px, calc(100vw - 32px)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip-btn, .space-btn, .voice-pop, .space-tip, .chip-btn .chip-caret { transition: none; animation: none; }
+  .chip-btn:hover, .space-btn.open:hover { transform: none; }
+  .chip-btn.busy .chip-val::after { animation: none; }
+}

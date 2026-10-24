@@ -1,6 +1,9 @@
 // 민디 소리(팀 9/23 §1-8): 알아들을 수 없는 짧은 음절. 기기 안 Web Audio 로 합성하고 파일·외부 요청이 없다.
 // 반응해도 되는 것은 사건 세 가지(찾았다·기다린다·채굴 성공)뿐이다. 그 주가 어떤 주였는지·답이 무엇인지에 따라
 // 소리가 달라지면 그 소리가 판정이 되므로, 같은 사건에는 언제나 같은 소리를 낸다(난수 없음). 기본은 꺼짐.
+// 팀 사운드 키트(soundKit.ts)를 켜 둔 상태면 같은 사건을 키트의 민디 목소리로 내고, 키트가 없을 때만 아래 합성음을 쓴다.
+import { kitCue } from './soundKit';
+
 export type MindiCue = 'found' | 'wait' | 'mined';
 
 // 음절 하나 = [시작 음높이(Hz), 끝 음높이, 길이(초), 모음 색(두 번째 진동자 배수)]
@@ -21,6 +24,7 @@ export function canPlay() {
 export const cueSyllables = (c: MindiCue) => CUES[c];
 
 export function playCue(c: MindiCue, volume = 0.18) {
+  if (kitCue(c)) return;
   if (!canPlay()) return;
   ctx ??= new (window.AudioContext || (window as any).webkitAudioContext)();
   const ac = ctx;

@@ -81,4 +81,16 @@ copyDir(path.join(web, 'node_modules/onnxruntime-web/dist'), path.join(models, '
   /^ort-wasm-simd-threaded(\.jsep)?\.(mjs|wasm)$/.test(f),
 );
 
+// 3) 팀 사운드 키트(app/sound_kit_v1, PR #7). 원본은 키트 폴더 한 곳에만 두고 여기로 복사한다(웹앱 public 에는 넣지 않음).
+//    엔진이 실제로 읽는 파일만: 엔진 JS 와 audio/*.wav·mp3 (곡조별 완성본 mindi_moods/ 는 영상·발표용이라 뺀다)
+{
+  const kit = path.resolve(here, '../../app/sound_kit_v1');
+  const dest = path.join(pub, 'sound');
+  if (fs.existsSync(path.join(kit, 'mined-sound.js'))) {
+    copyDir(kit, dest, (f) => f === 'mined-sound.js');
+    copyDir(path.join(kit, 'audio'), path.join(dest, 'audio'), (f) => /\.(wav|mp3)$/.test(f));
+    console.log('sound kit', fs.readdirSync(path.join(dest, 'audio')).length, 'files');
+  } else console.log('sound kit not found (app/sound_kit_v1) — 소리는 내장 합성음으로만 납니다');
+}
+
 console.log('assets ready');

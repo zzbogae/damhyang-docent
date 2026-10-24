@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { MINERAL_COLOR, MINERALS } from './minerals';
 import { dateLabel } from '../mindi/templates';
+import { sfx } from '../mindi/soundKit';
 
 const KEY = 'mined.oreNames.v1';
 
@@ -56,7 +57,7 @@ export function OreName({ w }: { w: OreWeek }) {
     return (
       <form className="ore-name-edit" onSubmit={(e) => {
         e.preventDefault();
-        saveOreName(w.week, draft);
+        saveOreName(w.week, draft); sfx('nameSave');
         setName(draft.trim() ? draft.trim().slice(0, 20) : null);
         setEditing(false);
       }}>

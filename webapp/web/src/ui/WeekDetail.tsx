@@ -1,5 +1,7 @@
 // 주 상세: 판정 문장 → 4축 게이지 → 채널 → 그때 쓴 글·찍은 사진 → 닮은 주 → 이름 붙이기.
 import { useEffect, useMemo, useState } from 'react';
+import { missingUsual, oreMineral, useCollected } from '../ore/collection';
+import { OreGuide } from './OreGuide';
 import { useStore } from '../state/store';
 import { AXES, axisScreen, CHANNEL_LABEL, CHANNELS, type Badge, type Grade, type MemoRecord, type WeekRecord } from '../types';
 import { gradeText, rangeLabel, sameDirectionText } from '../mindi/templates';
@@ -18,6 +20,7 @@ import { MINERAL_COLOR } from './minerals';
 import { OreName } from './oreName';
 import { MINERAL_IMG, ART } from './design';
 import { playCue } from '../mindi/sound';
+import { sfx } from '../mindi/soundKit';
 const GRADE_SHORT: Partial<Record<Grade, string>> = {
   open: '아직 확인 전', returned: '돌아옴, 그 뒤 미확인', held: '그 뒤도 평소 범위', insufficient: '기록이 비어 알 수 없음',
   broken: '돌아옴, 다시 벗어남',
@@ -308,6 +311,7 @@ function MineralDig({ mineral, sound }: { mineral: keyof typeof MINERAL_IMG; sou
     if (hits >= 3) return;
     const n = hits + 1;
     setHits(n); setShake((k) => k + 1);
+    sfx(n === 1 ? 'hit1' : n === 2 ? 'hit2' : 'hit3');
     if (n === 3) {
       if (sound) playCue('mined');
       setTimeout(() => document.getElementById('wk-memos')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 420);
@@ -332,14 +336,26 @@ export function WeekDetail({ w, team = false }: { w: WeekRecord; team?: boolean 
   void unlocked; void unlock;
   const fam = w.evidence.families.map((f) => CHANNEL_LABEL[f as keyof typeof CHANNEL_LABEL] ?? f);
   const lead = w.candidate ? (w.sentence_plain ?? w.sentence) : null;
+  // 직접 고른 주는 캔 뒤에만 겉색이 붙는다(보관함에 있을 때). 데이터 광석은 코어 값 그대로
+  const collected = useCollected();
+  const oreM = w.candidate ? (w.mineral && w.mineral in MINERAL_IMG ? w.mineral : null)
+    : collected.some((c) => c.week === w.week) ? oreMineral(w) : null;
+  const { weeks } = useStore();
+  const miss = team ? missingUsual(w, weeks) : [];
   return (
     <article className={`stack${team ? ' team-detail' : ''}`} aria-labelledby="wk-title">
       {team && (
         <header className="td-head">
-          {w.mineral && w.mineral in MINERAL_IMG && <img className="td-core" src={MINERAL_IMG[w.mineral as keyof typeof MINERAL_IMG]} alt="광석" />}
+          {oreM && <img className="td-core" src={MINERAL_IMG[oreM as keyof typeof MINERAL_IMG]} alt="광석" />}
           <h2 id="wk-title" className="td-date">{rangeLabel(w)}</h2>
           <div className="td-tag">{w.grade ? gradeText(w) : ''}</div>
-          <OreName w={w} />
+          <div className="td-chips">
+            {w.candidate && w.evidence.cross_validated && <span className="chip">교차 확인</span>}
+            {!w.candidate && oreM && <span className="chip">직접 고른 광석</span>}
+            {w.gyeol && <GyeolChip g={w.gyeol} />}
+          </div>
+          <OreName w={{ ...w, mineral: oreM }} />
+          {miss.length > 0 && <p className="td-miss small">그 주에 평소 있던 기록 중 {miss.length}종이 비어 있습니다({miss.map((c) => CHANNEL_LABEL[c]).join('·')}).</p>}
           <div className="td-gauges"><div className="td-legend" aria-hidden="true"><span>적음</span><span>평소</span><span>많음</span></div><Gauges w={w} /></div>
           {lead ? <p className="sentence">{lead}</p> : <p className="sentence muted">평소와 크게 다르지 않았던 주입니다. 그때 남은 기록을 그대로 보여 드립니다.</p>}
           {en && lead && <p className="sub-en" lang="en">{weekSentenceEn(w)}</p>}
@@ -347,6 +363,7 @@ export function WeekDetail({ w, team = false }: { w: WeekRecord; team?: boolean 
           {lead && <ScreenReadButton text={lead} />}
         </header>
       )}
+      {team && <OreGuide w={w} />}
       {!team && <header>
         {w.mineral && w.mineral in MINERAL_IMG && <MineralDig mineral={w.mineral as keyof typeof MINERAL_IMG} sound={!!settings.sound} />}
         <div className="week-head">
@@ -367,7 +384,7 @@ export function WeekDetail({ w, team = false }: { w: WeekRecord; team?: boolean 
       </header>}
 
       <section id="wk-memos"><h3 className="h3">그때 쓴 글</h3><Memos w={w} locked={locked} /></section>
-      <section><h3 className="h3">그때 찍은 사진</h3><Photos w={w} locked={locked} /></section>
+      <section id="wk-photos"><h3 className="h3">그때 찍은 사진</h3><Photos w={w} locked={locked} /></section>
       <MindiAsk w={w} />
       <section><h3 className="h3">닮은 지난 주</h3><Similar w={w} /></section>
       <section><h3 className="h3">이름 붙이기</h3><Labels w={w} /></section>

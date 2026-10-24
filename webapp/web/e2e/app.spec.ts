@@ -39,7 +39,7 @@ test('합성 입력으로 판정하고 주 상세를 연다', async ({ page }) =
 
   // 라벨 붙이기
   await page.getByLabel('이 주에 붙일 이름').fill('긴 겨울');
-  await page.getByRole('button', { name: '붙이기' }).click();
+  await page.getByRole('button', { name: '붙이기', exact: true }).click();
   await expect(page.locator('.label-pill', { hasText: '긴 겨울' })).toBeVisible();
 
   // 새로고침해도 남아 있다(IndexedDB)
@@ -132,7 +132,7 @@ test('같은 이름을 다섯 주에 붙이면 나의 방이 열린다', async (
   for (const wk of weeks) {
     await page.locator(`[data-week="${wk}"]`).click();
     await page.getByLabel('이 주에 붙일 이름').fill('긴 겨울');
-    await page.getByRole('button', { name: '붙이기' }).click();
+    await page.getByRole('button', { name: '붙이기', exact: true }).click();
     await expect(page.locator('.label-pill', { hasText: '긴 겨울' })).toBeVisible();
   }
   await page.getByRole('button', { name: '나의 방 열기' }).click();
@@ -173,7 +173,7 @@ test('민디에게 묻기와 시기 페이지', async ({ page }) => {
   await expect(page.locator('#wk-title')).toBeVisible();
   await page.getByLabel('민디에게 직접 묻기').fill('메모 남긴 주');
   await page.getByRole('button', { name: '묻기', exact: true }).click();
-  await page.getByRole('button', { name: '기록을 적게 남긴 주는 언제였어?' }).click();
+  await page.getByRole('button', { name: '글을 적게 남긴 주는 언제였어?' }).click();
   await expect(page.locator('.ask .bubble')).toContainText('남긴 기록이 있는');
   await page.getByLabel('민디에게 직접 묻기').fill('그때 많이 힘들었지?');
   await page.getByRole('button', { name: '묻기', exact: true }).click();
@@ -289,11 +289,19 @@ test('민디 소리: 켜면 사건마다 기기 안에서 음절을 합성하고
   expect(await page.evaluate(() => (window as any).__osc)).toBe(0);
   await page.getByRole('button', { name: '설정' }).click();
   await page.getByLabel(/민디 소리/).check();
+  // 켜면 팀 사운드 키트(같은 출처 파일)를 불러오고, 그 뒤 사건 소리는 키트 목소리로 낸다
+  await expect.poll(() => page.evaluate(() => (window as any).MineDSound?.isOn?.() ?? false), { timeout: 10000 }).toBe(true);
+  await page.evaluate(() => {
+    const k = (window as any).MineDSound; (window as any).__cues = [];
+    const cue = k.cue.bind(k); k.cue = (c: string) => { (window as any).__cues.push(c); return cue(c); };
+    const say = k.say.bind(k); k.say = (t: string, o?: unknown) => { (window as any).__cues.push('say'); return say(t, o); };
+  });
   // 이미 고른 주를 다시 눌러도 설정 화면에서 주 화면으로 돌아온다
   await page.locator('[data-week="2025-W20"]').click();
   await ask(page, '왜 이 주를 골랐어?');
-  // 광물 칸을 눌러 연 「채굴」 3음절 + 답이 나온 「찾았다」 3음절, 음절마다 진동자 2개
-  await expect.poll(() => page.evaluate(() => (window as any).__osc)).toBe(12);
+  // 광물 칸을 눌러 연 「채굴」 + 답이 나오면 민디가 그 답을 외계어 목소리로 말한다
+  await expect.poll(() => page.evaluate(() => (window as any).__cues.join(','))).toContain('say');
+  expect(await page.evaluate(() => (window as any).__cues)).toContain('mined');
   expect(errors).toEqual([]);
 });
 
@@ -305,7 +313,7 @@ test('전시용 키오스크: 샘플을 저절로 불러오고, 쉬는 시간이
   const wk = await page.locator('.strata .wk.hit').first().getAttribute('data-week');
   await page.locator(`[data-week="${wk}"]`).click();
   await page.getByLabel('이 주에 붙일 이름').fill('관람객 이름');
-  await page.getByRole('button', { name: '붙이기' }).click();
+  await page.getByRole('button', { name: '붙이기', exact: true }).click();
   await expect(page.locator('.strata .wk .lab')).toHaveCount(1);
   // 8초 동안 아무도 만지지 않으면 초기화
   await expect(page.getByText('처음 화면을 준비하고 있습니다.')).toBeVisible({ timeout: 20000 });

@@ -3,6 +3,7 @@
 // 대사 중 「화분에 심어두세요」·「한 번 더 물어봅니다」는 이 앱에 없는 기능이라(이름 붙이기 / 9/12 회의로 다시 묻기 없앰) 맞게 바꿨다.
 import { useEffect, useState } from 'react';
 import { ART } from './design';
+import { mindiSay, sceneOverlay, sfx } from '../mindi/soundKit';
 
 const TUTORIAL: { eyebrow: string; line: string[] }[] = [
   { eyebrow: '민디', line: ['안녕하세요, 저는 민디예요.', '당신의 기록에서 광물을 캡니다.'] },
@@ -26,6 +27,8 @@ export function Intro({ onDone }: { onDone: () => void }) {
   const finish = () => { setLeaving(true); setTimeout(onDone, 700); };
   const next = () => (step < TUTORIAL.length - 1 ? setStep(step + 1) : finish());
   const t = TUTORIAL[step];
+  useEffect(() => sceneOverlay('intro'), []);
+  useEffect(() => { if (stage === 1) mindiSay(t.line.join(' '), step === 0 ? 'hello' : undefined); }, [stage, step]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div className={`intro${leaving ? ' leaving' : ''}`} role="dialog" aria-modal="true" aria-label="Mine D 입장">
       <section className={`intro-screen intro-entry${stage === 0 ? ' on' : ''}`} aria-hidden={stage !== 0}>
@@ -35,7 +38,7 @@ export function Intro({ onDone }: { onDone: () => void }) {
         <div className="intro-scrim" />
         <img className={`intro-logo${logo ? ' play' : ''}`} src={ART.logoDark} alt="Mine D" />
         <div className={`intro-enter${btn ? ' play' : ''}`}>
-          <button className="intro-enter-btn" onClick={() => setStage(1)} tabIndex={stage === 0 ? 0 : -1}>
+          <button className="intro-enter-btn" onClick={() => { sfx('door'); setStage(1); }} tabIndex={stage === 0 ? 0 : -1}>
             <span className="dot" />입장하기
           </button>
         </div>

@@ -76,7 +76,7 @@
 | lang | 2.85 ⚠ | 1.37 ⚠ |
 | talk | 2.85 ⚠ | 1.37 ⚠ |
 
-⚠ 옛 `leave` 값을 임시로 씁니다. 맥에서 `pipeline/gyeol_kit/calibrate_axes.py`를 실데이터로 돌려 다시 재야 합니다.
+⚠ 옛 `leave` 값을 임시로 씁니다. 실데이터가 있는 맥에서 `cd pipeline/gyeol_kit && python3 calibrate_axes.py --name "카톡 표시 이름" --write` 한 줄이면 이 표·아래 결 주 수·코드(`gyeol/axes.py`, `webapp/core/mined_core/judge.py`)가 함께 바뀝니다.
 
 ### 광석 — 축이 정하고, 이름은 사용자가 붙입니다
 
@@ -135,14 +135,14 @@ robust z (MAD=0이면 평균절대편차 × 1.2533) · 기준선 직전 52주 ·
 
 ## 열린 것
 
-10/23 기준 열린 것: ① 언어·소통 τ 재계산(맥, 실데이터) ② 직접 고른 광석의 겉색 규칙 코드 반영 ③ 멘토 확인 — 데모 형식·발표 시간, OpenRouter 키. 아래 표는 10/2판이며 정리 전입니다.
+10/24 기준 열린 것: ① 언어·소통 τ 재계산은 도구가 준비됐고, 실데이터 맥에서 위 79행의 명령 한 줄만 돌리면 됩니다 ② 직접 고른 광석의 겉색 규칙은 웹앱에 반영했습니다(가장 크게 벗어난 축과 방향, 견줄 축이 없으면 색 없음) ③ 멘토 확인 — 데모 형식·발표 시간, OpenRouter 키. 아래 표는 10/2판이며, 10/24에 처리한 항목은 줄을 그었습니다.
 
 | \# | 무엇 | 누가 |
 | :---- | :---- | :---- |
-| 1 | **0순위 기술 부채** — `apply_principles.py`·`add_relics.py`를 `run_gyeol.py`에 흡수 | 데이터 창 |
-| 2 | `pickGem(week.week)` → `pickGem(dominant_axis, direction, cross_validated)` | 데이터 창 |
-| 3 | `insufficient` 등급의 앱 자리 | 창 B |
-| 4 | `rest` 축 — 밤 무기록 구간 대체 지표 | 데이터 창 |
+| 1 | ~~**0순위 기술 부채** — `apply_principles.py`·`add_relics.py`를 `run_gyeol.py`에 흡수~~ 10/24 완료: `run_gyeol.py` 한 번으로 리포트·벽·앱 데이터(원칙 v6·원문 포함). 두 파일은 하위호환 래퍼 | 데이터 창 |
+| 2 | ~~`pickGem(week.week)` → `pickGem(dominant_axis, direction, cross_validated)`~~ 웹앱은 축 × 방향 규칙으로 광석을 정합니다(난수 없음). 발표 프로토타입 `app/` 의 pickGem 은 그대로 | 데이터 창 |
+| 3 | ~~`insufficient` 등급의 앱 자리~~ 열린 광석 등급 자리에 「기록이 비어 판정할 수 없습니다」로 나옵니다 | 창 B |
+| 4 | `rest` 축 — 밤 무기록 구간 대체 지표: 웹앱에 들어가 있지만 배지에는 아직 쓰지 않습니다. 실기록 평가에서 수면과 맞는지 확인한 뒤 켭니다 | 데이터 창 |
 | 5 | **팔레트** — 관측소=단희 / 섬=노을 톤 분리안 | 보경 \+ 단희 |
 | 6 | 「앰버는 화면당 한 곳」 vs 광석 9종 다색 | 보경 \+ 하빈 |
 | 7 | 코드베이스 통합 — `gyeol_app.html` vs 하빈 `ui/` | 보경 \+ 하빈 |
