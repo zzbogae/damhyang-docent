@@ -1,0 +1,52 @@
+/* 연도 쌓임 — 엘리베이터 하강(YearStack)과 지층 화면의 층 이름(.mf-layer-year)
+   글꼴은 마루 부리(--display), 색은 팀 토큰. 움직임은 「흐릿함 → 또렷함 + 살짝 가라앉음」(안개가 걷히고 퇴적되는 느낌). */
+
+/* ---------- 엘리베이터 하강 중 ---------- */
+.ys { --ys-row: 64px; position: absolute; inset: 0; z-index: 4; pointer-events: none; overflow: hidden;
+  /* 위·아래로 갈수록 어둠 속으로 */
+  -webkit-mask-image: linear-gradient(180deg, transparent 20%, #000 48%, #000 80%, transparent 96%);
+          mask-image: linear-gradient(180deg, transparent 20%, #000 48%, #000 80%, transparent 96%); }
+.ys { --ys-at: 66%; }
+/* 엘리베이터 그림에 그려진 글자(SCROLL DOWN 등)와 섞이지 않도록, 쌓이는 줄 뒤에 어두운 띠를 깐다 */
+.ys::before { content: ''; position: absolute; left: 0; right: 0; top: calc(var(--ys-at) - 150px); height: 300px;
+  background: radial-gradient(ellipse 46% 50% at 50% 50%, rgba(8, 7, 11, .82), rgba(8, 7, 11, .55) 55%, transparent 100%);
+  opacity: 0; animation: ys-fade .5s ease forwards; }
+@keyframes ys-fade { to { opacity: 1; } }
+.ys-col { position: absolute; left: 50%; top: calc(var(--ys-at) - var(--ys-row) / 2); margin: 0; padding: 0; list-style: none;
+  transform: translateX(-50%); animation: ys-scroll var(--ys-span) cubic-bezier(.45, 0, .35, 1) forwards; }
+/* 한 해씩 위로 밀린다: 마지막 해가 가운데에 오도록 (줄 수 - 1) 만큼 */
+@keyframes ys-scroll { to { transform: translateX(-50%) translateY(calc(var(--ys-rows) * var(--ys-row) * -1)); } }
+
+.ys-row { position: relative; height: var(--ys-row); display: flex; align-items: center; justify-content: center; min-width: 280px;
+  opacity: 0; animation: ys-in .55s var(--mined-ease-out) var(--ys-in) forwards, ys-pass .6s ease var(--ys-out) forwards; }
+.ys-row.last { animation: ys-in .7s var(--mined-ease-out) var(--ys-in) forwards; }
+.ys-year { font-family: var(--display); font-weight: 600; font-size: 40px; letter-spacing: .08em; color: var(--mined-ink);
+  font-variant-numeric: lining-nums tabular-nums; text-shadow: 0 2px 12px rgba(0, 0, 0, .6); }
+.ys-row.last .ys-year { font-size: 56px; color: var(--mined-amber);
+  text-shadow: 0 0 26px rgba(255, 212, 138, .45), 0 2px 12px rgba(0, 0, 0, .6); }
+/* 층과 층 사이의 결(가는 띠) */
+.ys-seam { position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 236, 214, .22) 20%, rgba(255, 236, 214, .22) 80%, transparent); }
+.ys-row.last .ys-seam { background: linear-gradient(90deg, transparent, rgba(242, 170, 85, .5) 25%, rgba(242, 170, 85, .5) 75%, transparent); }
+
+@keyframes ys-in { from { opacity: 0; transform: translateY(18px); filter: blur(8px); } to { opacity: 1; transform: none; filter: blur(0); } }
+@keyframes ys-pass { to { opacity: .28; filter: blur(1.5px); } }
+
+/* ---------- 지층 화면: 층이 들어올 때 층 이름이 자리 잡는다 ----------
+   (styles.css 가 main.tsx 에서 이 파일보다 늦게 불리므로 .mf-layer 를 앞에 붙여 우선한다) */
+.mf-layer .mf-layer-year { font-size: 15px; color: rgba(238, 233, 226, .72); text-shadow: 0 1px 8px rgba(0, 0, 0, .6); }
+/* 층 이름표: 이름 뒤로 가는 결 한 줄 */
+.mf-layer .mf-layer-year::after { content: ''; display: inline-block; vertical-align: middle; width: 120px; height: 1px; margin-left: 12px;
+  background: linear-gradient(90deg, rgba(255, 236, 214, .3), transparent); }
+@supports (animation-timeline: view()) {
+  .mf-layer .mf-layer-year { animation: ys-layer linear both; animation-timeline: view(); animation-range: entry 10% cover 35%; }
+}
+@keyframes ys-layer { from { opacity: 0; transform: translateY(-12px); filter: blur(6px); } to { opacity: 1; transform: none; filter: blur(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ys::before, .ys-col, .ys-row, .mf-layer-year { animation: none !important; opacity: 1; filter: none; }
+}
+@media (max-width: 720px) {
+  .ys { --ys-row: 52px; }
+  .ys-year { font-size: 30px; } .ys-row.last .ys-year { font-size: 42px; }
+}

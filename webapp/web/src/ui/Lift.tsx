@@ -7,6 +7,7 @@ import { useStore } from '../state/store';
 import { kitDescend, sfx } from '../mindi/soundKit';
 import { ART } from './design';
 import './lift.css';
+import { YearStack } from './YearStack';
 
 const reduced = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -63,6 +64,7 @@ export function Lift({ onBack, onDescend }: { onBack: () => void; onDescend: (ye
         <img src={ART.liftShaft} alt="" style={{ ['--lift-depth' as string]: String((at + 1) / (floors.length + 1)) }} />
         <div className="lift-shade" />
       </div>
+      {going && cur && <YearStack years={floors.slice(0, at + 1).map((f) => f.year)} sec={2.2} />}
       <div className="lift-indicator">
         <button className="lift-arrow" onClick={() => move(at - 1)} disabled={at <= 0 || going} aria-label="한 층 위로">▲</button>
         <ol className="lift-floors" aria-label="층 표시기">
