@@ -12,6 +12,9 @@ import { MindiGreeting } from './Mindi';
 import { MindiAsk } from './MindiAsk';
 import { MindiMark } from './Icons';
 import { applyVoice, useVoice } from '../mindi/voices';
+import { NOTICE_FIRST_CHAT } from '../mindi/scripts.gen';
+import { dailyLine, openerLine } from '../mindi/talk';
+import type { Voice } from '../mindi/voices';
 import { VoiceChip } from './VoiceChip';
 import { requestNewSpace, SpaceButton } from './SpaceButton';
 import { GYEOL_TEXT } from './Gyeol';
@@ -30,21 +33,11 @@ export function latestObserved(weeks: WeekRecord[]): WeekRecord | undefined {
   return weeks[weeks.length - 1];
 }
 
-/** 오늘의 한 마디: 날짜마다 돌아가는 사실 문장. 같은 날 같은 기록이면 같은 문장이다 */
-export function todayLine(weeks: WeekRecord[], collected: number, today = new Date()): string {
+/** 오늘의 한 마디(전체 대본집 v1.1 §5-5, 44개 × 말투 4종): 날짜마다 돌아가고, 같은 날이면 같은 문장이다.
+ *  지표를 평가하지 않고, 질문하지 않고, 이용 시간·방문 빈도를 말하지 않는 줄만 대본집에 있다 */
+export function todayLine(weeks: WeekRecord[], _collected: number, today = new Date(), voice: Voice = 'quiet'): string {
   if (!weeks.length) return '아직 내려갈 지층이 없습니다.';
-  const first = Number(weeks[0].week.slice(0, 4));
-  const last = Number(weeks[weeks.length - 1].week.slice(0, 4));
-  const ores = weeks.filter((w) => w.candidate).length;
-  const latest = latestObserved(weeks);
-  const lines = [
-    `지층은 ${first}년부터 ${last}년까지, ${last - first + 1}해 깊이입니다.`,
-    `지금까지 캔 광석은 ${collected}개입니다.`,
-    latest ? `기록이 남은 가장 최근 주는 ${dateLabel(latest.date_start)}부터의 한 주입니다.` : `지층에 남은 주는 ${weeks.length}주입니다.`,
-    `기록이 평소 범위를 크게 벗어나 광석으로 박힌 주는 ${ores}주입니다.`,
-  ];
-  const day = Math.floor(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) / 86400000);
-  return lines[day % lines.length];
+  return dailyLine(voice, today);
 }
 
 /** 「2024년 4월 2주」 */
@@ -92,6 +85,7 @@ function loadScene(): SceneId {
 
 export function Observatory({ onGo }: { onGo: (to: HubGo) => void }) {
   const { weeks, greeted } = useStore();
+  const [hubVoice] = useVoice();
   const collected = useCollected();
   const open = collected.length >= SPACE_NEED;
   // 첫 인사는 「찾아가 보기」를 누르는 순간 greeted 가 되므로, 이 화면에 들어올 때 인사 중이었으면 답이 나올 때까지 인사 칸을 남겨 둔다
@@ -123,7 +117,7 @@ export function Observatory({ onGo }: { onGo: (to: HubGo) => void }) {
           {greeted && bubble && (
             <div className="obs-bubble" role="note" aria-label="민디의 오늘 한 마디">
               <MindiMark size={30} />
-              <p className="say">{todayLine(weeks, collected.length)}</p>
+              <p className="say">{todayLine(weeks, collected.length, undefined, hubVoice)}</p>
               <button className="obs-bubble-x" onClick={() => { sfx('close'); setBubble(false); }} aria-label="말풍선 닫기">×</button>
             </div>
           )}
@@ -216,6 +210,8 @@ export function Today({ onDescend }: { onDescend: (week: string) => void }) {
   );
 }
 
+const NOTICE_KEY = 'mined.chat.notice.v1';
+
 /** Ⓒ 민디와 이야기(P9): 위 `설명 듣기 | 이야기 나누기` · 오른쪽 위 ⋯ · 대화창 · 입력창 바로 위 「함께 보는 기록」 칩 · 입력창은 아래 */
 export function Talk({ onSpace, withWeek, firstText }: { onSpace?: () => void; withWeek?: string; firstText?: string }) {
   const { weeks, byKey } = useStore();
@@ -230,6 +226,10 @@ export function Talk({ onSpace, withWeek, firstText }: { onSpace?: () => void; w
   const [voice, setVoice] = useVoice();
   const collected = useCollected();
   const v = (s: string) => applyVoice(s, voice);
+  // 첫 대화 전 고지(대본집 §11-1): 처음 한 번 반드시, 건너뛸 수 없고 한 번 눌러 닫는다
+  const [noticed, setNoticed] = useState(() => { try { return localStorage.getItem(NOTICE_KEY) === '1'; } catch { return false; } });
+  // 첫 한 마디(§11-2): 이 화면에 들어올 때 한 번. 사용자가 먼저 말하거나 「그냥 둘러볼게요」를 누르면 거둔다(광석에서 넘어온 말이 있으면 처음부터 거둠)
+  const [opener, setOpener] = useState(!firstText);
   const chipEl = chip && byKey.get(chip) ? (
     <div className="talk-chip-row">
       <span className="talk-chip">함께 보는 기록 · {monthWeekLabel(byKey.get(chip)!)}
@@ -266,8 +266,8 @@ export function Talk({ onSpace, withWeek, firstText }: { onSpace?: () => void; w
               <div className="bubble"><MindiMark size={36} /><div className="stack">
                 <p>{v('이곳은 당신의 기록이 해마다 한 겹씩 쌓인 광산입니다. 아래로 내려갈수록 오래된 해입니다.')}</p>
                 <p>{v('모든 주는 지층의 결로 남아 있습니다. 걸음·수면·언어·소통 넷 가운데 기록이 직전 1년의 당신과 견주어 크게 벗어난 주에는 광석이 박혀 있습니다. 아무 주나 골라 캐도 광석이 됩니다.')}</p>
-                <p>{v('광석을 캐면 그때 남긴 사진과 글과 숫자가 그대로 열립니다. 저는 그 기록을 꺼내 보여 드릴 뿐, 좋았다거나 나빴다고 말하지 않습니다.')}</p>
-                <p>{v(`광석이 ${SPACE_NEED}개 모이면 안개가 걷히고 나의 공간을 지을 수 있습니다.`)}</p>
+                <p>{v('광석을 캐면 그때 남긴 사진과 글과 숫자가 그대로 열립니다.')}</p>
+                <p>{v(`광석이 ${SPACE_NEED}개 모이면 안개 옆에 나만의 섬을 놓을 자리가 생깁니다.`)}</p>
                 <p className="small muted">기록은 이 브라우저 밖으로 나가지 않습니다.</p>
               </div></div>
             </div>
@@ -277,11 +277,29 @@ export function Talk({ onSpace, withWeek, firstText }: { onSpace?: () => void; w
               <button className="btn primary" type="submit" disabled={!draft.trim()}>보내기</button>
             </form>
           </>
+        ) : !noticed ? (
+          <div className="talk-log">
+            <p className="ai-tag">민디 · AI</p>
+            <div className="bubble notice" role="dialog" aria-label="민디와 처음 이야기하기 전에"><MindiMark size={36} /><div className="stack">
+              {NOTICE_FIRST_CHAT.split('\n').map((l) => <p key={l}>{l}</p>)}
+              <div><button className="btn primary" onClick={() => { try { localStorage.setItem(NOTICE_KEY, '1'); } catch { /* 이번 화면에서만 */ } setNoticed(true); }}>알겠어요</button></div>
+            </div></div>
+          </div>
         ) : base ? (
-          <MindiAsk key={`${base.week}-${round}`} w={base} voiceChip={false} chat initial={pending} chip={chipEl} />
+          <>
+            <p className="ai-tag">민디 · AI</p>
+            {opener && (
+              <div className="bubble opener"><MindiMark size={36} /><div className="stack">
+                <p>{openerLine(voice)}</p>
+                <div><button className="btn quiet" onClick={() => setOpener(false)}>그냥 둘러볼게요</button></div>
+              </div></div>
+            )}
+            <MindiAsk key={`${base.week}-${round}`} w={base} voiceChip={false} chat initial={pending} chip={chipEl} onAsk={() => setOpener(false)} />
+            <p className="talk-band" role="note"><span aria-hidden="true">ⓘ</span> 이 서비스는 의학적 평가나 진단이 아닙니다.</p>
+          </>
         ) : <p className="muted">아직 기록이 없습니다.</p>}
-        {/* 나의 공간 만들기: 자리는 잠정(「함께 보는 기록」 줄 오른쪽 끝). 열려 있으면 새 공간 짓기부터 연다 */}
-        {onSpace && <div className="talk-foot"><SpaceButton count={collected.length} onOpen={() => { requestNewSpace(); onSpace(); }} /></div>}
+        {/* 나만의 섬으로 가기: 자리는 잠정(대화 아래 줄 오른쪽 끝). 열려 있으면 새 공간 짓기부터 연다 */}
+        {onSpace && <div className="talk-foot"><SpaceButton count={collected.length} voice={voice} onOpen={() => { requestNewSpace(); onSpace(); }} /></div>}
       </div>
     </section>
   );

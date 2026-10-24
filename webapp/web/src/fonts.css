@@ -1,0 +1,29 @@
+/* 제목·큰 연도 글꼴: 네이버 마루 부리(오픈 라이선스, © NAVER Corp. · NAVER Cultural Foundation) — licenses/MaruBuri-NOTICE.md
+   정보·버튼·민디 말풍선은 Pretendard 그대로(팀 UI 시트 8. 폰트). 마루 부리는 「안개 아래 오래된 기록」의 결을 맡는다.
+   파일은 네이버 공식 웹폰트(hangeul.pstatic.net) 원본 그대로이고, 오프라인 전시에서도 보이도록 앱에 함께 둔다. */
+@font-face {
+  font-family: 'MaruBuri';
+  src: url('./assets/fonts/MaruBuri-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'MaruBuri';
+  src: url('./assets/fonts/MaruBuri-SemiBold.woff2') format('woff2');
+  font-weight: 500 700;
+  font-display: swap;
+}
+
+:root { --display: 'MaruBuri', 'Nanum Myeongjo', 'AppleMyungjo', var(--font); }
+
+/* 화면 제목 */
+h1, h2 { font-family: var(--display); font-weight: 600; letter-spacing: -0.005em; }
+
+/* 지층의 큰 연도: 넓은 자간 + 호박색 빛 번짐(폰트 비교 B안). 숫자는 또렷하게 고정폭 */
+.mf-year {
+  font-family: var(--display); font-weight: 600; letter-spacing: .06em; font-variant-numeric: lining-nums tabular-nums;
+  text-shadow: 0 0 24px rgba(255, 212, 138, .35), 0 2px 10px rgba(0, 0, 0, .55);
+}
+
+/* 지층 안의 연도 표시(층 이름): 큰 연도와 같은 결로, 조용하게 */
+.mf-layer-year { font-family: var(--display); font-weight: 400; letter-spacing: .12em; }

@@ -5,6 +5,8 @@ import { getKV, wipeAll } from '../db';
 import { rerunKakaoMe } from '../pipeline';
 import { useVoice } from '../mindi/voices';
 import { VoicePicker } from './VoiceChip';
+import { VOICE_CHANGED } from '../mindi/scripts.gen';
+import { MindiMark } from './Icons';
 
 interface ImportSummaryLite { kakaoParticipants?: { name: string; messages: number }[]; kakaoMe?: string }
 
@@ -109,6 +111,8 @@ export function Settings({ extra }: { extra?: ReactNode } = {}) {
   const { settings, setSettings, reload, select } = useStore();
   const [confirm, setConfirm] = useState(false);
   const [voice, setVoice] = useVoice();
+  // 말투를 바꾸면 민디가 고른 결로 한 줄(대본집 §16)
+  const [voiceSaid, setVoiceSaid] = useState(false);
   return (
     <section className="settings" aria-labelledby="set-title">
       <h2 id="set-title" className="section-title">설정</h2>
@@ -131,8 +135,9 @@ export function Settings({ extra }: { extra?: ReactNode } = {}) {
       </label>
       <div className="voice-setting">
         <p className="h3">민디 말투</p>
-        <p className="small muted">민디가 말하는 결을 고릅니다. 어떤 말투에서도 숫자와 날짜는 그대로이고, 판단하거나 조언하지 않습니다. 「민디와 이야기」 화면의 말투 칩과 같은 값입니다.</p>
-        <VoicePicker value={voice} onChange={setVoice} withSample />
+        <p className="small muted">민디가 말하는 결을 고릅니다. 어떤 말투에서도 숫자와 날짜는 그대로이고, 판단하거나 조언하지 않습니다. 「민디와 이야기」 화면의 말투 칩과 같은 값입니다. 진단·위기에 대한 답은 말투와 상관없이 같습니다.</p>
+        <VoicePicker value={voice} onChange={(v) => { setVoice(v); setVoiceSaid(true); }} withSample />
+        {voiceSaid && <p className="voice-said" role="status"><MindiMark size={28} /><span>{VOICE_CHANGED[voice]}</span></p>}
       </div>
       <label className="toggle">
         <input type="checkbox" checked={settings.tone} onChange={(e) => setSettings({ ...settings, tone: e.target.checked })} />
@@ -146,6 +151,7 @@ export function Settings({ extra }: { extra?: ReactNode } = {}) {
       <KakaoMe />
       <LabelsBackup />
       <ExportV6 />
+      <p className="small muted">글꼴: 네이버에서 제공한 마루 부리(제목·연도), Pretendard(본문). 두 글꼴 모두 공개 라이선스입니다.</p>
       <hr className="divider" />
       <div>
         <p className="h3">내 기록 모두 지우기</p>

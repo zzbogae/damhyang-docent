@@ -45,6 +45,7 @@ export function parseIntent(raw: string): Intent {
   return { kind: 'unknown' };
 }
 
-export const FEELING_TEXT = '저는 그때의 마음이 어땠는지 판정하지 않습니다. 대신 그 주에 무엇이 평소와 달랐는지, 그때 남긴 글이 무엇인지는 보여 드릴 수 있습니다.';
-export const UNKNOWN_TEXT = '이 질문에는 아직 답하지 못합니다. 위의 질문 가운데서 골라 주시거나, 걸음·잠·화면·기록 가운데 하나로 물어 주세요.';
+// 대본집 v1.1 §20: 「판단하지 않습니다」(규칙 읽어주기)·「답하지 못합니다」(무능 고백)는 쓰지 않는다. 첫 문장은 §20 「대신」 칸
+export const FEELING_TEXT = '음, 그건 제가 말하면 틀릴 것 같아요. 대신 그 주에 무엇이 평소와 달랐는지는 같이 볼 수 있어요.';
+export const UNKNOWN_TEXT = '음, 그건 제가 잘 못 알아들었어요. 걸음·잠·화면·기록 가운데 하나로 다시 물어봐 주실래요?';
 export const UNCLEAR_TEXT = '어느 쪽을 찾을까요?';

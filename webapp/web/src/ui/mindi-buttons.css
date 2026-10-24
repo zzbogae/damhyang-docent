@@ -99,8 +99,23 @@
 .talk-foot { display: flex; justify-content: flex-end; }
 /* 민디에게 묻기 머리: 제목 · 말투 칩(광석 상세에서) */
 .ask-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-/* 설정 › 민디 말투 */
+/* 설정 › 민디 말투 · 바꾼 뒤 민디 한 줄(대본집 §16) */
 .voice-setting { display: grid; gap: 8px; }
+.voice-said { display: flex; align-items: center; gap: 10px; color: var(--mined-ink); font-size: 15px; }
+
+/* 민디와 이야기(대본집 §11-1): `민디 · AI` 상시 표시 · 첫 대화 고지 · 첫 한 마디 · 입력칸 아래 안내띠 */
+.talk-chat { display: grid; gap: 12px; }
+.ai-tag { justify-self: start; align-self: flex-start; width: max-content; margin: 0; font-size: 12px; letter-spacing: .06em; color: var(--mined-ink-mute);
+  padding: 3px 10px; border-radius: var(--mined-r-pill); box-shadow: inset 0 0 0 1px var(--mined-line-strong); }
+.talk-chat > .bubble { display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; padding: 14px 16px;
+  background: var(--mined-panel); border-radius: var(--mined-r-lg); box-shadow: var(--shadow); font-size: 17px; line-height: 1.65; }
+/* P9 새 배치(대화창 안): 첫 대화 고지·첫 한 마디도 민디 말풍선 모양으로 */
+.bubble.notice, .bubble.opener { display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; padding: 14px 16px;
+  background: var(--mined-panel); border-radius: var(--mined-r-lg); box-shadow: var(--shadow); }
+.bubble.notice p, .bubble.opener p { margin: 0; }
+.talk-chat .bubble.notice { box-shadow: 0 0 0 1px rgba(242, 170, 85, .35), var(--shadow); }
+.talk-chat .bubble.notice p, .talk-chat .bubble.opener p { margin: 0; }
+.talk-band { font-size: 13px; color: var(--mined-ink-mute); }
 
 /* 휴대폰: 대화창 머리(말투 칩 · 두 칸 전환 · ⋯)가 한 줄에 들어가도록 칩은 값만 보인다(화면 읽기는 aria-label 로 「민디 말투」) */
 @media (max-width: 480px) {
