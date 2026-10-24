@@ -17,5 +17,5 @@ export const MINERAL_COLOR: Record<string, string> = MINERAL_HEX;
 
 export const MINERAL_BY_AXIS_DIR: Record<Axis, { up: Mineral; down: Mineral }> = {
   move: { up: '호박', down: '황철석' }, rest: { up: '청금석', down: '월장석' },
-  watch: { up: '자수정', down: '홍옥' }, leave: { up: '흑요석', down: '석류석' },
+  lang: { up: '자수정', down: '홍옥' }, talk: { up: '흑요석', down: '석류석' },
 };

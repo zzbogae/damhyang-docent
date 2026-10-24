@@ -28,16 +28,18 @@ const TO_TIER: Record<Grade, V6LegacyTier> = {
 };
 
 // 지표 이름 → (id, 계열, 축). 팀 샘플의 10개 이름과 이 뼈대의 이름을 함께 둔다.
-const LABELS: Record<string, [string, Channel, Axis]> = {
+// 축이 null 인 지표(유튜브·사진·일정)는 10/22 지표 넷 밖이라 배지로 옮기지 않는다.
+const LABELS: Record<string, [string, Channel, Axis | null]> = {
   '걸음수': ['steps', 'health', 'move'], '수면 시간': ['sleep', 'health', 'rest'],
-  '메모 작성 수': ['memo_n', 'memo', 'leave'], '메모 길이': ['memo_len', 'memo', 'leave'], '메모 심야 작성 비율': ['memo_night', 'memo', 'leave'],
-  '사진 촬영 수': ['photo_n', 'photo', 'leave'], '심야 촬영 비율': ['photo_night', 'photo', 'leave'],
-  '유튜브 시청 수': ['yt_watch', 'yt', 'watch'], '유튜브 심야 비율': ['yt_night', 'yt', 'watch'], '유튜브 검색량': ['yt_search', 'yt', 'watch'],
-  '일정 개수': ['cal_n', 'cal', 'leave'],
-  '카톡 새벽 발화 비율': ['kakao_night', 'kakao', 'leave'], '카톡 발화 길이': ['kakao_len', 'kakao', 'leave'],
-  '카톡 답장 지연': ['kakao_delay', 'kakao', 'leave'], '카톡 1인칭 비율': ['kakao_first', 'kakao', 'leave'], '카톡 단정어 비율': ['kakao_assert', 'kakao', 'leave'],
-  '인스타그램 게시 수': ['sns_post', 'sns', 'leave'], '인스타그램 DM 수': ['sns_dm', 'sns', 'leave'], '인스타그램 새벽 DM 비율': ['sns_night', 'sns', 'leave'],
-  'AI 대화 메시지 수': ['ai_msg', 'ai', 'watch'], 'AI 대화 새벽 비율': ['ai_night', 'ai', 'watch'], 'AI에게 쓴 글 길이': ['ai_len', 'ai', 'watch'],
+  '메모 작성 수': ['memo_n', 'memo', 'lang'], '메모 길이': ['memo_len', 'memo', 'lang'], '메모 심야 작성 비율': ['memo_night', 'memo', 'lang'],
+  '사진 촬영 수': ['photo_n', 'photo', null], '심야 촬영 비율': ['photo_night', 'photo', null],
+  '유튜브 시청 수': ['yt_watch', 'yt', null], '유튜브 심야 비율': ['yt_night', 'yt', null], '유튜브 검색량': ['yt_search', 'yt', null],
+  '일정 개수': ['cal_n', 'cal', null],
+  '카톡 보낸 수': ['kakao_n', 'kakao', 'talk'],
+  '카톡 새벽 발화 비율': ['kakao_night', 'kakao', 'talk'], '카톡 발화 길이': ['kakao_len', 'kakao', 'talk'],
+  '카톡 답장 지연': ['kakao_delay', 'kakao', 'talk'], '카톡 1인칭 비율': ['kakao_first', 'kakao', 'talk'], '카톡 단정어 비율': ['kakao_assert', 'kakao', 'talk'],
+  '인스타그램 게시 수': ['sns_post', 'sns', 'lang'], '인스타그램 DM 수': ['sns_dm', 'sns', 'talk'], '인스타그램 새벽 DM 비율': ['sns_night', 'sns', 'talk'],
+  'AI 대화 메시지 수': ['ai_msg', 'ai', 'lang'], 'AI 대화 새벽 비율': ['ai_night', 'ai', 'lang'], 'AI에게 쓴 글 길이': ['ai_len', 'ai', 'lang'],
 };
 
 // v6 문장 조각(gen.py PHRASE)에서 방향을 읽는다. 문장에 없는 배지는 방향을 모른다.
@@ -97,21 +99,22 @@ export function fromV6(j: V6Json): { result: MinedResult; memos: MemoRecord[] } 
     const coverage = Object.fromEntries(CHANNELS.map((c) => [c, used.has(c) ? 'observed' : 'structural_missing'])) as WeekRecord['coverage'];
     const base: WeekRecord = {
       schema: 'mined.week/8', week: key, date_start: iso(t), date_end: iso(end), candidate: false, coverage,
-      ind: {}, axes: { move: null, rest: null, watch: null, leave: null }, badges: [],
+      ind: {}, axes: { move: null, rest: null, lang: null, talk: null }, badges: [],
       evidence: { families: [], independent: 0, cross_validated: false }, grade: null, grade_history: [], access: 'auto',
       era: null, mineral: null, shape: null, similar: [], sentence: null,
     };
     if (!v) { weeks.push(base); continue; }
-    const badges: Badge[] = v.badges.map((b) => {
-      const m = LABELS[b.label] ?? [b.label, 'memo' as Channel, 'leave' as Axis];
+    const badges: Badge[] = v.badges.flatMap((b) => {
+      const m = LABELS[b.label] ?? [b.label, 'memo' as Channel, 'lang' as Axis];
+      if (m[2] === null) return [];
       const strongest = b.pct === V6_STRONGEST;
       const top = strongest ? 1 : Number(/(\d+)/.exec(b.pct)?.[1] ?? 50);
       const dir = directionFromSentence(v.sentence, m[0]) ?? 'up';
-      return {
+      return [{
         indicator: m[0], label: b.label, family: m[1], axis: m[2], direction: dir,
         pr: dir === 'up' ? 1 - top / 100 : top / 100, rank: strongest ? 1 : 0, n_base: 52,
         extreme: strongest ? 2 : top <= 5 ? 1 : 0, pct_text: b.pct,
-      } as Badge;
+      } as Badge];
     });
     const fams = [...new Set(badges.map((b) => b.family))].sort();
     const grade: Grade | null = v.grade !== undefined ? v.grade : v.tier ? FROM_TIER[v.tier] : null;

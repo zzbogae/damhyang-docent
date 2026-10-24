@@ -13,12 +13,12 @@ export const IND_EN: Record<string, string> = {
   memo_n: 'notes written', memo_len: 'note length', memo_night: 'share of late-night notes',
   photo_n: 'photos taken', photo_night: 'share of late-night photos', yt_watch: 'YouTube videos watched',
   yt_night: 'share of late-night videos', yt_search: 'YouTube searches', cal_n: 'calendar events',
-  kakao_night: 'share of late-night messages', kakao_len: 'message length', kakao_delay: 'reply delay',
+  kakao_n: 'messages sent', kakao_night: 'share of late-night messages', kakao_len: 'message length', kakao_delay: 'reply delay',
   kakao_first: 'share of messages about yourself', kakao_assert: 'share of assertive words',
   sns_post: 'Instagram posts', sns_dm: 'Instagram DMs', sns_night: 'share of late-night DMs',
   ai_msg: 'AI chat messages', ai_night: 'share of late-night AI chats', ai_len: 'length of messages to AI',
 };
-export const AXIS_EN: Record<Axis, string> = { move: 'Steps', rest: 'Rest', watch: 'Screen', leave: 'Records' };
+export const AXIS_EN: Record<Axis, string> = { move: 'Steps', rest: 'Sleep', lang: 'Language', talk: 'Connection' };
 export const MINERAL_EN_NAME: Record<string, string> = {
   호박: 'amber', 황철석: 'pyrite', 청금석: 'lapis', 월장석: 'moonstone', 자수정: 'amethyst', 홍옥: 'rose', 흑요석: 'obsidian', 석류석: 'garnet', 형석: 'fluorite',
 };
@@ -67,8 +67,8 @@ export const FOOTER_EN = 'Korea suicide prevention line 109 (24 hours)';
 const AXIS_PHRASE_EN: Record<Axis, { up: string; down: string }> = {
   move: { up: 'you walked much more than usual', down: 'you walked much less than usual' },
   rest: { up: 'you slept much longer than usual', down: 'you slept much less than usual' },
-  watch: { up: 'you spent much more time on screens than usual', down: 'you spent much less time on screens than usual' },
-  leave: { up: 'you left many more records than usual', down: 'you left far fewer records than usual' },
+  lang: { up: 'you wrote much more than usual', down: 'you wrote much less than usual' },
+  talk: { up: 'you exchanged many more messages than usual', down: 'you exchanged far fewer messages than usual' },
 };
 
 export function axisDirEn(ax: Axis, dir: 'up' | 'down', w: WeekRecord, ctx: { result: MinedResult; memosByWeek: Map<string, MemoRecord[]> }): string {
@@ -82,7 +82,7 @@ export function axisDirEn(ax: Axis, dir: 'up' | 'down', w: WeekRecord, ctx: { re
   const last = hits[hits.length - 1];
   const n = ctx.memosByWeek.get(last.week)?.length ?? 0;
   return [`Out of ${measured} weeks, ${AXIS_PHRASE_EN[ax][dir]} in ${hits.length} weeks.`, `The most recent was the week of ${dateEn(last.date_start)}.`,
-    last.mineral ? `That week left a piece of ${MINERAL_EN_NAME[last.mineral] ?? last.mineral}.` : '', n ? `You wrote ${n} notes that week.` : ''].filter(Boolean).join(' ');
+    last.mineral ? 'That week left an ore.' : '', n ? `You wrote ${n} notes that week.` : ''].filter(Boolean).join(' ');
 }
 
 export function answerEn(q: QuestionId, w: WeekRecord, ctx: { result: MinedResult; byKey: Map<string, WeekRecord>; memosByWeek: Map<string, MemoRecord[]> }): string {

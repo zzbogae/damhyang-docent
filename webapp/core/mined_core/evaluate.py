@@ -76,7 +76,7 @@ def holdout(daily: list[dict], meta: dict, cfg: dict | None = None, q_hit: float
 
 
 PATTERNS = {
-    # 힘든 주: 걸음↓ 수면↓ 새벽 시청↑ 새벽 메모↑
+    # 힘든 주: 걸음↓ 수면↓ 새벽 시청↑ 새벽 메모↑ (10/22 지표 넷에서 판정에 쓰는 건 걸음·수면·새벽 메모. 새벽 시청은 근거 전용)
     "hard": lambda r, m: {
         **r,
         **({"steps": int(r["steps"] * (1 - m))} if "steps" in r else {}),
@@ -96,7 +96,7 @@ def injection(daily: list[dict], meta: dict, cfg: dict | None = None, magnitudes
               avoid: set[str] | None = None, base: dict | None = None) -> dict:
     base = base or run(daily, meta, cfg)
     fn = PATTERNS[pattern]
-    need = {"hard": ["steps", "sleep", "yt_night"], "steps": ["steps"]}[pattern]
+    need = {"hard": ["steps", "sleep", "memo_night"], "steps": ["steps"]}[pattern]
     eligible = [k for k, w in enumerate(base["weeks"])
                 if all(w["ind"][i]["pr"] is not None for i in need) and not w["candidate"]
                 and (not avoid or w["week"] not in avoid)]

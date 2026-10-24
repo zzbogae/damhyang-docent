@@ -56,10 +56,14 @@ def test_run_end_to_end_detects_hard_weeks():
     elapsed = time.time() - t
     assert res["schema"] == "mined.result/8"
     wk = {w["week"]: w for w in res["weeks"]}
-    for key in ["2022-W10", "2023-W20", "2022-W37"]:
+    for key in ["2022-W10", "2023-W20"]:
         assert wk[key]["candidate"], key
         assert wk[key]["evidence"]["cross_validated"], key
         assert wk[key]["sentence"].startswith(wk[key]["date_start"][:4] + "년")
+    # 10/22 지표 넷: 여행 주(걸음↑ + 사진↑)는 사진이 근거 전용이라 걸음 한 계열만 남아 교차 확인이 되지 않는다
+    trip = wk["2022-W37"]
+    assert "photo_n" not in {b["indicator"] for b in trip["badges"]}
+    assert not trip["evidence"]["cross_validated"]
     hard = wk["2022-W10"]
     dirs = {b["indicator"]: b["direction"] for b in hard["badges"]}
     assert dirs.get("steps") == "down"
@@ -114,7 +118,8 @@ def test_run_json_roundtrip_and_determinism():
 
 
 def test_linked_indicators_count_as_one_evidence():
-    # 새벽 유튜브와 새벽 메모를 같은 잠재 요인(늦게까지 깨어 있음)이 움직이는 합성 기록
+    # 새벽 AI 대화와 새벽 메모를 같은 잠재 요인(늦게까지 깨어 있음)이 움직이는 합성 기록
+    # (유튜브는 10/22 지표 넷에서 빠져 배지를 받지 않으므로 AI 대화로 바꿨다)
     import datetime as dt
     rng = np.random.default_rng(11)
     d0 = dt.date(2020, 1, 6)
@@ -125,17 +130,17 @@ def test_linked_indicators_count_as_one_evidence():
         L = late[i // 7]
         watch = int(rng.poisson(8))
         memo = int(rng.poisson(1.2)) + 1
-        rows.append({"date": d.isoformat(), "yt_watch_n": watch, "yt_watch_night_n": min(watch, int(round(watch * L * 0.8))),
+        rows.append({"date": d.isoformat(), "ai_msg_n": watch, "ai_msg_night_n": min(watch, int(round(watch * L * 0.8))),
                      "memo_n": memo, "memo_night_n": min(memo, int(round(memo * L * 0.9))), "steps": int(rng.normal(7000, 1200))})
-    meta = {"channels": {c: {"first": rows[0]["date"], "last": rows[-1]["date"]} for c in ("yt", "memo", "health")}}
+    meta = {"channels": {c: {"first": rows[0]["date"], "last": rows[-1]["date"]} for c in ("ai", "memo", "health")}}
     res = run(rows, meta)
     pairs = {(p["a"], p["b"]) for p in res["summary"]["linked_pairs"]}
-    assert ("memo_night", "yt_night") in pairs or ("yt_night", "memo_night") in pairs
-    both = [w for w in res["weeks"] if w["candidate"] and {b["indicator"] for b in w["badges"]} >= {"memo_night", "yt_night"}]
+    assert ("memo_night", "ai_night") in pairs or ("ai_night", "memo_night") in pairs
+    both = [w for w in res["weeks"] if w["candidate"] and {b["indicator"] for b in w["badges"]} >= {"memo_night", "ai_night"}]
     assert both, "새벽 두 지표가 함께 배지를 받은 주가 있어야 한다"
     for w in both:
         inds = {b["indicator"] for b in w["badges"]}
-        if inds == {"memo_night", "yt_night"}:
+        if inds == {"memo_night", "ai_night"}:
             assert w["evidence"]["independent"] == 1
             assert not w["evidence"]["cross_validated"]
     off = run(rows, meta, {"auto_link": False})

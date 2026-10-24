@@ -696,3 +696,12 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 .mf-picker, .mf-years, .mf-brand, .mf-hint { pointer-events: none; }
 .mf-picker button, .mf-years button { pointer-events: auto; }
 .mf-picker::before { content: ''; position: absolute; inset: -14px -40px; border-radius: 40px; background: radial-gradient(ellipse at center, rgba(11, 10, 14, .55), transparent 70%); z-index: -1; }
+
+/* 10/23 광석 이름: 예시 이름 + 사용자가 붙이는 이름 */
+.ore-name { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.ore-name .chip small { font-size: 12px; }
+.ore-name-btn { min-height: 30px; padding: 0 10px; font-size: 13px; }
+.ore-name-edit { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.ore-name-edit input { min-height: 32px; padding: 0 10px; border-radius: var(--mined-r-pill, 999px); border: 1px solid var(--mined-line-strong, #8886); background: transparent; color: inherit; font: inherit; max-width: 12em; }
+.ore-name-examples { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
+.ore-name-examples .chip[aria-pressed="true"] { outline: 2px solid currentColor; }
