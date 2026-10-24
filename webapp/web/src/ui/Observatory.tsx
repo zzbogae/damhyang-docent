@@ -2,7 +2,7 @@
 // 원칙 3: 앱이 고른 것으로 먼저 말 걸지 않는다. 오늘의 한 마디는 판정이 아니라 지층에 대한 사실 한 줄이고, 닮은 주는 사용자가 「오늘 보기」를 눌렀을 때만 찾는다.
 import { useMemo, useState } from 'react';
 import { useStore } from '../state/store';
-import { dateLabel, rangeLabel } from '../mindi/templates';
+import { dateLabel, rangeLabel, sameDirectionText } from '../mindi/templates';
 import { oreMineral, SPACE_NEED, useCollected } from '../ore/collection';
 import { oreLabel } from './oreName';
 import { MINERAL_IMG } from './design';
@@ -89,7 +89,7 @@ export function Today({ onDescend }: { onDescend: (week: string) => void }) {
                 {m && w.candidate ? <img src={MINERAL_IMG[m]} alt="" className="today-ore" /> : <span className={`today-ore stone g-${w.gyeol ?? 'none'}`} aria-hidden="true" />}
                 <div>
                   <b>{rangeLabel(w)}</b>
-                  <p className="small muted">{w.candidate ? '광석이 박힌 주' : w.gyeol ? `${GYEOL_TEXT[w.gyeol].name}의 주` : '평소였던 주'}{s.same_direction.length ? ` · 같은 방향: ${s.same_direction.join('·')}` : ''}</p>
+                  <p className="small muted">{w.candidate ? '광석이 박힌 주' : w.gyeol ? `${GYEOL_TEXT[w.gyeol].name}의 주` : '평소였던 주'}{s.same_direction.length ? ` · ${sameDirectionText(s.same_direction)}` : ''}</p>
                 </div>
                 <button className="btn" onClick={() => onDescend(w.week)}>이 주로 내려가기</button>
               </li>
