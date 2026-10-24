@@ -37,7 +37,10 @@ webapp/     브라우저 앱 — 판정 코어(Python/Pyodide) + 가져오기·�
 pipeline/   gyeol_kit — 팀 판정 파이프라인 (드라이브 gyeol_kit/code, 9/12 판)
 app/        발표용 프로토타입 (3개 지층 탐사 · XR Blocks)
 samples/    합성 샘플 데이터와 생성기 (실제 기록 아님)
+licenses/   글꼴 라이선스 (마루 부리 · Pretendard)
 ```
+
+> 글꼴: 이 서비스에는 네이버에서 제공한 **마루 부리**(제목·연도)와 **Pretendard**(본문)가 적용되어 있습니다. 라이선스는 [`licenses/`](licenses/README.md)
 
 ### 브라우저 앱 실행
 

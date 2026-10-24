@@ -150,6 +150,7 @@ export function Settings() {
       <KakaoMe />
       <LabelsBackup />
       <ExportV6 />
+      <p className="small muted">글꼴: 네이버에서 제공한 마루 부리(제목·연도), Pretendard(본문). 두 글꼴 모두 공개 라이선스입니다.</p>
       <hr className="divider" />
       <div>
         <p className="h3">내 기록 모두 지우기</p>
