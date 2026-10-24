@@ -15,6 +15,7 @@ import { FullscreenButton, KioskOverlay, useKiosk } from './ui/Kiosk';
 import { useEn } from './i18n/useEn';
 import { FOOTER_EN } from './i18n/en';
 import { ART } from './ui/design';
+import { panelScene, sceneSound } from './mindi/soundKit';
 
 function Door109En() {
   return useEn() ? <span lang="en" className="muted"> · {FOOTER_EN}</span> : null;
@@ -45,6 +46,7 @@ function Shell() {
   // 안드로이드 공유로 사진이 넘어오면 가져오기 화면부터 연다
   const [panel, setPanel] = useState<Panel>(FLAGS.has('shared') ? 'import' : 'week');
   const [roomName, setRoomName] = useState<string>();
+  useEffect(() => { sceneSound(phase !== 'ready' ? 'import' : panelScene(panel, !!selected)); }, [phase, panel, selected]);
   const [collectOf, setCollectOf] = useState<{ axis: Axis; dir: 'up' | 'down' }>();
   const rooms = useMemo(() => {
     const m = new Map<string, Set<string>>();

@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../state/store';
 import { rangeLabel } from '../mindi/templates';
 import { playCue } from '../mindi/sound';
+import { fieldDepth, sfx } from '../mindi/soundKit';
 import { MINERAL_IMG, ART, stratumFor } from './design';
 import { MINERAL_HEX, type Mineral } from './minerals';
 import { customOreName } from './oreName';
@@ -41,6 +42,7 @@ function Ore({ w, i, onMined }: { w: WeekRecord; i: number; onMined: (w: WeekRec
     if (hits >= 3) return;
     const n = hits + 1;
     setHits(n); setHit((k) => k + 1);
+    sfx(n === 1 ? 'hit1' : n === 2 ? 'hit2' : 'hit3');
     if (n === 3) {
       if (settings.sound) playCue('mined');
       const r = (e.currentTarget as HTMLElement).closest('.mf-content')!.getBoundingClientRect();
@@ -84,6 +86,7 @@ export function MineField() {
     let cur = years[0];
     sc.querySelectorAll<HTMLElement>('.mf-layer').forEach((el) => { if (el.getBoundingClientRect().top <= mid) cur = Number(el.dataset.year); });
     setYear(cur);
+    fieldDepth(years.indexOf(cur), years.length);
   };
   useEffect(() => { sync(); }, [years]); // eslint-disable-line react-hooks/exhaustive-deps
   const go = (y: number | undefined) => {
@@ -115,7 +118,7 @@ export function MineField() {
                 <img className="mf-band" src={st.src} alt="" />
                 <span className="mf-layer-year" aria-hidden="true">{y}</span>
                 {!st.own && <span className="mf-band-note">이 해의 지층 그림은 아직 없어 다른 해 그림을 씁니다</span>}
-                {ores.map((w, n) => <Ore key={w.week} w={w} i={n} onMined={(ww, x, yy) => setCard({ w: ww, x, y: yy })} />)}
+                {ores.map((w, n) => <Ore key={w.week} w={w} i={n} onMined={(ww, x, yy) => { sfx('card'); setCard({ w: ww, x, y: yy }); }} />)}
                 {!ores.length && <p className="mf-empty">{y}년에는 평소를 벗어난 주가 없습니다.</p>}
               </section>
             );

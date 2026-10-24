@@ -123,7 +123,7 @@ export function Settings() {
       </label>
       <label className="toggle">
         <input type="checkbox" checked={!!settings.sound} onChange={(e) => setSettings({ ...settings, sound: e.target.checked })} />
-        <span><span className="t">민디 소리</span><br /><span className="d">민디가 찾았을 때·기다릴 때·기록을 열 때 짧은 소리를 냅니다. 말이 아니고, 그 주의 내용에 따라 달라지지 않습니다.</span></span>
+        <span><span className="t">민디 소리</span><br /><span className="d">화면마다 바탕 소리와 곡괭이·버튼 효과음, 민디의 뜻 없는 목소리를 냅니다(팀 사운드 키트). 지금 있는 화면과 누른 것에만 반응하고, 그 주의 내용에 따라 달라지지 않습니다.</span></span>
       </label>
       <label className="toggle">
         <input type="checkbox" checked={settings.tone} onChange={(e) => setSettings({ ...settings, tone: e.target.checked })} />

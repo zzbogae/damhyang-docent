@@ -1,6 +1,7 @@
 // 민디에게 묻기: 민디는 먼저 말하지 않고, 사용자가 고른 질문에만 판정값으로 답한다.
 import { useEffect, useState } from 'react';
 import { playCue } from '../mindi/sound';
+import { mindiSay } from '../mindi/soundKit';
 import { useStore } from '../state/store';
 import { answer, AXIS_DIR_QUESTION, axisDirAnswer, QUESTIONS, type Answer, type QuestionId } from '../mindi/answers';
 import { FEELING_TEXT, parseIntent, UNCLEAR_TEXT, UNKNOWN_TEXT } from '../mindi/intent';
@@ -25,7 +26,7 @@ export function MindiAsk({ w }: { w: WeekRecord }) {
   const [src, setSrc] = useState<{ q?: QuestionId; axis?: Axis; dir?: 'up' | 'down'; kind?: 'feeling' | 'unknown' | 'unclear' } | null>(null);
   const [choices, setChoices] = useState<{ axis: Axis; dir: 'up' | 'down'; text: string }[]>([]);
   // 답이 나올 때마다 같은 소리 하나(답의 내용과 상관없이)
-  useEffect(() => { if (a && settings.sound) playCue('found'); }, [a]);
+  useEffect(() => { if (a && settings.sound && !mindiSay(a.text)) playCue('found'); }, [a]);
   if (!result) return null;
 
   async function show(base: Answer) {
