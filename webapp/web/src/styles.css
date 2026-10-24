@@ -780,3 +780,29 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 .space-ore img { width: clamp(52px, 12%, 80px); }
 .ore-guide .bubble, .space-make .bubble, .team-page .bubble { display: flex; gap: 12px; align-items: flex-start; }
 .archive-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+
+/* 지층 가로 자리: 넓은 화면은 16~82%, 좁은 화면은 왼쪽 연도 목록을 피해 16~94% */
+.minefield { --mf-x0: 16%; --mf-xw: 66%; }
+/* 위에 떠 있는 안내·눈·호명은 아래 광석과 눈금을 누르는 것을 막지 않는다 */
+.mf-hint, .mf-scanner, .mf-called, .mf-layer-year, .mf-band-note, .mf-month { pointer-events: none; }
+@media (max-width: 1080px) {
+  .app.team.on-field { height: 100dvh; }
+}
+@media (max-width: 760px) {
+  .minefield { --mf-x0: 16%; --mf-xw: 78%; min-height: 0; }
+  .mf-hint { display: none; }
+  .mf-tick { width: 4px; }
+  .mf-month { font-size: 9px; }
+  .mf-month:nth-child(even) { visibility: hidden; }
+  .mf-called { top: calc(19% + 64px); font-size: 13px; }
+}
+@media (max-width: 760px) {
+  .mf-brand { display: none; }
+  .space-ore small { white-space: normal; max-width: 26vw; text-align: center; font-size: 10px; line-height: 1.25; }
+  .space-ore img { width: 44px; min-width: 0; }
+}
+@media (max-width: 760px) {
+  /* 좁은 화면: 기록 조각 카드는 연도 목록·머리에 가리지 않게 화면 아래 시트로 */
+  .mf-card { position: fixed; left: 12px !important; right: 12px; top: auto !important; bottom: 52px; width: auto; z-index: 40; }
+  .space-ore small { display: none; }
+}
