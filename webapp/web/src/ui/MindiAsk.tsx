@@ -8,13 +8,15 @@ import { FEELING_TEXT, parseIntent, UNCLEAR_TEXT, UNKNOWN_TEXT } from '../mindi/
 import { useEn } from '../i18n/useEn';
 import { answerEn, axisDirEn, DONT_KNOW_EN, FEELING_EN, UNCLEAR_EN, UNKNOWN_EN } from '../i18n/en';
 import { DONT_KNOW } from '../mindi/templates';
-import { polishTone } from '../mindi/tone';
+import { applyVoice, speakAs, useVoice, type Voice } from '../mindi/voices';
 import { MindiMark } from './Icons';
+import { VoiceChip } from './VoiceChip';
 import type { Axis, WeekRecord } from '../types';
 
 const EXAMPLES = ['이 주에 무엇이 달랐어?', '이 주와 닮은 주는 언제야?', '잠을 못 잔 주는 언제였어?'];
 
-export function MindiAsk({ w }: { w: WeekRecord }) {
+/** voiceChip: 말투 칩을 이 머리에 둘지(민디와 이야기 화면은 위쪽 줄에 따로 둔다) */
+export function MindiAsk({ w, voiceChip = true }: { w: WeekRecord; voiceChip?: boolean }) {
   const { result, byKey, memosByWeek, select, settings } = useStore();
   const [q, setQ] = useState<QuestionId | null>(null);
   const [a, setA] = useState<(Answer & { used?: string }) | null>(null);
@@ -25,16 +27,26 @@ export function MindiAsk({ w }: { w: WeekRecord }) {
   // 영어 자막을 만들 원천(어떤 질문에 답했는지). 답 문장이 아니라 판정값에서 다시 만든다
   const [src, setSrc] = useState<{ q?: QuestionId; axis?: Axis; dir?: 'up' | 'down'; kind?: 'feeling' | 'unknown' | 'unclear' } | null>(null);
   const [choices, setChoices] = useState<{ axis: Axis; dir: 'up' | 'down'; text: string }[]>([]);
+  const [voice, setVoice] = useVoice();
+  // 말투를 입히기 전의 답(판정값으로 만든 문장). 말투를 바꾸면 이것을 다시 말한다
+  const [base, setBase] = useState<Answer | null>(null);
+  useEffect(() => { if (base) voiced(base, voice); }, [voice]);
   // 답이 나올 때마다 같은 소리 하나(답의 내용과 상관없이)
   useEffect(() => { if (a && settings.sound && !mindiSay(a.text)) playCue('found'); }, [a]);
   if (!result) return null;
 
-  async function show(base: Answer) {
-    if (!settings.tone) { setA(base); return; }
+  // 고른 말투로: 어미 규칙은 바로, 「말투 다듬기」가 켜져 있으면 외부 모델로 한 번 더(숫자·날짜가 바뀌면 규칙 결과)
+  async function voiced(b: Answer, v: Voice = voice) {
+    if (!settings.tone) { setA({ ...b, text: applyVoice(b.text, v) }); return; }
     setBusy(true);
-    const r = await polishTone(base.text);
+    const r = await speakAs(b.text, v, { useLlm: true });
     setBusy(false);
-    setA({ ...base, text: r.text, used: r.used });
+    setA({ ...b, text: r.text, used: r.used });
+  }
+
+  function show(b: Answer) {
+    setBase(b);
+    return voiced(b);
   }
 
   function askAxis(axis: Axis, dir: 'up' | 'down') {
@@ -55,10 +67,10 @@ export function MindiAsk({ w }: { w: WeekRecord }) {
     if (it.kind === 'axis_unclear') {
       setSrc({ kind: 'unclear' });
       setChoices((['up', 'down'] as const).map((dir) => ({ axis: it.axis, dir, text: AXIS_DIR_QUESTION[it.axis][dir] })));
-      return setA({ text: UNCLEAR_TEXT, dontKnow: false });
+      return show({ text: UNCLEAR_TEXT, dontKnow: false });
     }
     setSrc({ kind: it.kind === 'feeling' ? 'feeling' : 'unknown' });
-    return setA({ text: it.kind === 'feeling' ? FEELING_TEXT : UNKNOWN_TEXT, dontKnow: false });
+    return show({ text: it.kind === 'feeling' ? FEELING_TEXT : UNKNOWN_TEXT, dontKnow: false });
   }
 
   async function ask(id: QuestionId, keepHeard = false) {
@@ -67,16 +79,15 @@ export function MindiAsk({ w }: { w: WeekRecord }) {
     setSrc({ q: id });
     if (!keepHeard) setHeard(null);
     setChoices([]);
-    if (!settings.tone) { setA(base); return; }
-    setBusy(true);
-    const r = await polishTone(base.text);
-    setBusy(false);
-    setA({ ...base, text: r.text, used: r.used });
+    return show(base);
   }
 
   return (
     <section className="ask" aria-labelledby="ask-title">
-      <h3 id="ask-title" className="h3">민디에게 묻기</h3>
+      <div className="ask-head">
+        <h3 id="ask-title" className="h3">민디에게 묻기</h3>
+        {voiceChip && <VoiceChip value={voice} onChange={setVoice} busy={busy} />}
+      </div>
       {/* 9/12 회의: 정해진 질문 버튼 대신 문장으로 묻는다. 예시는 입력칸에 채워 묻기만 한다 */}
       <form className="label-row" onSubmit={(e) => { e.preventDefault(); if (text.trim()) askFree(); }}>
         <input className="input" value={text} onChange={(e) => setText(e.target.value)} placeholder="예: 잠을 못 잔 주는 언제였어?" aria-label="민디에게 직접 묻기" />
@@ -93,7 +104,7 @@ export function MindiAsk({ w }: { w: WeekRecord }) {
           <MindiMark size={36} />
           <div>
             {heard && <p className="small muted">「{heard}」로 알아들었습니다.</p>}
-            <p>{a.text}{a.dontKnow && <> <span className="dk">{DONT_KNOW}</span></>}</p>
+            <p>{a.text}{a.dontKnow && <> <span className="dk">{applyVoice(DONT_KNOW, voice)}</span></>}</p>
             {en && src && (
               <p className="sub-en" lang="en">
                 {src.q ? answerEn(src.q, w, { result, byKey, memosByWeek })

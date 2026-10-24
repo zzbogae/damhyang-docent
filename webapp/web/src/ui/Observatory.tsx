@@ -10,6 +10,9 @@ import { MINERAL_HEX, type Mineral } from './minerals';
 import { MindiGreeting } from './Mindi';
 import { MindiAsk } from './MindiAsk';
 import { MindiMark } from './Icons';
+import { applyVoice, useVoice } from '../mindi/voices';
+import { VoiceChip } from './VoiceChip';
+import { requestNewSpace, SpaceButton } from './SpaceButton';
 import { GYEOL_TEXT } from './Gyeol';
 import type { WeekRecord } from '../types';
 
@@ -106,26 +109,34 @@ export function Today({ onDescend }: { onDescend: (week: string) => void }) {
 }
 
 /** Ⓒ 민디와 이야기: 설명 듣기 / 그냥 이야기하기. 상관없는 이야기도 받아 준다(지어내지 않고 모른다고 답한다) */
-export function Talk() {
+export function Talk({ onSpace }: { onSpace?: () => void }) {
   const { weeks } = useStore();
   const [mode, setMode] = useState<'explain' | 'chat'>('explain');
   const cur = useMemo(() => latestObserved(weeks), [weeks]);
+  const [voice, setVoice] = useVoice();
+  const collected = useCollected();
+  const v = (s: string) => applyVoice(s, voice);
   return (
     <section className="stack" aria-labelledby="talk-title">
       <h2 id="talk-title" className="h2">민디와 이야기</h2>
+      <div className="talk-head">
+      <VoiceChip value={voice} onChange={setVoice} />
       <div className="label-row" role="tablist" aria-label="이야기 방식">
         <button role="tab" aria-selected={mode === 'explain'} className={`btn${mode === 'explain' ? ' primary' : ''}`} onClick={() => setMode('explain')}>설명 듣기</button>
         <button role="tab" aria-selected={mode === 'chat'} className={`btn${mode === 'chat' ? ' primary' : ''}`} onClick={() => setMode('chat')}>그냥 이야기하기</button>
       </div>
+      </div>
       {mode === 'explain' ? (
         <div className="bubble"><MindiMark size={36} /><div className="stack">
-          <p>이곳은 당신의 기록이 해마다 한 겹씩 쌓인 광산입니다. 아래로 내려갈수록 오래된 해입니다.</p>
-          <p>모든 주는 지층의 결로 남아 있습니다. 걸음·수면·언어·소통 넷 가운데 기록이 직전 1년의 당신과 견주어 크게 벗어난 주에는 광석이 박혀 있습니다. 아무 주나 골라 캐도 광석이 됩니다.</p>
-          <p>광석을 캐면 그때 남긴 사진과 글과 숫자가 그대로 열립니다. 저는 그 기록을 꺼내 보여 드릴 뿐, 좋았다거나 나빴다고 말하지 않습니다.</p>
-          <p>광석이 {SPACE_NEED}개 모이면 안개가 걷히고 나의 공간을 지을 수 있습니다.</p>
+          <p>{v('이곳은 당신의 기록이 해마다 한 겹씩 쌓인 광산입니다. 아래로 내려갈수록 오래된 해입니다.')}</p>
+          <p>{v('모든 주는 지층의 결로 남아 있습니다. 걸음·수면·언어·소통 넷 가운데 기록이 직전 1년의 당신과 견주어 크게 벗어난 주에는 광석이 박혀 있습니다. 아무 주나 골라 캐도 광석이 됩니다.')}</p>
+          <p>{v('광석을 캐면 그때 남긴 사진과 글과 숫자가 그대로 열립니다. 저는 그 기록을 꺼내 보여 드릴 뿐, 좋았다거나 나빴다고 말하지 않습니다.')}</p>
+          <p>{v(`광석이 ${SPACE_NEED}개 모이면 안개가 걷히고 나의 공간을 지을 수 있습니다.`)}</p>
           <p className="small muted">기록은 이 브라우저 밖으로 나가지 않습니다.</p>
         </div></div>
-      ) : cur ? <MindiAsk w={cur} /> : <p className="muted">아직 기록이 없습니다.</p>}
+      ) : cur ? <MindiAsk w={cur} voiceChip={false} /> : <p className="muted">아직 기록이 없습니다.</p>}
+      {/* 나의 공간 만들기: 자리는 잠정(「함께 보는 기록」 줄 오른쪽 끝). 열려 있으면 새 공간 짓기부터 연다 */}
+      {onSpace && <div className="talk-foot"><SpaceButton count={collected.length} onOpen={() => { requestNewSpace(); onSpace(); }} /></div>}
     </section>
   );
 }

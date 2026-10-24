@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { useStore } from '../state/store';
 import { getKV, wipeAll } from '../db';
 import { rerunKakaoMe } from '../pipeline';
+import { useVoice } from '../mindi/voices';
+import { VoicePicker } from './VoiceChip';
 
 interface ImportSummaryLite { kakaoParticipants?: { name: string; messages: number }[]; kakaoMe?: string }
 
@@ -106,6 +108,7 @@ function LabelsBackup() {
 export function Settings() {
   const { settings, setSettings, reload, select } = useStore();
   const [confirm, setConfirm] = useState(false);
+  const [voice, setVoice] = useVoice();
   return (
     <section className="settings" aria-labelledby="set-title">
       <h2 id="set-title" className="section-title">설정</h2>
@@ -125,6 +128,11 @@ export function Settings() {
         <input type="checkbox" checked={!!settings.sound} onChange={(e) => setSettings({ ...settings, sound: e.target.checked })} />
         <span><span className="t">민디 소리</span><br /><span className="d">화면마다 바탕 소리와 곡괭이·버튼 효과음, 민디의 뜻 없는 목소리를 냅니다(팀 사운드 키트). 지금 있는 화면과 누른 것에만 반응하고, 그 주의 내용에 따라 달라지지 않습니다.</span></span>
       </label>
+      <div className="voice-setting">
+        <p className="h3">민디 말투</p>
+        <p className="small muted">민디가 말하는 결을 고릅니다. 어떤 말투에서도 숫자와 날짜는 그대로이고, 판단하거나 조언하지 않습니다. 「민디와 이야기」 화면의 말투 칩과 같은 값입니다.</p>
+        <VoicePicker value={voice} onChange={setVoice} withSample />
+      </div>
       <label className="toggle">
         <input type="checkbox" checked={settings.tone} onChange={(e) => setSettings({ ...settings, tone: e.target.checked })} />
         <span><span className="t">민디 말투 다듬기</span><br /><span className="d">주 문장 한두 줄만 외부 언어 모델로 보내 말투를 다듬습니다. 메모 원문과 사진은 보내지 않습니다. 숫자나 날짜가 바뀌면 원래 문장을 씁니다.</span></span>

@@ -10,6 +10,7 @@ import { MINERAL_IMG } from './design';
 import { MINERAL_HEX, type Mineral } from './minerals';
 import { MindiMark } from './Icons';
 import { sfx } from '../mindi/soundKit';
+import { takeNewSpaceRequest } from './SpaceButton';
 import { AXES, axisScreen, type Axis, type WeekRecord } from '../types';
 
 export interface SpaceRow { id: string; name: string; kind: 'island' | 'room'; ores: string[]; words: string[]; at: string }
@@ -123,7 +124,7 @@ export function Space({ onField }: { onField: () => void }) {
   const { byKey, labels, memosByWeek, photosByWeek } = useStore();
   const collected = useCollected();
   const [spaces, setSpaces] = useState<SpaceRow[]>(loadSpaces);
-  const [making, setMaking] = useState(spaces.length === 0);
+  const [making, setMaking] = useState(() => takeNewSpaceRequest() || spaces.length === 0);
   const pool = useMemo(() => collected.map((c) => byKey.get(c.week)).filter(Boolean) as WeekRecord[], [collected, byKey]);
   const [chosen, setChosen] = useState<string[]>(() => pool.slice(-SPACE_NEED).map((w) => w.week));
   const [words, setWords] = useState<string[]>([]);

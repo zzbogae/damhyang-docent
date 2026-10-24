@@ -177,7 +177,7 @@ function Shell() {
       : panel === 'letters' ? <Letters onChange={refreshLetters} />
       : panel === 'collect' && collectOf ? <Collect axis={collectOf.axis} dir={collectOf.dir} onClose={toField} />
       : panel === 'today' ? <Today onDescend={(week) => { setDescent((d) => ({ n: d.n + 1, focus: week })); setPanel('field'); }} />
-      : panel === 'talk' ? <Talk />
+      : panel === 'talk' ? <Talk onSpace={() => setPanel('space')} />
       : panel === 'archive' ? <Archive onSpace={() => setPanel('space')} />
       : panel === 'space' ? <Space onField={() => goHub('field')} />
       : panel === 'week' && w ? <WeekDetail w={w} key={w.week} team />
