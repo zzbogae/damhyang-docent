@@ -51,6 +51,22 @@ cd ../web && npm install --include=dev --legacy-peer-deps && npm run assets && n
 
 <img src="docs/assets/webapp_entry_261003.png" width="49%"> <img src="docs/assets/webapp_yearmine_week_261003.png" width="49%">
 
+### XR Blocks 프로토타입 (`app/xrblocks_space_prototype.html`)
+
+v6 §5 — "광석 재료로 완성도 있는 공간을 만들 수 있는지, 확장은 어떻게 하는지" 시험용.
+[XR Blocks](https://github.com/google/xrblocks)(구글 오픈소스, WebXR + three.js)를 CDN으로 불러와
+광석 몇 개로 최소 공간을 만들고, 새 광석이 자동으로 바깥 링에 이어 붙는 방식을 실험합니다.
+
+ES 모듈 임포트를 쓰기 때문에 `mined_app.html`과 달리 **`file://`로 열면 동작하지 않습니다.**
+로컬 서버로 열어야 합니다:
+
+```bash
+cd app && python3 -m http.server 8080
+# 브라우저에서 http://localhost:8080/xrblocks_space_prototype.html
+```
+
+인터넷 연결이 필요합니다 (three.js·XR Blocks·손 모델을 CDN에서 받아옵니다).
+
 ### 파이프라인 실행
 
 ```bash
