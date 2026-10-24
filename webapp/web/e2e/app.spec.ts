@@ -177,7 +177,7 @@ test('민디에게 묻기와 시기 페이지', async ({ page }) => {
   await expect(page.locator('.ask .bubble')).toContainText('남긴 기록이 있는');
   await page.getByLabel('민디에게 직접 묻기').fill('그때 많이 힘들었지?');
   await page.getByRole('button', { name: '묻기', exact: true }).click();
-  await expect(page.locator('.ask .bubble')).toContainText('판정하지 않습니다');
+  await expect(page.locator('.ask .bubble')).toContainText('힘드시군요');
   await page.locator('.ask').scrollIntoViewIfNeeded();
   await page.screenshot({ path: '../out/shots/app-ask.png' });
   await page.getByRole('button', { name: '시기', exact: true }).click();

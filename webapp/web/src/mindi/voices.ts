@@ -1,11 +1,12 @@
-// 민디 말투 5종(보이스 v4 §7 의 네 결 + 반말 1종, 10/24 하빈 결정).
+// 민디 말투 4종(전체 대본집 v1.1 §18 · 보이스 v4 §7): 조용한 · 다정한 · 담백한 · 시니컬한. 반말은 대본집 §21 열린 결정이라 넣지 않는다.
+// 대본집에 문장이 있는 장면은 scripts.gen.ts 의 문장을 그대로 쓰고(talk.ts), 숫자가 들어가는 답(판정값 템플릿)만 여기서 어미를 바꾼다.
 // 템플릿 문장(합쇼체)의 어미만 바꾼다. 숫자·날짜·순위·「가장」은 손대지 않고, 감정 판정·예측·조언은 tone.ts 검사를 그대로 쓴다.
 // 인터넷이 없어도 어미 규칙으로 바로 바뀌고, 외부 모델(/api/mindi)이 켜져 있으면 그 말투로 한 번 더 다듬는다.
 // 고른 말투는 이 기기 브라우저에만 둔다(설정 › 민디와 채팅 창이 같은 값을 쓴다).
 import { useEffect, useState } from 'react';
 import { checkTone } from './tone';
 
-export type Voice = 'quiet' | 'warm' | 'plain' | 'dry' | 'casual';
+export type Voice = 'quiet' | 'warm' | 'plain' | 'dry';
 
 export interface VoiceDef {
   id: Voice;
@@ -13,7 +14,7 @@ export interface VoiceDef {
   label: string;
   /** 고르기 창의 한 줄 설명 */
   hint: string;
-  /** 튜토리얼 v1.1 §7 「7-1 캐기」 줄. 반말은 [제안] */
+  /** 대본집 §18 「튜토리얼 7-1 캐기」 줄 */
   sample: string;
   /** 외부 모델에 줄 말투 지시 */
   prompt: string;
@@ -26,10 +27,8 @@ export const VOICES: VoiceDef[] = [
     prompt: '말투: 다정한. 부드러운 해요체로 바꾼다. 위로나 감정 이름 붙이기는 하지 않는다.' },
   { id: 'plain', label: '담백한', hint: '짧게, 요점만 말해요', sample: '세 번 두드리세요.',
     prompt: '말투: 담백한. 합쇼체를 유지하되 문장을 짧게 줄이고, 명사로 끝내도 된다. 내용은 빼지 않는다.' },
-  { id: 'dry', label: '시니컬한', hint: '건조하게, 가끔 자기 농담을 해요', sample: '세 번이요. 네 번 두드려도 안 깨지는 건 아니니까 걱정 마시고요.',
+  { id: 'dry', label: '시니컬한', hint: '건조하게, 가끔 제 얘기로 농담해요', sample: '세 번이요. 네 번 두드려도 안 깨지는 건 아니니까 걱정 마시고요.',
     prompt: '말투: 시니컬한. 건조한 해요체. 농담은 다섯 문장에 한 번 이하, 과녁은 민디 자신이나 숫자뿐이다. 사용자의 기록·감정·사람을 농담거리로 삼지 않고, 숫자로 감정을 짐작하지 않는다.' },
-  { id: 'casual', label: '친구처럼', hint: '반말로 편하게 말해요', sample: '세 번 두드리면 열려.',
-    prompt: '말투: 친구처럼. 반말(해체)로 바꾼다. 무례하거나 단정하는 말은 쓰지 않는다.' },
 ];
 
 export const DEFAULT_VOICE: Voice = 'quiet';
@@ -103,14 +102,6 @@ export function toHaeyo(s: string): string {
   return s.replace(ENDING, (m) => conjugate(m, 'haeyo'));
 }
 
-/** 합쇼체·해요체 → 반말 */
-export function toHae(s: string): string {
-  return s.replace(ENDING, (m) => conjugate(m, 'hae'))
-    .replace(/([가-힣])(이에요|예요)(?=[.!?]|$)/g, (_m, a: string, e: string) => a + (e === '이에요' ? '이야' : '야'))
-    .replace(/까요(?=\?)/g, '까')
-    .replace(/([가-힣])요(?=[.!?]|$)/g, '$1');
-}
-
 /** 담백한: 「…입니다.」로 끝나는 문장을 명사로 끝낸다(튜토리얼 §7 「광석은 평소와 크게 달랐던 주.」) */
 export function toPlain(s: string): string {
   return s.replace(new RegExp(String.raw`([가-힣]+?)입니다` + END, 'g'), '$1');
@@ -128,7 +119,6 @@ export function applyVoice(template: string, voice: Voice): string {
     case 'warm': return toHaeyo(template);
     case 'plain': return toPlain(template);
     case 'dry': return toDry(template);
-    case 'casual': return toHae(template);
     default: return template;
   }
 }
