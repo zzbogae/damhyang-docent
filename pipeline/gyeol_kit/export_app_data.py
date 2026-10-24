@@ -114,6 +114,16 @@ def main():
         print('주 단위로 묶을 데이터가 없습니다.')
         return 1
 
+    out_path = os.path.join(ROOT, 'gyeol_data.json')   # 앱 데이터는 키트 최상단 고정
+    build_app_data(merged, health_rows, user_ranges, args.limit, out_path)
+    print('   relic 필드는 비어 있습니다 — 실제로 보여줄 사진/메모가 있는 주만')
+    print('   직접 채워 넣으세요 (지금까지 해온 방식 그대로).')
+    print('   (run_gyeol.py 로 돌리면 data/my_notes_text_clean.tsv 의 원문이 자동으로 붙습니다.)')
+    return 0
+
+
+def build_app_data(merged, health_rows, user_ranges, limit, out_path):
+    """이미 읽어 둔 data/ 로 앱용 gyeol_data.json 을 씁니다 (run_gyeol.py 도 부름)."""
     present = sorted({f for row in merged.values() for f in row})
     feats = [(f, d) for f, d in FEATURE_DIRECTION if f in present]
 
@@ -128,10 +138,10 @@ def main():
     by_week_health, avgs = build_health_index(health_rows)
 
     # deviation 큰 순 — 가장 또렷한 주부터 앱에 우선 배치
-    retrievable_sorted = sorted(retrievable, key=lambda c: -c.get('deviation', 0))[:args.limit]
+    retrievable_sorted = sorted(retrievable, key=lambda c: -c.get('deviation', 0))[:limit]
     # withheld(제외된 것)도 "직접 찾아가면 확인 후 접근 가능"으로 포함한다.
     # 다만 왜 제외됐는지(_excluded_by)는 절대 내보내지 않는다 — 그 설명 자체가 판정이 되기 때문.
-    withheld_sorted = sorted(withheld, key=lambda c: -c.get('deviation', 0))[:args.limit]
+    withheld_sorted = sorted(withheld, key=lambda c: -c.get('deviation', 0))[:limit]
 
     def build_week_record(c, access):
         wk = week_key_from_range(c['date_range'])
@@ -174,7 +184,6 @@ def main():
     weeks_out = [build_week_record(c, 'auto') for c in retrievable_sorted]
     weeks_out += [build_week_record(c, 'confirm') for c in withheld_sorted]
 
-    out_path = os.path.join(ROOT, 'gyeol_data.json')   # 앱 데이터는 키트 최상단 고정
     with open(out_path, 'w', encoding='utf-8') as f:
         json.dump({'generated_weeks': len(weeks_out), 'weeks': weeks_out}, f,
                    ensure_ascii=False, indent=2)
@@ -182,9 +191,7 @@ def main():
     n_auto = sum(1 for w in weeks_out if w['access'] == 'auto')
     n_confirm = sum(1 for w in weeks_out if w['access'] == 'confirm')
     print(f'✅ 저장 완료: {out_path}  (자동 노출 가능 {n_auto}주 · 직접 탐사 시 확인 후 접근 {n_confirm}주)')
-    print('   relic 필드는 비어 있습니다 — 실제로 보여줄 사진/메모가 있는 주만')
-    print('   직접 채워 넣으세요 (지금까지 해온 방식 그대로).')
-    return 0
+    return out_path
 
 
 if __name__ == '__main__':

@@ -6,6 +6,12 @@
     python3 run_gyeol.py
 
 data/ 폴더에 있는 파일을 스스로 알아보고, 있는 것만으로 돌립니다.
+한 번 돌리면 아래 셋이 모두 만들어집니다.
+  out/gyeol_report.html   리포트
+  out/gyeol_wall.html     지층 벽 (원칙 v6 · 그때 쓴 글까지 붙은 것)
+  gyeol_data.json         앱 데이터 (원칙 v6 · 그때 쓴 글까지 붙은 것)
+전에는 make_wall.py → add_relics.py → apply_principles.py 를 차례로 돌려야 했습니다.
+리포트만 필요하면 --report-only.
 하나만 넣어도 돌아가고, 여섯 개를 다 넣어도 돌아갑니다.
 필요한 설치 없음 — 파이썬 표준 라이브러리만 씁니다.
 
@@ -38,6 +44,7 @@ from gyeol.feature_extractor import compute_weekly_features          # noqa: E40
 from gyeol import rolling_baseline as RB                             # noqa: E402
 from gyeol import crisis_filter                                      # noqa: E402
 from gyeol.judge import apply_evidence_floor                         # noqa: E402
+from gyeol import principles                                         # noqa: E402
 
 
 def log(msg=''):
@@ -277,6 +284,12 @@ def main():
                     metavar='시작:끝',
                     help='되돌려받고 싶지 않은 기간. 예: --exclude 2024-09-01:2024-10-31 '
                          '(여러 번 쓸 수 있습니다)')
+    ap.add_argument('--report-only', action='store_true',
+                    help='리포트만 만들고 지층 벽·앱 데이터는 만들지 않음')
+    ap.add_argument('--app-data', default=os.path.join(ROOT, 'gyeol_data.json'),
+                    help='앱 데이터 경로 (기본: 키트 최상단 gyeol_data.json)')
+    ap.add_argument('--limit', type=int, default=40,
+                    help='앱 데이터에 넣을 최대 주 수 (기본 40)')
     args = ap.parse_args()
 
     user_ranges = []
@@ -364,6 +377,23 @@ def main():
         f.write(report.build_html(ctx))
 
     report.print_console(ctx)
+
+    if args.report_only:
+        return 0
+    # 지층 벽 · 앱 데이터 → 원칙 v6 · 원문. 이미 읽어 둔 data/ 를 그대로 씁니다.
+    import make_wall
+    import export_app_data
+    log('\n' + '=' * 68)
+    log(' 지층 벽과 앱 데이터를 만듭니다')
+    log('=' * 68)
+    wall = make_wall.build_wall(found, info, health_rows, merged, args.who, args.out)
+    export_app_data.build_app_data(merged, health_rows, user_ranges, args.limit, args.app_data)
+    relics = principles.load_relics(args.data, log=log)
+    if relics:
+        log(f'원문      {sum(len(v["q"]) for v in relics.values())}개 · {len(relics)}주')
+    principles.apply_to_data(args.app_data, relics, log=log)
+    principles.apply_to_wall(wall, relics, log=log)
+    log(f'\n완성: {wall}\n      {args.app_data}')
     return 0
 
 

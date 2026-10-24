@@ -130,7 +130,6 @@ def core_shape(days, sleep, sorted_avgs):
 def main():
     data_dir = os.path.join(ROOT, 'data')
     out_dir = os.path.join(ROOT, 'out')
-    os.makedirs(out_dir, exist_ok=True)
 
     who = sys.argv[1] if len(sys.argv) > 1 else ''
     # 카톡은 '내 이름'을 알아야 읽힙니다. 두 번째 인자로 받고, 없으면 who를 씁니다.
@@ -148,6 +147,15 @@ def main():
         print(' 주 단위로 묶을 데이터가 없습니다.')
         return 1
 
+    path = build_wall(found, info, health_rows, merged, who, out_dir)
+    print(f'\n완성: {path}')
+    print('브라우저로 열어보세요. 그대로 웹에 올려도 됩니다.')
+    return 0
+
+
+def build_wall(found, info, health_rows, merged, who, out_dir):
+    """이미 읽어 둔 data/ 로 out/gyeol_wall.html 을 만들고 경로를 돌려줍니다 (run_gyeol.py 도 부름)."""
+    os.makedirs(out_dir, exist_ok=True)
     present = sorted({f for row in merged.values() for f in row})
     feats = [(f, d) for f, d in FEATURE_DIRECTION if f in present]
     p = RB.compute_rolling_percentiles(merged, feats, window=52)
@@ -224,9 +232,7 @@ def main():
     path = os.path.join(out_dir, 'gyeol_wall.html')
     with open(path, 'w', encoding='utf-8') as f:
         f.write(html)
-    print(f'\n완성: {path}')
-    print('브라우저로 열어보세요. 그대로 웹에 올려도 됩니다.')
-    return 0
+    return path
 
 
 TEMPLATE = r'''<!DOCTYPE html><html lang="ko"><head>
