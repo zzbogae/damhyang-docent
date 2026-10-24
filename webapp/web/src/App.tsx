@@ -15,6 +15,8 @@ import { FullscreenButton, KioskOverlay, useKiosk } from './ui/Kiosk';
 import { useEn } from './i18n/useEn';
 import { FOOTER_EN } from './i18n/en';
 import { ART } from './ui/design';
+import { Archive, Observatory, Talk, Today, type HubGo } from './ui/Observatory';
+import { Space } from './ui/Space';
 
 function Door109En() {
   return useEn() ? <span lang="en" className="muted"> · {FOOTER_EN}</span> : null;
@@ -38,12 +40,21 @@ const Islands = lazy(() => import('./islands/Islands'));
 const Eras = lazy(() => import('./ui/Eras'));
 const Eval = lazy(() => import('./ui/Eval'));
 
-type Panel = 'week' | 'settings' | 'import' | 'room' | 'islands' | 'eras' | 'eval' | 'letters' | 'collect';
+type Panel = 'week' | 'settings' | 'import' | 'room' | 'islands' | 'eras' | 'eval' | 'letters' | 'collect'
+  // 10/23 장면 플로우(기본 화면만): 관측소 허브와 곁가지
+  | 'hub' | 'field' | 'today' | 'talk' | 'archive' | 'space';
 
 function Shell() {
   const { phase, selected, byKey, select, labels, result } = useStore();
   // 안드로이드 공유로 사진이 넘어오면 가져오기 화면부터 연다
-  const [panel, setPanel] = useState<Panel>(FLAGS.has('shared') ? 'import' : 'week');
+  const [panel, setPanel] = useState<Panel>(FLAGS.has('shared') ? 'import' : GRID ? 'week' : 'hub');
+  // 관측소에서 지층으로 내려갈 때만 엘리베이터를 보여 주고, 오늘 보기에서 고른 주가 있으면 그 주로 내려간다
+  const [descent, setDescent] = useState<{ n: number; focus?: string }>({ n: 0 });
+  const home: Panel = GRID ? 'week' : 'hub';
+  const goHub = (to: HubGo) => {
+    if (to === 'field') setDescent((d) => ({ n: d.n + 1 }));
+    setPanel(to);
+  };
   const [roomName, setRoomName] = useState<string>();
   const [collectOf, setCollectOf] = useState<{ axis: Axis; dir: 'up' | 'down' }>();
   const rooms = useMemo(() => {
@@ -54,7 +65,7 @@ function Shell() {
   useEffect(() => {
     const open = (e: Event) => { setRoomName((e as CustomEvent<string>).detail); setPanel('room'); };
     const collect = (e: Event) => { setCollectOf((e as CustomEvent<{ axis: Axis; dir: 'up' | 'down' }>).detail); setPanel('collect'); };
-    const showWeek = () => setPanel('week');
+    const showWeek = () => setPanel(GRID ? 'week' : 'field');
     const openEval = () => setPanel('eval');
     window.addEventListener('mined:open-eval', openEval);
     window.addEventListener('mined:open-room', open);
@@ -68,7 +79,7 @@ function Shell() {
     };
   }, []);
   const [arrived, setArrived] = useState(0);
-  const resetting = useKiosk(KIOSK, KIOSK_IDLE, () => { setPanel('week'); setArrived(0); });
+  const resetting = useKiosk(KIOSK, KIOSK_IDLE, () => { setPanel(home); setArrived(0); });
   const refreshLetters = () => { loadLetters().then((ls) => setArrived(arrivedCount(ls))); };
   useEffect(refreshLetters, []);
   const rightRef = useRef<HTMLDivElement>(null);
@@ -85,7 +96,7 @@ function Shell() {
       <div className="spacer" />
       {phase === 'ready' && (
         <div className="actions">
-          <button className="btn quiet" onClick={() => { select(undefined); setPanel('week'); }}>처음 화면</button>
+          <button className="btn quiet" onClick={() => { select(undefined); setPanel(home); }}>{GRID ? '처음 화면' : '관측소'}</button>
           {rooms.length > 0 && (
             <button className="btn quiet" onClick={() => { setRoomName(rooms[0]); setPanel('room'); }}><IconRoom />나의 방</button>
           )}
@@ -120,7 +131,7 @@ function Shell() {
     return (
       <div className="app">
         {header}
-        <main style={{ overflow: 'auto' }}><ImportPanel onDone={() => setPanel('week')} onEval={SHOW_EVAL ? () => setPanel('eval') : undefined} /></main>
+        <main style={{ overflow: 'auto' }}><ImportPanel onDone={() => setPanel(home)} onEval={SHOW_EVAL ? () => setPanel('eval') : undefined} /></main>
         {door}
       </div>
     );
@@ -153,18 +164,30 @@ function Shell() {
     );
   }
   if (!GRID) {
-    // 드라이브 디자인: 광물 지하 한 화면 → 광물을 캐면 상세 한 화면. 나머지 화면도 가운데 한 줄로 연다.
-    const back = <button className="btn quiet back" onClick={() => { select(undefined); setPanel('week'); }}>← 지층으로</button>;
+    // 드라이브 디자인 + 10/23 장면 플로우: 관측소(허브) → 지층(광물 지하) → 캐기 → 열린 광석(상세). 곁가지는 가운데 한 줄로 연다.
+    const toField = () => { select(undefined); setPanel('field'); };
+    const toHub = () => { select(undefined); setPanel('hub'); };
+    const back = panel === 'week' || panel === 'collect'
+      ? <button className="btn quiet back" onClick={toField}>← 지층으로</button>
+      : <button className="btn quiet back" onClick={toHub}>← 관측소로</button>;
     const page = panel === 'settings' ? <Settings />
       : panel === 'eras' ? <Suspense fallback={null}><Eras /></Suspense>
       : panel === 'letters' ? <Letters onChange={refreshLetters} />
-      : panel === 'collect' && collectOf ? <Collect axis={collectOf.axis} dir={collectOf.dir} onClose={() => setPanel('week')} />
-      : w ? <WeekDetail w={w} key={w.week} team /> : null;
+      : panel === 'collect' && collectOf ? <Collect axis={collectOf.axis} dir={collectOf.dir} onClose={toField} />
+      : panel === 'today' ? <Today onDescend={(week) => { setDescent((d) => ({ n: d.n + 1, focus: week })); setPanel('field'); }} />
+      : panel === 'talk' ? <Talk />
+      : panel === 'archive' ? <Archive onSpace={() => setPanel('space')} />
+      : panel === 'space' ? <Space onField={() => goHub('field')} />
+      : panel === 'week' && w ? <WeekDetail w={w} key={w.week} team />
+      : null;
+    const onField = !page && panel !== 'hub';
     return (
-      <div className={`app team${page ? '' : ' on-field'}`}>
+      <div className={`app team${onField ? ' on-field' : ''}`}>
         {header}
         <main className="team-main" ref={rightRef}>
-          {page ? <div className="team-page">{back}{page}</div> : <MineField />}
+          {page ? <div className="team-page">{back}{page}</div>
+            : panel === 'hub' ? <div className="team-page"><Observatory onGo={goHub} /></div>
+            : <MineField descent={descent.n} focusWeek={descent.focus} />}
         </main>
         {door}
       </div>

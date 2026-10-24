@@ -56,7 +56,7 @@ DEFAULT_CONFIG = {
     # 확인하기 전까지 쉼 게이지·결에만 쓴다. 확인되면 [] 로 바꾼다
     "badge_off": ["quiet"],  # 배지가 이 수 이상의 축에 걸치면 광물을 형석(복합)으로  # 판정 창(horizon) 안에서 관측된 주 비율이 이보다 낮으면 insufficient
     "similar_exclude": 8,
-    "similar_top": 3,
+    "similar_top": 5,  # 팀 NOW「닮은 주 k=5」
     "similar_min_families": 2,
     "similar_min_shared": 3,
     "null_iter": 200,  # 요약에 '우연이라면 몇 주'를 넣는 원형 이동 반복 수(0 이면 생략)

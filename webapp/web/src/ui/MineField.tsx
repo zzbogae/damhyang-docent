@@ -4,6 +4,8 @@
 // 원본은 연도별 무작위 위치·무작위 광물이었지만, 여기서는 광물이 나온 주만 놓는다.
 // 가로 = 그 주가 한 해 중 어디인지(1~53주), 세로 = 광물을 정한 축(걸음·쉼·화면·기록, 깊을수록 아래), 크기 = 서로 다른 근거 수. 난수는 쓰지 않는다.
 // 광물을 곡괭이로 세 번 치면(1·2번은 금이 가고 3번째에 깨짐) 기록 조각 카드가 뜨고, 「상세 페이지에서 이어보기」로 그 주를 연다.
+// 10/23 장면 플로우 ③: 지층마다 월 타임라인이 있고, 모든 주가 결 무늬 눈금으로 보인다. 아무 주나 골라 캐면 「직접 고른 광석」이 된다.
+// 관측소에서 내려올 때는 엘리베이터 연출이 한 번 지나간다.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../state/store';
 import { rangeLabel } from '../mindi/templates';
@@ -11,8 +13,9 @@ import { playCue } from '../mindi/sound';
 import { MINERAL_IMG, ART, stratumFor } from './design';
 import { MINERAL_HEX, type Mineral } from './minerals';
 import { customOreName } from './oreName';
-import { MindiGreeting } from './Mindi';
-import type { WeekRecord } from '../types';
+import { collect, missingUsual, oreMineral, pickedMineral } from '../ore/collection';
+import { axisScreen, CHANNEL_LABEL, type WeekRecord } from '../types';
+import { GYEOL_TEXT } from './Gyeol';
 
 const ROW: Record<string, number> = { 호박: 0, 황철석: 0, 청금석: 1, 월장석: 1, 자수정: 2, 홍옥: 2, 흑요석: 3, 석류석: 3, 형석: 1.5 };
 const LAYERS = [
@@ -28,50 +31,99 @@ function wave(y: number, amp: number, phase: number) {
 const CRACK_C1 = 'M24,10 L40,32 L26,40 L46,62 L30,70 L48,90';
 const CRACK_C2 = 'M80,16 L58,30 L76,44 L52,58 L72,74 L54,92';
 
-function Ore({ w, i, onMined }: { w: WeekRecord; i: number; onMined: (w: WeekRecord, x: number, y: number) => void }) {
+function weekX(w: WeekRecord) {
+  const wk = Number(w.week.split('-W')[1]);
+  return 16 + ((wk - 1) / 52) * 66;
+}
+
+function Ore({ w, i, onMined, picked = false }: { w: WeekRecord; i: number; onMined: (w: WeekRecord, x: number, y: number) => void; picked?: boolean }) {
   const { settings } = useStore();
   const [hits, setHits] = useState(0);
   const [hit, setHit] = useState(0);
-  const wk = Number(w.week.split('-W')[1]);
-  const x = 16 + ((wk - 1) / 52) * 66;
-  const y = 30 + (ROW[w.mineral!] ?? 1.5) * 13;
-  const size = 40 + Math.min(3, w.evidence.independent ?? 1) * 8;
-  const m = w.mineral as Mineral;
+  const x = weekX(w);
+  const m = (oreMineral(w) ?? '형석') as Mineral;
+  const y = 30 + (ROW[m] ?? 1.5) * 13;
+  const size = picked ? 44 : 40 + Math.min(3, w.evidence.independent ?? 1) * 8;
   const click = (e: React.MouseEvent) => {
     if (hits >= 3) return;
     const n = hits + 1;
     setHits(n); setHit((k) => k + 1);
     if (n === 3) {
       if (settings.sound) playCue('mined');
+      collect(w);
       const r = (e.currentTarget as HTMLElement).closest('.mf-content')!.getBoundingClientRect();
       setTimeout(() => { onMined(w, e.clientX - r.left, e.clientY - r.top); setHits(0); }, 260);
     }
   };
   return (
     <button
-      className={`mf-ore${hits === 1 ? ' crack-1' : ''}${hits === 2 ? ' crack-2' : ''}${hits >= 3 ? ' breaking' : ''}${w.evidence.cross_validated ? '' : ' thin'}`}
-      key={hit} data-mine-week={w.week} data-mineral={m}
+      className={`mf-ore${picked ? ' picked' : ''}${hits === 1 ? ' crack-1' : ''}${hits === 2 ? ' crack-2' : ''}${hits >= 3 ? ' breaking' : ''}${picked || w.evidence.cross_validated ? '' : ' thin'}`}
+      key={hit} data-mine-week={w.week} data-mineral={picked ? undefined : m} data-picked={picked ? 'true' : undefined}
       style={{ left: `${x}%`, top: `${y}%`, width: size, animationDelay: `${i * 0.05}s` }}
-      onClick={click} aria-label={`${rangeLabel(w)} · 광석 캐기 (${hits}/3)`} title={rangeLabel(w)}
+      onClick={click} aria-label={`${rangeLabel(w)} · ${picked ? '고른 주 캐기' : '광석 캐기'} (${hits}/3)`} title={rangeLabel(w)}
     >
-      <span className="mf-glow" style={{ background: `radial-gradient(circle, ${MINERAL_HEX[m]}88, transparent 70%)` }} />
+      {!picked && <span className="mf-glow" style={{ background: `radial-gradient(circle, ${MINERAL_HEX[m]}88, transparent 70%)` }} />}
       <img className="mf-core" src={MINERAL_IMG[m]} alt="" />
       <svg className="mf-crack" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path className="c1" d={CRACK_C1} /><path className="c2" d={CRACK_C2} /></svg>
     </button>
   );
 }
 
-export function MineField() {
-  const { weeks, select, greeted } = useStore();
-  const byYear = useMemo(() => {
+const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
+
+/** 월 타임라인: 그해의 모든 주를 결 무늬 눈금으로. 눈금을 누르면 그 주를 골라 캘 수 있다 */
+function Timeline({ year, weeks, picking, onPick }: { year: number; weeks: WeekRecord[]; picking?: string; onPick: (w: WeekRecord) => void }) {
+  return (
+    <div className="mf-timeline" role="group" aria-label={`${year}년 월 타임라인 · 주를 골라 캐기`}>
+      {MONTHS.map((m) => <span key={m} className="mf-month" style={{ left: `${16 + ((m - 1) / 12) * 66}%` }}>{m}월</span>)}
+      {weeks.map((w) => (
+        <button key={w.week} type="button" data-week={w.week}
+          className={`mf-tick g-${w.gyeol ?? 'none'}${w.candidate ? ' has-ore' : ''}${picking === w.week ? ' on' : ''}`}
+          style={{ left: `${weekX(w)}%` }} onClick={() => onPick(w)}
+          aria-label={`${rangeLabel(w)}${w.gyeol ? ` · ${GYEOL_TEXT[w.gyeol].name}` : ''}${w.candidate ? ' · 광석이 박힌 주' : ''}`} title={rangeLabel(w)} />
+      ))}
+    </div>
+  );
+}
+
+/** ③ 내려가기의 엘리베이터: 지상에서 가장 최근 해까지 한 번 내려간다. 누르는 것은 막지 않는다 */
+function Elevator({ top }: { top: number | undefined }) {
+  const [gone, setGone] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setGone(true), 1400); return () => clearTimeout(t); }, []);
+  if (gone) return null;
+  return (
+    <div className="mf-elevator" aria-hidden="true">
+      <div className="mf-elev-cab"><span className="mf-elev-floor">지상</span><span className="mf-elev-floor">{top ?? ''}</span></div>
+    </div>
+  );
+}
+
+function monthOf(w: WeekRecord) {
+  const [y, m] = w.date_start.split('-').map(Number);
+  return `${y}년 ${m}월이네요.`;
+}
+
+// 같은 내려가기(관측소에서 한 번 누름)로는 엘리베이터와 오늘 보기의 주 맞추기를 한 번만 한다(상세에서 돌아올 때는 다시 안 함)
+let shownDescent = 0;
+
+export function MineField({ descent = 0, focusWeek: focusIn }: { descent?: number; focusWeek?: string } = {}) {
+  const [fresh] = useState(() => { if (descent > shownDescent) { shownDescent = descent; return true; } return false; });
+  const descend = fresh;
+  const focusWeek = fresh ? focusIn : undefined;
+  const { weeks, byKey, select } = useStore();
+  const { byYear, allByYear } = useMemo(() => {
     const m = new Map<number, WeekRecord[]>();
+    const all = new Map<number, WeekRecord[]>();
     for (const w of weeks) {
       const y = Number(w.week.split('-W')[0]);
-      if (!m.has(y)) m.set(y, []);
+      if (!m.has(y)) { m.set(y, []); all.set(y, []); }
+      all.get(y)!.push(w);
       if (w.candidate && w.mineral && w.mineral in MINERAL_IMG) m.get(y)!.push(w);
     }
-    return m;
+    return { byYear: m, allByYear: all };
   }, [weeks]);
+  const [picking, setPicking] = useState<string | undefined>(focusWeek);
+  const [called, setCalled] = useState<string>();
   const years = useMemo(() => [...byYear.keys()].sort((a, b) => b - a), [byYear]); // 위가 최근, 아래로 오래됨
   const [year, setYear] = useState<number>();
   const [card, setCard] = useState<{ w: WeekRecord; x: number; y: number }>();
@@ -91,6 +143,23 @@ export function MineField() {
     const el = scroller.current?.querySelector<HTMLElement>(`.mf-layer[data-year="${y}"]`);
     if (el && scroller.current) scroller.current.scrollTo({ top: el.offsetTop - scroller.current.clientHeight * 0.3, behavior: 'smooth' });
     setCard(undefined);
+  };
+  // 오늘 보기에서 고른 주로 내려오면 그 해로 스크롤하고 그 주를 캘 준비를 한다
+  useEffect(() => {
+    const w = focusWeek ? byKey.get(focusWeek) : undefined;
+    if (!w) return;
+    const t = setTimeout(() => { go(Number(w.week.split('-W')[0])); pick(w); }, descend ? 900 : 50);
+    return () => clearTimeout(t);
+  }, [focusWeek]); // eslint-disable-line react-hooks/exhaustive-deps
+  const pick = (w: WeekRecord) => {
+    setCalled(monthOf(w));
+    if (w.candidate && w.mineral && w.mineral in MINERAL_IMG) {
+      setPicking(undefined);
+      scroller.current?.querySelector<HTMLElement>(`.mf-ore[data-mine-week="${w.week}"]`)?.focus();
+      return;
+    }
+    setPicking(w.week);
+    setTimeout(() => scroller.current?.querySelector<HTMLElement>(`.mf-ore[data-mine-week="${w.week}"]`)?.focus(), 30);
   };
   const cur = year ?? years[0];
   const i = years.indexOf(cur);
@@ -116,7 +185,14 @@ export function MineField() {
                 <span className="mf-layer-year" aria-hidden="true">{y}</span>
                 {!st.own && <span className="mf-band-note">이 해의 지층 그림은 아직 없어 다른 해 그림을 씁니다</span>}
                 {ores.map((w, n) => <Ore key={w.week} w={w} i={n} onMined={(ww, x, yy) => setCard({ w: ww, x, y: yy })} />)}
-                {!ores.length && <p className="mf-empty">{y}년에는 평소를 벗어난 주가 없습니다.</p>}
+                {(() => {
+                  const pw = picking ? byKey.get(picking) : undefined;
+                  return pw && Number(pw.week.split('-W')[0]) === y && !pw.candidate
+                    ? <Ore key={`p-${pw.week}`} w={pw} i={0} picked onMined={(ww, x, yy) => { setPicking(undefined); setCard({ w: ww, x, y: yy }); }} />
+                    : null;
+                })()}
+                {!ores.length && <p className="mf-empty">{y}년에는 평소를 벗어난 주가 없습니다. 아래 타임라인에서 주를 골라 캘 수 있습니다.</p>}
+                <Timeline year={y} weeks={allByYear.get(y) ?? []} picking={picking} onPick={pick} />
               </section>
             );
           })}
@@ -124,14 +200,24 @@ export function MineField() {
           {card && cardPos && (
             <div className="mf-card" style={cardPos} role="dialog" aria-label="기록 조각">
               <button className="mf-card-x" onClick={() => setCard(undefined)} aria-label="닫기">✕</button>
-              <div className="mf-card-eyebrow">{rangeLabel(card.w)}{customOreName(card.w.week) ? ` · ${customOreName(card.w.week)}` : ''}</div>
-              <p className="mf-card-line">{card.w.sentence_plain ?? card.w.sentence}</p>
+              <div className="mf-card-eyebrow">
+                {(() => { const m = oreMineral(card.w); return m ? <i className="mf-card-dot" style={{ background: MINERAL_HEX[m] }} /> : null; })()}
+                {rangeLabel(card.w)}{customOreName(card.w.week) ? ` · ${customOreName(card.w.week)}` : ''}
+                {card.w.candidate ? (card.w.evidence.cross_validated ? ' · 교차 확인' : '') : ' · 직접 고른 광석'}
+              </div>
+              <p className="mf-card-line">{card.w.candidate ? (card.w.sentence_plain ?? card.w.sentence) : pickedLine(card.w)}</p>
+              {(() => {
+                const miss = missingUsual(card.w, weeks);
+                return miss.length > 0 && <p className="mf-card-miss">그 주에 평소 있던 기록 중 {miss.length}종이 비어 있습니다({miss.map((c) => CHANNEL_LABEL[c]).join('·')}).</p>;
+              })()}
               <button className="mf-card-next" onClick={() => select(card.w.week)}>상세 페이지에서 이어보기 →</button>
             </div>
           )}
         </div>
       </div>
       <div className="mf-scanner" aria-hidden="true"><i /><i /></div>
+      {descend && <Elevator top={years[0]} />}
+      {called && <p className="mf-called" role="status">{called}</p>}
       <div className="mf-picker">
         <button className="mf-chev" onClick={() => go(years[i - 1])} disabled={i <= 0} aria-label="다음 해(위로)">‹</button>
         <h2 className="mf-year" key={cur}>{cur}</h2>
@@ -144,13 +230,19 @@ export function MineField() {
           </button>
         ))}
       </nav>
-      {!greeted && <div className="mf-greet"><MindiGreeting /></div>}
       <div className="mf-brand" aria-hidden="true">
         <img className="mindy" src={ART.mindiCharacter} alt="" />
         <img className="logo" src={ART.logoLight} alt="" />
         <div className="tagline">Your Mind In Your Mine D</div>
       </div>
-      <p className="mf-hint">아래로 내려갈수록 오래된 해입니다. 광물을 곡괭이로 세 번 치면 그 주의 기록 조각이 나옵니다.</p>
+      <p className="mf-hint">아래로 내려갈수록 오래된 해입니다. 광물을 곡괭이로 세 번 치면 그 주의 기록 조각이 나옵니다. 타임라인에서 아무 주나 골라 캘 수도 있습니다.</p>
     </div>
   );
+}
+
+/** 직접 고른 주의 기록 조각 문장: 판정하지 않고, 가장 크게 움직인 지표와 방향만 적는다 */
+function pickedLine(w: WeekRecord): string {
+  const p = pickedMineral(w);
+  if (!p) return '이 주에는 지표를 견줄 기록이 남아 있지 않습니다. 남은 글과 사진은 상세에서 볼 수 있습니다.';
+  return `평소 범위 안팎을 견주면, 이 주에 가장 크게 움직인 지표는 ${axisScreen(p.axis)}(평소보다 ${p.dir === 'up' ? '많은' : '적은'} 쪽)입니다.`;
 }
