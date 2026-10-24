@@ -92,7 +92,7 @@ test('시연 영상', async ({ page }) => {
   // 2. 지층과 광물 9종
   await cap(page, '한 줄이 한 해, 한 칸이 한 주입니다. 색이 있는 칸이 직전 1년과 견줘 평소를 벗어난 주입니다.', 4500);
   await page.locator('.legend').scrollIntoViewIfNeeded();
-  await cap(page, '광물은 어느 축이 많았는지 적었는지를 말합니다. 걸음이 많으면 호박, 적으면 황철석입니다.', 4500);
+  await cap(page, '광석의 색은 어느 지표가 많았는지 적었는지를 말합니다. 이름은 처음엔 없고, 사용자가 붙입니다.', 4500);
   await page.getByRole('button', { name: '다음에' }).click();
 
   // 3. 주 상세

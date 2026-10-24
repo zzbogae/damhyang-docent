@@ -83,8 +83,8 @@ def test_gyeol_counts_axes_outside_band():
 
 
 def test_axis_names_two_layers():
-    assert AXES == ["move", "rest", "watch", "leave"]
-    assert [axis_screen(a) for a in AXES] == ["걸음", "쉼", "화면", "기록"]
+    assert AXES == ["move", "rest", "lang", "talk"]
+    assert [axis_screen(a) for a in AXES] == ["걸음", "수면", "언어", "소통"]
 
 
 @pytest.mark.parametrize("metric", ["mid_rank_pct", "robust_z"])

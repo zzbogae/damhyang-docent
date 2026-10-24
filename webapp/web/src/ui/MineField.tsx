@@ -10,6 +10,7 @@ import { rangeLabel } from '../mindi/templates';
 import { playCue } from '../mindi/sound';
 import { MINERAL_IMG, ART, stratumFor } from './design';
 import { MINERAL_HEX, type Mineral } from './minerals';
+import { customOreName } from './oreName';
 import { MindiGreeting } from './Mindi';
 import type { WeekRecord } from '../types';
 
@@ -49,9 +50,9 @@ function Ore({ w, i, onMined }: { w: WeekRecord; i: number; onMined: (w: WeekRec
   return (
     <button
       className={`mf-ore${hits === 1 ? ' crack-1' : ''}${hits === 2 ? ' crack-2' : ''}${hits >= 3 ? ' breaking' : ''}${w.evidence.cross_validated ? '' : ' thin'}`}
-      key={hit} data-mine-week={w.week}
+      key={hit} data-mine-week={w.week} data-mineral={m}
       style={{ left: `${x}%`, top: `${y}%`, width: size, animationDelay: `${i * 0.05}s` }}
-      onClick={click} aria-label={`${rangeLabel(w)} · ${m} 캐기 (${hits}/3)`} title={`${rangeLabel(w)} · ${m}`}
+      onClick={click} aria-label={`${rangeLabel(w)} · 광석 캐기 (${hits}/3)`} title={rangeLabel(w)}
     >
       <span className="mf-glow" style={{ background: `radial-gradient(circle, ${MINERAL_HEX[m]}88, transparent 70%)` }} />
       <img className="mf-core" src={MINERAL_IMG[m]} alt="" />
@@ -123,7 +124,7 @@ export function MineField() {
           {card && cardPos && (
             <div className="mf-card" style={cardPos} role="dialog" aria-label="기록 조각">
               <button className="mf-card-x" onClick={() => setCard(undefined)} aria-label="닫기">✕</button>
-              <div className="mf-card-eyebrow">{rangeLabel(card.w)} · {card.w.mineral}</div>
+              <div className="mf-card-eyebrow">{rangeLabel(card.w)}{customOreName(card.w.week) ? ` · ${customOreName(card.w.week)}` : ''}</div>
               <p className="mf-card-line">{card.w.sentence_plain ?? card.w.sentence}</p>
               <button className="mf-card-next" onClick={() => select(card.w.week)}>상세 페이지에서 이어보기 →</button>
             </div>

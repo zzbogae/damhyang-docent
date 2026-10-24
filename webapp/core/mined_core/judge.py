@@ -66,22 +66,25 @@ DEFAULT_CONFIG = {
     "family_merge": None,  # 예: {"yt": "screen", "photo": "screen"} 처럼 계열을 묶어 셀 때
 }
 
-# 팀 확정 광물 9종(9/23 §1-4): 축 × 방향 8종 + 교차검증 1종(형석). 난수가 아니라 같은 데이터면 같은 광물이 나온다.
+# 광물 9종: 지표 × 방향 8종 + 교차검증 1종(형석). 난수가 아니라 같은 데이터면 같은 광물이 나온다.
+# 10/23 보경: 광물 이름은 「예시 이름」이다. 이름은 사용자가 붙이고, 앱은 처음 이름만 제안한다(화면 문구는 웹 쪽).
 MINERAL_BY_AXIS_DIR = {
     ("move", "up"): "호박", ("move", "down"): "황철석",
     ("rest", "up"): "청금석", ("rest", "down"): "월장석",
-    ("watch", "up"): "자수정", ("watch", "down"): "홍옥",
-    ("leave", "up"): "흑요석", ("leave", "down"): "석류석",
+    ("lang", "up"): "자수정", ("lang", "down"): "홍옥",
+    ("talk", "up"): "흑요석", ("talk", "down"): "석류석",
 }
 MINERAL_COMPLEX = "형석"
 MINERAL_EN = {"호박": "amber", "황철석": "pyrite", "청금석": "lapis", "월장석": "moonstone", "자수정": "amethyst",
               "홍옥": "rose", "흑요석": "obsidian", "석류석": "garnet", "형석": "fluorite"}
 # 팀 v6 실측 τ(800주 실기록, 9/23 §1-3). 건수형 지표는 오른쪽 꼬리가 길어 위·아래 문턱이 다르다.
+# ⚠ lang·talk 는 10/23 이전 남기기(leave) 축의 τ 를 임시로 옮겨 썼다. 실기록으로 다시 재야 한다
+#   (pipeline/gyeol_kit/calibrate_axes.py, 기기 안에서만). 기본 metric(mid_rank_pct)은 τ 를 쓰지 않는다.
 TEAM_V6_TAU = {
     "move": {"up": 4.91, "down": 1.60},
     "rest": {"up": 2.21, "down": 2.99},
-    "watch": {"up": 2.48, "down": 1.44},
-    "leave": {"up": 2.85, "down": 1.37},
+    "lang": {"up": 2.85, "down": 1.37},  # 임시
+    "talk": {"up": 2.85, "down": 1.37},  # 임시
 }
 GRADES = ["held", "returned", "open", "insufficient", "broken", "not_returned"]
 # 화면 문장(팀 확정, broken 은 10/2 NOW). None 은 팀이 문안을 정할 때까지 아무것도 붙이지 않는다는 뜻이다.
@@ -236,7 +239,7 @@ def make_badges(w: int, P: dict[str, dict], cfg: dict) -> list[dict]:
     use_z = cfg.get("metric", "mid_rank_pct") == "robust_z"
     off = set(cfg.get("badge_off") or [])
     for ind in INDICATORS:
-        if ind.id in off:
+        if ind.id in off or ind.axis is None:
             continue
         R = P[ind.id]
         p = R["pr"][w]
@@ -362,8 +365,8 @@ def mineral_shape(badges: list[dict], complex_min_axes: int = 3) -> tuple[str | 
     return mineral, shape
 
 
-AXIS_GAUGE = {"move": ["steps"], "rest": ["sleep", "quiet"], "watch": ["yt_watch", "yt_search", "screen_time"],
-              "leave": ["memo_n", "photo_n", "cal_n"]}
+AXIS_GAUGE = {"move": ["steps"], "rest": ["sleep", "quiet"], "lang": ["memo_n", "ai_msg"],
+              "talk": ["kakao_n", "sns_dm"]}
 
 
 def axes_for(w: int, P: dict[str, dict]) -> dict:

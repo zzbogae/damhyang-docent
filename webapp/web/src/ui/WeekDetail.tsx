@@ -15,6 +15,7 @@ import { groupSimilar } from '../photos/similar';
 import { LABEL as LABELS } from './format';
 
 import { MINERAL_COLOR } from './minerals';
+import { OreName } from './oreName';
 import { MINERAL_IMG, ART } from './design';
 import { playCue } from '../mindi/sound';
 const GRADE_SHORT: Partial<Record<Grade, string>> = {
@@ -314,7 +315,7 @@ function MineralDig({ mineral, sound }: { mineral: keyof typeof MINERAL_IMG; sou
   };
   return (
     <div className="dig">
-      <button className={`dig-ore${hits >= 3 ? ' cracked' : ''}`} key={shake} onClick={hit} aria-label={`${mineral} 캐기 (${hits}/3)`} data-hit={hits}>
+      <button className={`dig-ore${hits >= 3 ? ' cracked' : ''}`} key={shake} onClick={hit} aria-label={`광석 캐기 (${hits}/3)`} data-hit={hits}>
         <img src={MINERAL_IMG[mineral]} alt="" />
         <img className="dig-pick" src={ART.pickaxe} alt="" />
       </button>
@@ -335,9 +336,10 @@ export function WeekDetail({ w, team = false }: { w: WeekRecord; team?: boolean 
     <article className={`stack${team ? ' team-detail' : ''}`} aria-labelledby="wk-title">
       {team && (
         <header className="td-head">
-          {w.mineral && w.mineral in MINERAL_IMG && <img className="td-core" src={MINERAL_IMG[w.mineral as keyof typeof MINERAL_IMG]} alt={w.mineral} />}
+          {w.mineral && w.mineral in MINERAL_IMG && <img className="td-core" src={MINERAL_IMG[w.mineral as keyof typeof MINERAL_IMG]} alt="광석" />}
           <h2 id="wk-title" className="td-date">{rangeLabel(w)}</h2>
-          <div className="td-tag">{[w.grade ? gradeText(w) : '', w.mineral].filter(Boolean).join(' · ')}</div>
+          <div className="td-tag">{w.grade ? gradeText(w) : ''}</div>
+          <OreName w={w} />
           <div className="td-gauges"><div className="td-legend" aria-hidden="true"><span>적음</span><span>평소</span><span>많음</span></div><Gauges w={w} /></div>
           {lead ? <p className="sentence">{lead}</p> : <p className="sentence muted">평소와 크게 다르지 않았던 주입니다. 그때 남은 기록을 그대로 보여 드립니다.</p>}
           {en && lead && <p className="sub-en" lang="en">{weekSentenceEn(w)}</p>}
@@ -349,7 +351,7 @@ export function WeekDetail({ w, team = false }: { w: WeekRecord; team?: boolean 
         {w.mineral && w.mineral in MINERAL_IMG && <MineralDig mineral={w.mineral as keyof typeof MINERAL_IMG} sound={!!settings.sound} />}
         <div className="week-head">
           <h2 id="wk-title">{rangeLabel(w)}</h2>
-          {w.mineral && <span className="chip"><i style={{ background: MINERAL_COLOR[w.mineral] }} />{w.mineral}</span>}
+          <OreName w={w} />
           {w.gyeol && <GyeolChip g={w.gyeol} />}
         </div>
         {lead ? (
