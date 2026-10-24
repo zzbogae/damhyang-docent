@@ -6,7 +6,14 @@ import { customOreName } from './oreName';
 import { MindiMark } from './Icons';
 import type { WeekRecord } from '../types';
 
-type Vibe = 'photo' | 'talk' | 'memo' | 'cal';
+export type Vibe = 'photo' | 'talk' | 'memo' | 'cal';
+/** P8 ★VIBE 네 질문(10/23 버튼배치 P08 ③): 민디 말풍선 바로 아래 버튼 글자 */
+export const VIBE_BUTTONS: { id: Vibe; text: string }[] = [
+  { id: 'photo', text: '사진 볼까?' },
+  { id: 'talk', text: '대화 볼까?' },
+  { id: 'memo', text: '메모 볼까?' },
+  { id: 'cal', text: '일정 볼까?' },
+];
 export const VIBE_QUESTIONS: { id: Vibe; text: string }[] = [
   { id: 'photo', text: '이 주에 찍은 사진은?' },
   { id: 'talk', text: '이 주에 나눈 대화는?' },

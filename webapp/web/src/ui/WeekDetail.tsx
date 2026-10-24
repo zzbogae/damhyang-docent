@@ -1,7 +1,11 @@
 // 주 상세: 판정 문장 → 4축 게이지 → 채널 → 그때 쓴 글·찍은 사진 → 닮은 주 → 이름 붙이기.
 import { useEffect, useMemo, useState } from 'react';
 import { missingUsual, oreMineral, useCollected } from '../ore/collection';
-import { OreGuide } from './OreGuide';
+import { OreGuide, VIBE_BUTTONS, vibeAnswer, type Vibe } from './OreGuide';
+import { SPACE_NEED } from '../ore/collection';
+import { MindiMark } from './Icons';
+import { applyVoice, useVoice } from '../mindi/voices';
+import './detail.css';
 import { useStore } from '../state/store';
 import { AXES, axisScreen, CHANNEL_LABEL, CHANNELS, type Badge, type Grade, type MemoRecord, type WeekRecord } from '../types';
 import { gradeText, rangeLabel, sameDirectionText } from '../mindi/templates';
@@ -19,6 +23,7 @@ import { LABEL as LABELS } from './format';
 import { MINERAL_COLOR } from './minerals';
 import { OreName } from './oreName';
 import { MINERAL_IMG, ART } from './design';
+import type { Axis } from '../types';
 import { playCue } from '../mindi/sound';
 import { sfx } from '../mindi/soundKit';
 const GRADE_SHORT: Partial<Record<Grade, string>> = {
@@ -328,8 +333,147 @@ function MineralDig({ mineral, sound }: { mineral: keyof typeof MINERAL_IMG; sou
   );
 }
 
+
+// ── P8 광석 상세(10/23 버튼배치 P08): ‹ 되돌아가기 · 큰 광석 · 결 색깔 구성 비율 · 민디 말풍선 · ★VIBE 네 질문 · 하단 입력창 ──
+
+/** 지표 고유색(판정 색 아님). 좋고 나쁨을 칠하지 않는다 */
+const AXIS_TINT: Record<Axis, string> = { rest: '#7FA3D6', move: '#E2AC52', talk: '#8DBB8A', lang: '#C792C9' };
+
+/** 지표 넷이 평소 범위에서 벗어난 크기의 비율(합 100). z 가 있으면 |z|, 없으면 백분위가 가운데에서 떨어진 정도 */
+export function gyeolShares(w: WeekRecord): { axis: Axis; pct: number }[] {
+  const raw = AXES.map((axis) => {
+    const a = w.axes[axis];
+    if (!a) return { axis, size: 0 };
+    const size = typeof a.z === 'number' && Number.isFinite(a.z) ? Math.abs(a.z) : Math.abs(a.pr - 0.5) * 4;
+    return { axis, size };
+  }).filter((x) => x.size > 0);
+  const sum = raw.reduce((t, x) => t + x.size, 0);
+  if (!sum) return [];
+  const out = raw.map((x) => ({ axis: x.axis, pct: Math.round((x.size / sum) * 100) })).sort((a, b) => b.pct - a.pct);
+  const drift = 100 - out.reduce((t, x) => t + x.pct, 0);
+  if (out.length) out[0].pct += drift;
+  return out.filter((x) => x.pct > 0);
+}
+
+const TALK_SRC = /kakao|카톡|ai|claude|chatgpt|gpt|insta|sns|dm|facebook/i;
+
+function BackMenu({ onBack }: { onBack: (to: 'hub' | 'field' | 'space') => void }) {
+  const [open, setOpen] = useState(false);
+  const n = useCollected().length;
+  const spaceOpen = n >= SPACE_NEED;
+  return (
+    <div className="p8-back">
+      <button className="p8-back-btn" aria-expanded={open} onClick={() => { sfx('tap'); setOpen((o) => !o); }}>‹ 되돌아가기</button>
+      {open && (
+        <div className="p8-back-menu" role="menu">
+          <button role="menuitem" onClick={() => { sfx('back'); onBack('hub'); }}>관측소</button>
+          <button role="menuitem" onClick={() => { sfx('back'); onBack('field'); }}>Quit · 지층으로</button>
+          {spaceOpen
+            ? <button role="menuitem" onClick={() => { sfx('tap'); onBack('space'); }}>★ 나의 공간</button>
+            : <span role="menuitem" aria-disabled="true" className="p8-locked" onClick={() => sfx('locked')}>★ 나의 공간 · {Math.min(n, SPACE_NEED)}/{SPACE_NEED}</span>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function P8Top({ w, oreM, onBack, onAsk }: { w: WeekRecord; oreM: string | null; onBack?: (to: 'hub' | 'field' | 'space') => void; onAsk?: (text: string) => void }) {
+  const { memosByWeek, photosByWeek, weeks } = useStore();
+  const [voice] = useVoice();
+  const v = (t: string) => applyVoice(t, voice);
+  const [vibe, setVibe] = useState<Vibe>();
+  const [ask, setAsk] = useState('');
+  const memos = memosByWeek.get(w.week) ?? [];
+  const photos = photosByWeek.get(w.week) ?? [];
+  const shown = photos.filter((p) => p.filter?.status !== 'hidden').length;
+  const shares = gyeolShares(w);
+  const [y, m] = w.date_start.split('-').map(Number);
+  const lead = w.candidate ? (w.sentence_plain ?? w.sentence) : null;
+  const say = [
+    `${y}년 ${m}월이네요.`,
+    v(lead ?? '평소 범위에서 크게 벗어나지 않은 주입니다.'),
+    v(memos.length || photos.length ? `이 주에 남은 기록은 글 ${memos.length}개, 사진 ${photos.length}장입니다.` : '이 주에 남은 글과 사진은 없습니다. 숫자 기록만 남아 있습니다.'),
+    v('…그 무렵 이야기, 들어 볼까요?'),
+  ];
+  const miss = missingUsual(w, weeks);
+  const src = CHANNELS.filter((c) => c !== 'quiet' && w.coverage[c] === 'observed').map((c) => CHANNEL_LABEL[c]);
+  const talkMemos = memos.filter((x) => TALK_SRC.test(x.source));
+  const openVibe = (id: Vibe) => {
+    if (vibe === id) { sfx('panelClose'); setVibe(undefined); return; }
+    sfx('panelOpen'); setVibe(id);
+    setTimeout(() => document.getElementById('p8-vibe-panel')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
+  };
+  const ans = vibe ? vibeAnswer(vibe, w, { memos: memos.length, photos: photos.length, shown }) : null;
+  const send = () => {
+    const t = ask.trim();
+    if (!t || !onAsk) return;
+    sfx('send'); onAsk(t); setAsk('');
+  };
+  return (
+    <section className="p8" aria-labelledby="wk-title">
+      {onBack && <BackMenu onBack={onBack} />}
+      <h2 id="wk-title" className="sr-only">{rangeLabel(w)}</h2>
+      <div className="p8-stage">
+        <div className="p8-left">
+          <div className="p8-ore">
+            <img src={oreM ? MINERAL_IMG[oreM as keyof typeof MINERAL_IMG] : ART.stoneCut} alt={oreM ? '열린 광석' : '열린 돌'} />
+          </div>
+          <div className="p8-name">
+            <span className="p8-date">{rangeLabel(w)}</span>
+            <OreName w={{ ...w, mineral: oreM }} />
+          </div>
+          <div className="p8-bubble" role="note" aria-label="민디의 해설">
+            <MindiMark size={34} />
+            <p>{say.join(' ')}</p>
+          </div>
+          <div className="p8-vibe" role="group" aria-label="★ VIBE 네 질문">
+            <span className="p8-star" aria-hidden="true">★</span>
+            {VIBE_BUTTONS.map((q) => (
+              <button key={q.id} className={`p8-vibe-btn${vibe === q.id ? ' on' : ''}`} aria-expanded={vibe === q.id} aria-controls="p8-vibe-panel" onClick={() => openVibe(q.id)}>{q.text}</button>
+            ))}
+          </div>
+        </div>
+        <aside className="p8-card" aria-label="결 색깔 · 구성 비율">
+          <p className="p8-card-title">결 색깔 · 구성 비율</p>
+          {shares.length ? (
+            <>
+              <div className="p8-stack" role="img" aria-label={shares.map((x) => `${axisScreen(x.axis)} ${x.pct}%`).join(', ')}>
+                {shares.map((x) => <i key={x.axis} style={{ width: `${x.pct}%`, background: AXIS_TINT[x.axis] }} />)}
+              </div>
+              <p className="p8-legend">{shares.map((x) => (
+                <span key={x.axis}><b style={{ color: AXIS_TINT[x.axis] }}>◆</b> {axisScreen(x.axis)} {x.pct}%</span>
+              ))}</p>
+            </>
+          ) : <p className="p8-muted">이 주에는 견줄 지표 기록이 없습니다.</p>}
+          {w.grade && gradeText(w) && <p className="p8-line">{gradeText(w)}</p>}
+          {w.gyeol && <p className="p8-line"><GyeolChip g={w.gyeol} /></p>}
+          <p className="p8-src">근거 기록 · 출처: {src.length ? src.join(' · ') : '없음'}</p>
+          {miss.length > 0 && <p className="p8-src">그 주에 평소 있던 기록 중 {miss.length}종이 비어 있습니다({miss.map((c) => CHANNEL_LABEL[c]).join('·')}).</p>}
+          <details className="p8-gauges">
+            <summary>지표 넷을 내 평소와 견주어 보기</summary>
+            <div className="td-gauges"><div className="td-legend" aria-hidden="true"><span>적음</span><span>평소</span><span>많음</span></div><Gauges w={w} /></div>
+          </details>
+        </aside>
+      </div>
+      {vibe && ans && (
+        <div id="p8-vibe-panel" className="p8-vibe-panel" role="region" aria-label={`${VIBE_BUTTONS.find((q) => q.id === vibe)!.text} 근거`}>
+          <p className="p8-ans">{v(ans.text)}</p>
+          {vibe === 'photo' && photos.length > 0 && <div id="wk-photos"><Photos w={w} locked={false} /></div>}
+          {vibe === 'memo' && memos.length > 0 && <div id="wk-memos"><Memos w={w} locked={false} /></div>}
+          {vibe === 'talk' && talkMemos.length === 0 && <p className="p8-muted small">대화 원문은 보여 드리지 않고 횟수만 셉니다.</p>}
+        </div>
+      )}
+      {onAsk && (
+        <form className="p8-ask" onSubmit={(e) => { e.preventDefault(); send(); }}>
+          <input value={ask} onChange={(e) => setAsk(e.target.value)} placeholder="민디에게 물어보기…" aria-label="민디에게 물어보기" maxLength={200} />
+          <button type="submit" className="p8-send" disabled={!ask.trim()}>보내기</button>
+        </form>
+      )}
+    </section>
+  );
+}
+
 export function WeekDetail({ w, team = false, onBack, onAsk }: { w: WeekRecord; team?: boolean; onBack?: (to: 'hub' | 'field' | 'space') => void; onAsk?: (text: string) => void }) {
-  void onBack; void onAsk;
   const { unlocked, unlock, settings } = useStore();
   const en = useEn();
   // 9/12 회의 5번: 주 단위 「한 번 더 묻기」는 없앴다. 위기 표현이 걸린 글만 하나씩 가려 두고 누르면 연다(Memos)
@@ -345,26 +489,7 @@ export function WeekDetail({ w, team = false, onBack, onAsk }: { w: WeekRecord; 
   const miss = team ? missingUsual(w, weeks) : [];
   return (
     <article className={`stack${team ? ' team-detail' : ''}`} aria-labelledby="wk-title">
-      {team && (
-        <header className="td-head">
-          {oreM && <img className="td-core" src={MINERAL_IMG[oreM as keyof typeof MINERAL_IMG]} alt="광석" />}
-          <h2 id="wk-title" className="td-date">{rangeLabel(w)}</h2>
-          <div className="td-tag">{w.grade ? gradeText(w) : ''}</div>
-          <div className="td-chips">
-            {w.candidate && w.evidence.cross_validated && <span className="chip">교차 확인</span>}
-            {!w.candidate && oreM && <span className="chip">직접 고른 광석</span>}
-            {w.gyeol && <GyeolChip g={w.gyeol} />}
-          </div>
-          <OreName w={{ ...w, mineral: oreM }} />
-          {miss.length > 0 && <p className="td-miss small">그 주에 평소 있던 기록 중 {miss.length}종이 비어 있습니다({miss.map((c) => CHANNEL_LABEL[c]).join('·')}).</p>}
-          <div className="td-gauges"><div className="td-legend" aria-hidden="true"><span>적음</span><span>평소</span><span>많음</span></div><Gauges w={w} /></div>
-          {lead ? <p className="sentence">{lead}</p> : <p className="sentence muted">평소와 크게 다르지 않았던 주입니다. 그때 남은 기록을 그대로 보여 드립니다.</p>}
-          {en && lead && <p className="sub-en" lang="en">{weekSentenceEn(w)}</p>}
-          {w.candidate && <p className="td-evidence">{w.evidence.cross_validated ? `근거: ${fam.join('·')} · 서로 다른 기록 ${w.evidence.independent}종이 함께 가리킴` : `근거: ${fam.join('·')} · 기록 한 종류에서만 나와 근거가 얇습니다`}</p>}
-          {lead && <ScreenReadButton text={lead} />}
-        </header>
-      )}
-      {team && <OreGuide w={w} />}
+      {team && <P8Top w={w} oreM={oreM} onBack={onBack} onAsk={onAsk} />}
       {!team && <header>
         {w.mineral && w.mineral in MINERAL_IMG && <MineralDig mineral={w.mineral as keyof typeof MINERAL_IMG} sound={!!settings.sound} />}
         <div className="week-head">
@@ -384,11 +509,29 @@ export function WeekDetail({ w, team = false, onBack, onAsk }: { w: WeekRecord; 
         )}
       </header>}
 
-      <section id="wk-memos"><h3 className="h3">그때 쓴 글</h3><Memos w={w} locked={locked} /></section>
-      <section id="wk-photos"><h3 className="h3">그때 찍은 사진</h3><Photos w={w} locked={locked} /></section>
-      <MindiAsk w={w} />
-      <section><h3 className="h3">닮은 지난 주</h3><Similar w={w} /></section>
-      <section><h3 className="h3">이름 붙이기</h3><Labels w={w} /></section>
+      {team ? (
+        <details className="p8-more">
+          <summary>이 주의 기록 더 보기 · 닮은 지난 주 · 이름 붙이기</summary>
+          <div className="stack" style={{ marginTop: 12 }}>
+            <section><h3 className="h3">그때 쓴 글</h3><Memos w={w} locked={locked} /></section>
+            <section><h3 className="h3">그때 찍은 사진</h3><Photos w={w} locked={locked} /></section>
+            {!onAsk && <MindiAsk w={w} />}
+            <section><h3 className="h3">닮은 지난 주</h3><Similar w={w} /></section>
+            <section><h3 className="h3">이름 붙이기</h3><Labels w={w} /></section>
+            <OreGuide w={w} />
+            {lead && <ScreenReadButton text={lead} />}
+            {en && lead && <p className="sub-en" lang="en">{weekSentenceEn(w)}</p>}
+          </div>
+        </details>
+      ) : (
+        <>
+          <section id="wk-memos"><h3 className="h3">그때 쓴 글</h3><Memos w={w} locked={locked} /></section>
+          <section id="wk-photos"><h3 className="h3">그때 찍은 사진</h3><Photos w={w} locked={locked} /></section>
+          <MindiAsk w={w} />
+          <section><h3 className="h3">닮은 지난 주</h3><Similar w={w} /></section>
+          <section><h3 className="h3">이름 붙이기</h3><Labels w={w} /></section>
+        </>
+      )}
 
       <details className="why">
         <summary>왜 이 주인가</summary>

@@ -1,10 +1,10 @@
 /* 10/23 버튼배치 확정: 왼쪽 레일 + 우상단 묶음 [?][⚙][관측소의 문] + 좌상단 ‹ 와 현재 위치 */
-.app.framed { grid-template-columns: 76px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
-.app.framed.immersive { grid-template-columns: minmax(0, 1fr); }
-.app.framed > .rail { grid-row: 1; grid-column: 1; }
-.app.framed > .stage { grid-row: 1; grid-column: 2; position: relative; min-height: 0; display: flex; flex-direction: column; }
-.app.framed.immersive > .stage { grid-column: 1; }
-.app.framed > .door { grid-column: 1 / -1; }
+.app.team.framed { grid-template-columns: 76px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
+.app.team.framed.immersive { grid-template-columns: minmax(0, 1fr); }
+.app.team.framed > .rail { grid-row: 1; grid-column: 1; }
+.app.team.framed > .stage { grid-row: 1; grid-column: 2; position: relative; min-height: 0; display: flex; flex-direction: column; }
+.app.team.framed.immersive > .stage { grid-column: 1; }
+.app.team.framed > .door { grid-column: 1 / -1; }
 
 .rail {
   display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 28px 0;
@@ -33,7 +33,7 @@
 }
 .tb-btn svg { width: 17px; height: 17px; }
 .tb-door {
-  height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--mined-line-strong);
+  height: 34px; padding: 0 12px; white-space: nowrap; border-radius: 8px; border: 1px solid var(--mined-line-strong);
   background: rgba(20, 16, 24, .55); color: var(--mined-ink); font: 13px/1 var(--font); cursor: pointer; backdrop-filter: blur(6px);
 }
 .tb-back:hover, .tb-btn:hover, .tb-door:hover { border-color: var(--mined-amber); }
@@ -59,10 +59,10 @@
 
 /* 모바일: 레일 → 하단 탭 바 */
 @media (max-width: 720px) {
-  .app.framed { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto auto; }
-  .app.framed > .stage { grid-column: 1; }
-  .app.framed > .rail { grid-row: 2; grid-column: 1; flex-direction: row; justify-content: space-around; padding: 6px 0; border-right: 0; border-top: 1px solid var(--mined-line); }
-  .app.framed > .door { grid-row: 3; }
+  .app.team.framed { height: 100dvh; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto auto; }
+  .app.team.framed > .stage { grid-column: 1; }
+  .app.team.framed > .rail { grid-row: 2; grid-column: 1; flex-direction: row; justify-content: space-around; padding: 6px 0; border-right: 0; border-top: 1px solid var(--mined-line); }
+  .app.team.framed > .door { grid-row: 3; }
   .rail-btn i { width: 20px; height: 20px; }
   .crumbs { max-width: 40vw; }
   .tb-door { padding: 0 8px; font-size: 12px; }

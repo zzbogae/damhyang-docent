@@ -3,19 +3,18 @@
 // 가운데 위 민디 눈과 큰 연도는 지금 화면 한가운데 있는 지층의 해를 따라가고, ‹ ›·왼쪽 연도 목록은 그 지층으로 내려가거나 올라간다.
 // 원본은 연도별 무작위 위치·무작위 광물이었지만, 여기서는 광물이 나온 주만 놓는다.
 // 가로 = 그 주가 한 해 중 어디인지(1~53주), 세로 = 광물을 정한 축(걸음·쉼·화면·기록, 깊을수록 아래), 크기 = 서로 다른 근거 수. 난수는 쓰지 않는다.
-// 광물을 곡괭이로 세 번 치면(1·2번은 금이 가고 3번째에 깨짐) 기록 조각 카드가 뜨고, 「상세 페이지에서 이어보기」로 그 주를 연다.
-// 10/23 장면 플로우 ③: 지층마다 월 타임라인이 있고, 모든 주가 결 무늬 눈금으로 보인다. 아무 주나 골라 캐면 「직접 고른 광석」이 된다.
-// 관측소에서 내려올 때는 엘리베이터 연출이 한 번 지나간다.
+// 10/23 버튼배치 확정(P6): 광석에 마우스를 올리거나 처음 누르면 광석 바로 위에 「2024년 4월 2주 · 캐기」 말풍선이 뜨고, 캐기는 P7 광석 캐기 화면에서 한다.
+// 지층마다 월 타임라인이 있고 모든 주가 결 무늬 눈금으로 보인다. 광석 없는 주는 눈금을 고르면 그 자리에 「이 주 고르기」 점선 말풍선이 뜬다(10/23 D안).
+// 연도 목록은 P5 층 표시기와 같은 오른쪽에 둔다. 엘리베이터는 P5 화면이 따로 맡는다.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../state/store';
 import { rangeLabel } from '../mindi/templates';
-import { playCue } from '../mindi/sound';
-import { fieldDepth, sfx, sceneOverlay } from '../mindi/soundKit';
+import { fieldDepth, sfx } from '../mindi/soundKit';
 import { MINERAL_IMG, ART, stratumFor } from './design';
 import { MINERAL_HEX, type Mineral } from './minerals';
-import { customOreName } from './oreName';
-import { collect, missingUsual, oreMineral, pickedMineral } from '../ore/collection';
-import { axisScreen, CHANNEL_LABEL, type WeekRecord } from '../types';
+import { oreMineral } from '../ore/collection';
+import type { WeekRecord } from '../types';
+import './field.css';
 import { GYEOL_TEXT } from './Gyeol';
 
 const ROW: Record<string, number> = { 호박: 0, 황철석: 0, 청금석: 1, 월장석: 1, 자수정: 2, 홍옥: 2, 흑요석: 3, 석류석: 3, 형석: 1.5 };
@@ -29,8 +28,8 @@ function wave(y: number, amp: number, phase: number) {
   const p = (x: number) => y + Math.sin((x / 1000) * Math.PI * 2 + phase) * amp;
   return `M0,${p(0)} C 170,${p(170) - amp * 0.6} 330,${p(330) + amp * 0.6} 500,${p(500)} S 830,${p(830) - amp * 0.6} 1000,${p(1000)}`;
 }
-const CRACK_C1 = 'M24,10 L40,32 L26,40 L46,62 L30,70 L48,90';
-const CRACK_C2 = 'M80,16 L58,30 L76,44 L52,58 L72,74 L54,92';
+export const CRACK_C1 = 'M24,10 L40,32 L26,40 L46,62 L30,70 L48,90';
+export const CRACK_C2 = 'M80,16 L58,30 L76,44 L52,58 L72,74 L54,92';
 
 // 가로 자리: 한 해 안에서 몇 번째 주인지(0~1). 실제 위치는 CSS 변수 --mf-x0·--mf-xw 로 화면 폭에 맞춘다(좁은 화면은 더 넓게)
 function weekFrac(w: WeekRecord) {
@@ -38,37 +37,42 @@ function weekFrac(w: WeekRecord) {
 }
 const xAt = (f: number) => `calc(var(--mf-x0) + var(--mf-xw) * ${f.toFixed(4)})`;
 
-function Ore({ w, i, onMined, picked = false, top }: { w: WeekRecord; i: number; onMined: (w: WeekRecord, x: number, y: number) => void; picked?: boolean; top?: number }) {
-  const { settings } = useStore();
-  const [hits, setHits] = useState(0);
-  const [hit, setHit] = useState(0);
+/** 「2024년 4월 2주」: 그 주 월요일이 그달 몇째 주인지 */
+export function monthWeek(w: Pick<WeekRecord, 'date_start'>) {
+  const [y, m, d] = w.date_start.split('-').map(Number);
+  return `${y}년 ${m}월 ${Math.ceil(d / 7)}주`;
+}
+
+function Ore({ w, i, onMine, picked = false, top, open, onOpen }: { w: WeekRecord; i: number; onMine: (week: string) => void; picked?: boolean; top?: number; open: boolean; onOpen: (week: string | undefined) => void }) {
+  const touch = useRef(false);
+  const wasOpen = useRef(false);
   const m = (oreMineral(w) ?? '형석') as Mineral;
   const y = top ?? 30 + (ROW[m] ?? 1.5) * 13;
   const size = picked ? 44 : 40 + Math.min(3, w.evidence.independent ?? 1) * 8;
-  const click = (e: React.MouseEvent) => {
-    if (hits >= 3) return;
-    const n = hits + 1;
-    setHits(n); setHit((k) => k + 1);
-    sfx(n === 1 ? 'hit1' : n === 2 ? 'hit2' : 'hit3');
-    if (n === 3) {
-      if (settings.sound) playCue('mined');
-      collect(w);
-      sfx('keep');
-      const r = (e.currentTarget as HTMLElement).closest('.mf-content')!.getBoundingClientRect();
-      setTimeout(() => { onMined(w, e.clientX - r.left, e.clientY - r.top); setHits(0); }, 260);
-    }
+  // 마우스는 올리면 말풍선이 이미 보이므로 한 번에 캐러 간다. 손가락은 첫 탭에 말풍선, 두 번째(또는 말풍선)에 캐러 간다
+  const click = () => {
+    if (touch.current && !wasOpen.current) { onOpen(w.week); return; }
+    sfx('tap');
+    onMine(w.week);
   };
   return (
-    <button
-      className={`mf-ore${picked ? ' picked' : ''}${hits === 1 ? ' crack-1' : ''}${hits === 2 ? ' crack-2' : ''}${hits >= 3 ? ' breaking' : ''}${picked || w.evidence.cross_validated ? '' : ' thin'}`}
-      key={hit} data-mine-week={w.week} data-mineral={picked ? undefined : m} data-picked={picked ? 'true' : undefined}
-      style={{ left: xAt(weekFrac(w)), top: `${y}%`, width: size, animationDelay: `${i * 0.05}s` }}
-      onClick={click} aria-label={`${rangeLabel(w)} · ${picked ? '고른 주 캐기' : '광석 캐기'} (${hits}/3)`} title={rangeLabel(w)}
-    >
-      {!picked && <span className="mf-glow" style={{ background: `radial-gradient(circle, ${MINERAL_HEX[m]}88, transparent 70%)` }} />}
-      <img className="mf-core" src={MINERAL_IMG[m]} alt="" />
-      <svg className="mf-crack" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path className="c1" d={CRACK_C1} /><path className="c2" d={CRACK_C2} /></svg>
-    </button>
+    <div className={`mf-ore-wrap${open ? ' open' : ''}`} style={{ left: xAt(weekFrac(w)), top: `${y}%` }}
+      onMouseEnter={() => onOpen(w.week)} onMouseLeave={() => onOpen(undefined)}>
+      <button
+        className={`mf-ore${picked ? ' picked' : ''}${picked || w.evidence.cross_validated ? '' : ' thin'}`}
+        data-mine-week={w.week} data-mineral={picked ? undefined : m} data-picked={picked ? 'true' : undefined}
+        style={{ width: size, animationDelay: `${i * 0.05}s` }}
+        onPointerDown={(e) => { touch.current = e.pointerType === 'touch'; wasOpen.current = open; }}
+        onFocus={() => onOpen(w.week)} onBlur={() => onOpen(undefined)}
+        onClick={click} aria-label={`${monthWeek(w)} · ${picked ? '이 주 고르기' : '캐기'}`}
+      >
+        {!picked && <span className="mf-glow" style={{ background: `radial-gradient(circle, ${MINERAL_HEX[m]}88, transparent 70%)` }} />}
+        <img className="mf-core" src={MINERAL_IMG[m]} alt="" />
+      </button>
+      <button type="button" tabIndex={-1} className={`mf-tip${picked ? ' pick' : ''}`} onClick={() => { sfx('tap'); onMine(w.week); }} aria-hidden="true">
+        {picked ? '이 주 고르기' : `${monthWeek(w)} · 캐기`}
+      </button>
+    </div>
   );
 }
 
@@ -102,36 +106,20 @@ function Timeline({ year, weeks, picking, onPick }: { year: number; weeks: WeekR
   );
 }
 
-/** ③ 내려가기의 엘리베이터: 지상에서 가장 최근 해까지 한 번 내려간다. 누르는 것은 막지 않는다 */
-function Elevator({ top }: { top: number | undefined }) {
-  const [gone, setGone] = useState(false);
-  useEffect(() => {
-    const release = sceneOverlay('elevator');
-    const t = setTimeout(() => { setGone(true); release(); }, 1400);
-    return () => { clearTimeout(t); release(); };
-  }, []);
-  if (gone) return null;
-  return (
-    <div className="mf-elevator" aria-hidden="true">
-      <div className="mf-elev-cab"><span className="mf-elev-floor">지상</span><span className="mf-elev-floor">{top ?? ''}</span></div>
-    </div>
-  );
-}
-
 function monthOf(w: WeekRecord) {
   const [y, m] = w.date_start.split('-').map(Number);
   return `${y}년 ${m}월이네요.`;
 }
 
-// 같은 내려가기(관측소에서 한 번 누름)로는 엘리베이터와 오늘 보기의 주 맞추기를 한 번만 한다(상세에서 돌아올 때는 다시 안 함)
+// 같은 내려가기(엘리베이터·오늘 보기에서 한 번)로는 그 해·그 주 맞추기를 한 번만 한다(상세에서 돌아올 때는 다시 안 함)
 let shownDescent = 0;
 
-export function MineField({ descent = 0, focusWeek: focusIn, focusYear, onMine }: { descent?: number; focusWeek?: string; focusYear?: number; onMine?: (week: string) => void } = {}) {
-  void focusYear; void onMine;
+export function MineField({ descent = 0, focusWeek: focusIn, focusYear: yearIn, onMine }: { descent?: number; focusWeek?: string; focusYear?: number; onMine?: (week: string) => void } = {}) {
   const [fresh] = useState(() => { if (descent > shownDescent) { shownDescent = descent; return true; } return false; });
-  const descend = fresh;
   const focusWeek = fresh ? focusIn : undefined;
-  const { weeks, byKey, select } = useStore();
+  const focusYear = fresh ? yearIn : undefined;
+  const { weeks, byKey } = useStore();
+  const mine = (week: string) => onMine?.(week);
   const { byYear, allByYear } = useMemo(() => {
     const m = new Map<number, WeekRecord[]>();
     const all = new Map<number, WeekRecord[]>();
@@ -143,13 +131,12 @@ export function MineField({ descent = 0, focusWeek: focusIn, focusYear, onMine }
     }
     return { byYear: m, allByYear: all };
   }, [weeks]);
-  const [picking, setPicking] = useState<string | undefined>(focusWeek);
+  const [picking, setPicking] = useState<string | undefined>(focusWeek && !byKey.get(focusWeek)?.candidate ? focusWeek : undefined);
+  const [tip, setTip] = useState<string | undefined>(focusWeek);
   const [called, setCalled] = useState<string>();
   const years = useMemo(() => [...byYear.keys()].sort((a, b) => b - a), [byYear]); // 위가 최근, 아래로 오래됨
   const [year, setYear] = useState<number>();
-  const [card, setCard] = useState<{ w: WeekRecord; x: number; y: number }>();
   const scroller = useRef<HTMLDivElement>(null);
-  const content = useRef<HTMLDivElement>(null);
   // 화면 한가운데 걸친 지층의 해를 큰 연도로 보여 준다
   const sync = () => {
     const sc = scroller.current; if (!sc) return;
@@ -160,40 +147,42 @@ export function MineField({ descent = 0, focusWeek: focusIn, focusYear, onMine }
     fieldDepth(years.indexOf(cur), years.length);
   };
   useEffect(() => { sync(); }, [years]); // eslint-disable-line react-hooks/exhaustive-deps
-  const go = (y: number | undefined) => {
+  const go = (y: number | undefined, smooth = true) => {
     if (y === undefined) return;
     const el = scroller.current?.querySelector<HTMLElement>(`.mf-layer[data-year="${y}"]`);
-    if (el && scroller.current) scroller.current.scrollTo({ top: el.offsetTop - scroller.current.clientHeight * 0.3, behavior: 'smooth' });
-    setCard(undefined);
+    if (el && scroller.current) scroller.current.scrollTo({ top: el.offsetTop - scroller.current.clientHeight * 0.3, behavior: smooth ? 'smooth' : 'auto' });
   };
-  // 오늘 보기에서 고른 주로 내려오면 그 해로 스크롤하고 그 주를 캘 준비를 한다
+  // 엘리베이터에서 고른 해로 바로 내려와 있는다(하강 연출은 P5 가 이미 했다)
+  useEffect(() => {
+    if (focusYear === undefined) return;
+    const t = setTimeout(() => go(focusYear, false), 30);
+    return () => clearTimeout(t);
+  }, [focusYear]); // eslint-disable-line react-hooks/exhaustive-deps
+  // 오늘 보기에서 고른 주로 내려오면 그 해로 스크롤하고 그 주 위에 말풍선을 띄운다
   useEffect(() => {
     const w = focusWeek ? byKey.get(focusWeek) : undefined;
     if (!w) return;
-    const t = setTimeout(() => { go(Number(w.week.split('-W')[0])); pick(w); }, descend ? 900 : 50);
+    const t = setTimeout(() => { go(Number(w.week.split('-W')[0]), false); pick(w); }, 50);
     return () => clearTimeout(t);
   }, [focusWeek]); // eslint-disable-line react-hooks/exhaustive-deps
   const pick = (w: WeekRecord) => {
     setCalled(monthOf(w));
     if (w.candidate && w.mineral && w.mineral in MINERAL_IMG) {
-      setPicking(undefined);
+      setPicking(undefined); setTip(w.week);
       scroller.current?.querySelector<HTMLElement>(`.mf-ore[data-mine-week="${w.week}"]`)?.focus();
       return;
     }
-    setPicking(w.week);
+    sfx('tap');
+    setPicking(w.week); setTip(w.week);
     setTimeout(() => scroller.current?.querySelector<HTMLElement>(`.mf-ore[data-mine-week="${w.week}"]`)?.focus(), 30);
   };
   const cur = year ?? years[0];
   const i = years.indexOf(cur);
-  const W = content.current?.clientWidth ?? 1200;
-  // 카드는 광석 오른쪽에, 자리가 없으면 왼쪽에 둔다. 좁은 화면에서도 화면 밖으로 나가지 않게 가둔다
-  const cardW = Math.min(300, W * 0.78);
-  const cardLeft = card ? (card.x + 22 + cardW > W ? card.x - cardW - 22 : card.x + 22) : 0;
-  const cardPos = card && { left: Math.max(8, Math.min(W - cardW - 8, cardLeft)), top: Math.max(10, card.y - 30) };
+  const hover = (k: string | undefined) => setTip((t) => (k ?? (t === picking ? t : undefined)));
   return (
-    <div className="minefield" role="region" aria-label="광물 지하">
+    <div className="minefield" role="region" aria-label="연도 지층">
       <div className="mf-scroll" ref={scroller} onScroll={sync}>
-        <div className="mf-content" ref={content}>
+        <div className="mf-content">
           <div className="mf-sky">
             <svg className="mf-strata" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
               <defs><linearGradient id="mfSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#cfe0e6" /><stop offset="55%" stopColor="#8a8f92" /><stop offset="100%" stopColor="#4b4a4d" /></linearGradient></defs>
@@ -204,53 +193,34 @@ export function MineField({ descent = 0, focusWeek: focusIn, focusYear, onMine }
           {years.map((y, k) => {
             const st = stratumFor(y);
             const ores = byYear.get(y) ?? [];
+            const pw = picking ? byKey.get(picking) : undefined;
             return (
               <section key={y} className="mf-layer" data-year={y} aria-label={`${y}년 지층 · 광물 ${ores.length}개`} style={{ filter: `brightness(${Math.max(0.55, 1 - k * 0.04)})` }}>
                 <img className="mf-band" src={st.src} alt="" />
                 <span className="mf-layer-year" aria-hidden="true">{y}</span>
                 {!st.own && <span className="mf-band-note">이 해의 지층 그림은 아직 없어 다른 해 그림을 씁니다</span>}
-                {(() => { const tops = placeOres(ores); return ores.map((w, n) => <Ore key={w.week} w={w} i={n} top={tops[n]} onMined={(ww, x, yy) => { sfx('card'); setCard({ w: ww, x, y: yy }); }} />); })()}
-                {(() => {
-                  const pw = picking ? byKey.get(picking) : undefined;
-                  return pw && Number(pw.week.split('-W')[0]) === y && !pw.candidate
-                    ? <Ore key={`p-${pw.week}`} w={pw} i={0} picked onMined={(ww, x, yy) => { sfx('card'); setPicking(undefined); setCard({ w: ww, x, y: yy }); }} />
-                    : null;
-                })()}
+                {(() => { const tops = placeOres(ores); return ores.map((w, n) => <Ore key={w.week} w={w} i={n} top={tops[n]} onMine={mine} open={tip === w.week} onOpen={hover} />); })()}
+                {pw && Number(pw.week.split('-W')[0]) === y && !pw.candidate && (
+                  <Ore key={`p-${pw.week}`} w={pw} i={0} picked top={62} onMine={mine} open={tip === pw.week} onOpen={hover} />
+                )}
                 {!ores.length && <p className="mf-empty">{y}년에는 평소를 벗어난 주가 없습니다. 아래 타임라인에서 주를 골라 캘 수 있습니다.</p>}
                 <Timeline year={y} weeks={allByYear.get(y) ?? []} picking={picking} onPick={pick} />
               </section>
             );
           })}
           <div className="mf-bedrock" aria-hidden="true" />
-          {card && cardPos && (
-            <div className="mf-card" style={cardPos} role="dialog" aria-label="기록 조각">
-              <button className="mf-card-x" onClick={() => setCard(undefined)} aria-label="닫기">✕</button>
-              <div className="mf-card-eyebrow">
-                {(() => { const m = oreMineral(card.w); return m ? <i className="mf-card-dot" style={{ background: MINERAL_HEX[m] }} /> : null; })()}
-                {rangeLabel(card.w)}{customOreName(card.w.week) ? ` · ${customOreName(card.w.week)}` : ''}
-                {card.w.candidate ? (card.w.evidence.cross_validated ? ' · 교차 확인' : '') : ' · 직접 고른 광석'}
-              </div>
-              <p className="mf-card-line">{card.w.candidate ? (card.w.sentence_plain ?? card.w.sentence) : pickedLine(card.w)}</p>
-              {(() => {
-                const miss = missingUsual(card.w, weeks);
-                return miss.length > 0 && <p className="mf-card-miss">그 주에 평소 있던 기록 중 {miss.length}종이 비어 있습니다({miss.map((c) => CHANNEL_LABEL[c]).join('·')}).</p>;
-              })()}
-              <button className="mf-card-next" onClick={() => select(card.w.week)}>상세 페이지에서 이어보기 →</button>
-            </div>
-          )}
         </div>
       </div>
       <div className="mf-scanner" aria-hidden="true"><i /><i /></div>
-      {descend && <Elevator top={years[0]} />}
       {called && <p className="mf-called" role="status">{called}</p>}
       <div className="mf-picker">
-        <button className="mf-chev" onClick={() => go(years[i - 1])} disabled={i <= 0} aria-label="다음 해(위로)">‹</button>
+        <button className="mf-chev" onClick={() => { sfx('floor'); go(years[i - 1]); }} disabled={i <= 0} aria-label="다음 해(위로)">◁</button>
         <h2 className="mf-year" key={cur}>{cur}</h2>
-        <button className="mf-chev" onClick={() => go(years[i + 1])} disabled={i >= years.length - 1} aria-label="이전 해(아래로)">›</button>
+        <button className="mf-chev" onClick={() => { sfx('floor'); go(years[i + 1]); }} disabled={i >= years.length - 1} aria-label="이전 해(아래로)">▷</button>
       </div>
       <nav className="mf-years" aria-label="연도">
         {years.map((y) => (
-          <button key={y} className={`mf-yr${y === cur ? ' on' : ''}`} onClick={() => go(y)} aria-current={y === cur ? 'true' : undefined}>
+          <button key={y} className={`mf-yr${y === cur ? ' on' : ''}`} onClick={() => { sfx('floor'); go(y); }} aria-current={y === cur ? 'true' : undefined}>
             <span className="arrow">▶</span>{y}{(byYear.get(y)?.length ?? 0) > 0 && <small> · {byYear.get(y)!.length}</small>}
           </button>
         ))}
@@ -260,14 +230,7 @@ export function MineField({ descent = 0, focusWeek: focusIn, focusYear, onMine }
         <img className="logo" src={ART.logoLight} alt="" />
         <div className="tagline">Your Mind In Your Mine D</div>
       </div>
-      <p className="mf-hint">아래로 내려갈수록 오래된 해입니다. 광물을 곡괭이로 세 번 치면 그 주의 기록 조각이 나옵니다. 타임라인에서 아무 주나 골라 캘 수도 있습니다.</p>
+      <p className="mf-hint">아래로 내려갈수록 오래된 해입니다. 광석을 누르면 캐러 갑니다. 타임라인에서 아무 주나 골라 캘 수도 있습니다.</p>
     </div>
   );
-}
-
-/** 직접 고른 주의 기록 조각 문장: 판정하지 않고, 가장 크게 움직인 지표와 방향만 적는다 */
-function pickedLine(w: WeekRecord): string {
-  const p = pickedMineral(w);
-  if (!p) return '이 주에는 지표를 견줄 기록이 남아 있지 않습니다. 남은 글과 사진은 상세에서 볼 수 있습니다.';
-  return `평소 범위 안팎을 견주면, 이 주에 가장 크게 움직인 지표는 ${axisScreen(p.axis)}(평소보다 ${p.dir === 'up' ? '많은' : '적은'} 쪽)입니다.`;
 }

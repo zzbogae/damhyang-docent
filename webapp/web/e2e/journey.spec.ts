@@ -15,30 +15,48 @@ for (const vp of [{ name: 'desktop', width: 1360, height: 900 }, { name: 'phone'
     await expect(page.getByRole('heading', { name: '관측소' })).toBeVisible({ timeout: 180000 });
     await shot('1_hub');
     await page.getByRole('button', { name: '다음에' }).click();
-    await page.getByRole('button', { name: /지층으로 내려가기/ }).click();
-    await page.waitForTimeout(1700);
+    // 10/23 버튼배치: Ⓑ 내려가기 → 엘리베이터 → 지층 → 고른 주 → 캐기(3번) → 여기서 바로 보기 → 상세
+    const descend = async () => {
+      await page.locator('.obs-btn.b').click();
+      await page.locator('.lift-btn.primary').click();
+      await expect(page.locator('.minefield')).toBeVisible({ timeout: 10000 });
+    };
+    const mine = async (carry: boolean) => {
+      const rock = page.locator('.mine-ore');
+      await expect(rock).toBeVisible();
+      for (let i = 0; i < 3; i++) await rock.click();
+      await page.getByRole('button', { name: carry ? '관측소로 가져가기' : '여기서 바로 보기' }).click();
+    };
+    await descend();
+    await page.waitForTimeout(800);
     await shot('2_field');
     const tick = page.locator('.mf-tick:not(.has-ore)').nth(5);
     await tick.evaluate((el) => el.scrollIntoView({ block: 'center' })); await tick.click();
-    const rock = page.locator('.mf-ore[data-picked="true"]');
-    for (let i = 0; i < 3; i++) await rock.click();
-    const card = page.getByRole('dialog', { name: '기록 조각' });
-    await expect(card).toBeVisible(); await page.waitForTimeout(500); await shot('3_card');
-    await card.getByRole('button', { name: '상세 페이지에서 이어보기 →' }).click();
-    await expect(page.locator('.team-detail')).toBeVisible(); await shot('4_detail');
-    await page.getByRole('button', { name: '← 지층으로' }).click();
+    await page.locator('.mf-ore[data-picked="true"]').click();
+    if (vp.name === 'phone' && !(await page.locator('.mine-ore').isVisible())) await page.locator('.mf-ore[data-picked="true"]').click();
+    await shot('3_mine');
+    await mine(false);
+    await expect(page.getByRole('group', { name: '★ VIBE 네 질문' })).toBeVisible(); await shot('4_detail');
+    await page.getByRole('button', { name: '‹ 되돌아가기' }).click();
+    await page.getByRole('menuitem', { name: '관측소' }).click();
     for (let k = 0; k < 2; k++) {
+      await descend();
       const ore = page.locator('.mf-ore:not([data-picked])').nth(k);
       await ore.evaluate((el) => el.scrollIntoView({ block: 'center' }));
-      for (let i = 0; i < 3; i++) await ore.click();
-      await expect(card).toBeVisible(); await card.getByRole('button', { name: '닫기' }).click();
+      await ore.click();
+      if (!(await page.locator('.mine-ore').isVisible())) await ore.click(); // 터치: 첫 탭은 말풍선
+      await mine(true);
+      await expect(page.getByRole('heading', { name: '관측소' })).toBeVisible({ timeout: 10000 });
     }
-    await page.getByRole('button', { name: '관측소', exact: true }).click();
-    await page.getByRole('button', { name: /나의 공간/ }).click();
+    await page.locator('.obs-btn.e').click();
+    await page.getByRole('button', { name: '다음' }).click();
     await page.getByRole('group', { name: '단어 고르기' }).getByRole('button').first().click();
+    await page.getByRole('button', { name: '다음' }).click();
+    await page.getByRole('button', { name: '다음' }).click();
     await page.getByLabel('공간 이름').fill('첫 공간');
-    await page.getByRole('button', { name: '이름 붙이고 짓기' }).click();
-    await expect(page.locator('.space-name')).toHaveText('첫 공간'); await shot('5_space');
+    await page.getByRole('button', { name: '다음' }).click();
+    await page.getByRole('button', { name: '안개 걷고 열기' }).click();
+    await expect(page.getByText('첫 공간').first()).toBeVisible({ timeout: 10000 }); await shot('5_space');
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
     console.log(vp.name, 'overflow', overflow, 'errors', errors.length);
     expect(errors).toEqual([]);

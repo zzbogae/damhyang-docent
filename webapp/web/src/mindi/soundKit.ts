@@ -78,7 +78,6 @@ export function panelScene(panel: string, weekOpen: boolean): SceneName {
   if (panel === 'hub') return 'observatory';
   if (panel === 'talk') return 'ask';
   if (panel === 'collect') return 'detail';
-  if (panel === 'week') return 'detail';
   if (panel === 'archive') return 'archive';
   if (panel === 'islands') return 'space';
   return weekOpen ? 'detail' : 'field';

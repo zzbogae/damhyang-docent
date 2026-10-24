@@ -1,0 +1,70 @@
+/* P8 광석 상세 (10/23 버튼배치 P08): ① ‹ 되돌아가기 좌상단 · 큰 광석 왼쪽 · ② 결 색깔 구성 비율 오른쪽 위 ·
+   ③ 민디 말풍선 바로 아래 ★VIBE 네 질문 · ④ 하단 전체 폭 입력창. 위 64px 는 공통 TopBar 자리라 비워 둔다. */
+.team-detail { max-width: 1120px; margin: 0 auto; padding: 64px 28px 120px; }
+.p8 { position: relative; display: grid; gap: 18px; }
+.p8-back { position: relative; justify-self: start; z-index: 5; }
+.p8-back-btn {
+  height: 38px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--mined-line-strong);
+  background: rgba(20, 16, 24, .6); color: var(--mined-ink); font: 15px/1 var(--font); cursor: pointer;
+}
+.p8-back-btn:hover { border-color: var(--mined-amber); }
+.p8-back-menu {
+  position: absolute; top: 44px; left: 0; min-width: 200px; display: grid; padding: 6px;
+  background: var(--mined-panel); border: 1px solid var(--mined-line-strong); border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,.4);
+}
+.p8-back-menu > * { text-align: left; padding: 10px 12px; border-radius: 8px; background: none; border: 0; color: var(--mined-ink); font: 15px/1.3 var(--font); cursor: pointer; }
+.p8-back-menu > button:hover { background: var(--mined-btn-bg-hi); }
+.p8-back-menu .p8-locked { color: var(--mined-ink-mute); cursor: default; }
+
+.p8-stage { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(280px, .9fr); gap: 28px; align-items: start; }
+.p8-left { display: grid; gap: 14px; justify-items: start; }
+.p8-ore { width: 100%; display: grid; place-items: center; min-height: 260px; background: radial-gradient(ellipse 50% 50% at 50% 55%, rgba(242,170,85,.16), transparent 70%); }
+.p8-ore img { width: min(260px, 60%); max-height: 320px; object-fit: contain; filter: drop-shadow(0 18px 30px rgba(0,0,0,.55)); }
+.p8-name { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.p8-date { font-weight: 600; font-size: 18px; color: var(--mined-ink); }
+.p8-bubble {
+  display: flex; gap: 12px; align-items: flex-start; width: 100%; padding: 16px 18px; border-radius: 16px;
+  background: #F1E7DA; color: #2a2230; font-size: 16px; line-height: 1.7;
+}
+.p8-bubble p { margin: 0; }
+.p8-vibe { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.p8-star { color: var(--mined-amber); font-size: 18px; }
+.p8-vibe-btn {
+  height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--mined-line-strong);
+  background: var(--mined-btn-bg); color: var(--mined-ink); font: 15px/1 var(--font); cursor: pointer;
+}
+.p8-vibe-btn:hover { border-color: var(--mined-amber); }
+.p8-vibe-btn.on { background: var(--mined-amber); border-color: var(--mined-amber); color: #2a1d0b; }
+
+.p8-card { padding: 18px 20px; border-radius: 16px; border: 1px solid var(--mined-line-strong); background: rgba(26, 21, 31, .82); display: grid; gap: 10px; }
+.p8-card-title { margin: 0; font-size: 14px; color: var(--mined-ink-soft); }
+.p8-stack { display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: var(--mined-line); }
+.p8-stack i { display: block; height: 100%; }
+.p8-legend { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 14px; color: var(--mined-ink); }
+.p8-line { margin: 0; font-size: 14px; color: var(--mined-ink-soft); }
+.p8-src { margin: 0; font-size: 13px; color: var(--mined-ink-mute); }
+.p8-muted { color: var(--mined-ink-mute); margin: 0; }
+.p8-gauges summary { cursor: pointer; font-size: 13px; color: var(--mined-ink-soft); }
+.p8-gauges[open] summary { margin-bottom: 8px; }
+
+.p8-vibe-panel { padding: 16px 18px; border-radius: 14px; border: 1px solid var(--mined-line-strong); background: rgba(26, 21, 31, .7); display: grid; gap: 10px; }
+.p8-ans { margin: 0; color: var(--mined-ink); }
+
+.p8-ask {
+  position: sticky; bottom: 12px; z-index: 6; display: flex; gap: 8px; padding: 8px 8px 8px 16px;
+  border-radius: 14px; border: 1px solid var(--mined-line-strong); background: rgba(20, 16, 24, .92); backdrop-filter: blur(8px);
+}
+.p8-ask input { flex: 1; min-width: 0; background: none; border: 0; color: var(--mined-ink); font: 16px/1.4 var(--font); outline: none; }
+.p8-ask input::placeholder { color: var(--mined-ink-mute); }
+.p8-send { height: 40px; padding: 0 18px; border-radius: 10px; border: 0; background: var(--mined-amber); color: #2a1d0b; font: 600 15px/1 var(--font); cursor: pointer; }
+.p8-send:disabled { opacity: .45; cursor: not-allowed; }
+
+.p8-more { margin-top: 8px; border-top: 1px solid var(--mined-line); padding-top: 12px; }
+.p8-more > summary { cursor: pointer; color: var(--mined-ink-soft); font-size: 15px; }
+
+@media (max-width: 860px) {
+  .team-detail { padding: 60px 16px 110px; }
+  .p8-stage { grid-template-columns: minmax(0, 1fr); }
+  .p8-ore { min-height: 180px; }
+  .p8-ore img { width: min(180px, 50%); }
+}

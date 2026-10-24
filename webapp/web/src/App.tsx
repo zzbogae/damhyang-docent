@@ -201,12 +201,13 @@ function Shell() {
         default: return ['관측소'];
       }
     })();
-    const back: (() => void) | undefined = panel === 'hub' ? undefined
-      : panel === 'week' || panel === 'collect' || panel === 'mine' ? toField
+    // P8 은 시안의 「‹ 되돌아가기」(세 갈래)가 뒤로 가기를 맡는다
+    const back: (() => void) | undefined = panel === 'hub' || panel === 'week' ? undefined
+      : panel === 'collect' || panel === 'mine' ? toField
       : toHub;
     const railOn: RailId | undefined = panel === 'hub' || panel === 'today' || panel === 'archive' || panel === 'eras' || panel === 'letters' ? 'hub'
       : panel === 'talk' ? 'talk' : panel === 'space' ? 'space' : panel === 'settings' ? 'settings' : undefined;
-    const immersive = panel === 'elevator' || panel === 'field' || panel === 'mine' || panel === 'week' || panel === 'collect';
+    const immersive = panel === 'elevator' || panel === 'field' || panel === 'mine' || panel === 'week' || panel === 'collect' || panel === 'space';
     const onRail = (id: RailId) => { select(undefined); if (id === 'talk') setTalkWith(undefined); setPanel(id); };
     const page = panel === 'settings' ? <Settings extra={(
         <div className="label-row">
