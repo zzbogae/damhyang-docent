@@ -6,7 +6,9 @@ import { execFileSync } from 'node:child_process';
 import { fromV6, isV6, toV6, v6Pct, type V6Json } from '../src/bridge/v6';
 import { selectRelic } from '../src/relic/select';
 
-const team = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../team_files_20260911/sample_data.json'), 'utf8')) as V6Json;
+// 멘토 작업 폴더의 팀 원본 샘플이 있으면 그것을, 팀 저장소에서는 samples/ 의 합성 샘플을 읽는다
+const teamFile = [path.resolve(__dirname, '../../../team_files_20260911/sample_data.json'), path.resolve(__dirname, '../../../samples/sample_data_synthetic.json')].find((f) => fs.existsSync(f))!;
+const team = JSON.parse(fs.readFileSync(teamFile, 'utf8')) as V6Json;
 
 describe('팀 v6 JSON 불러오기', () => {
   const { result, memos } = fromV6(team);
@@ -18,9 +20,13 @@ describe('팀 v6 JSON 불러오기', () => {
     expect(result.weeks.length).toBeGreaterThan(team.weeks.length * 5);
   });
   it('문장에서 배지 방향을 읽는다', () => {
-    const w = result.weeks.find((x) => x.week === '2012-W10')!; // "검색이 평소보다 많았습니다 … 걸음수가 평소보다 적었습니다"
+    // 팀 원본에서는 2012-W10("검색이 평소보다 많았습니다 … 걸음수가 평소보다 적었습니다"), 합성 샘플에서는 걸음이 적었던 첫 주
+    const src = team.weeks.find((x) => x.week === '2012-W10' && x.sentence.includes('걸음수가 평소보다 적었'))
+      ?? team.weeks.find((x) => x.sentence.includes('걸음수가 평소보다 적었') && x.badges.some((b) => b.label === '걸음수'))!;
+    const w = result.weeks.find((x) => x.week === src.week)!;
     const dir = Object.fromEntries(w.badges.map((b) => [b.indicator, b.direction]));
-    expect(dir.yt_search).toBe('up');
+    // 유튜브는 10/22 지표 넷 밖(근거 전용)이라 배지로 옮기지 않는다
+    expect(dir.yt_search).toBeUndefined();
     expect(dir.steps).toBe('down');
   });
   it('다시 v6 로 내보내면 원래 값과 같다', () => {
@@ -31,7 +37,11 @@ describe('팀 v6 JSON 불러오기', () => {
     const strip = (w: any) => ({ week: w.week, date_start: w.date_start, date_end: w.date_end, tier: w.tier, sentence: w.sentence,
       cross_validated: w.cross_validated, badges: w.badges, mineral: w.mineral, shape: w.shape, access: w.access,
       relic: w.relic ? w.relic.q.map((q: any) => [q.t, q.d, q.h, q.mi]) : null });
-    expect(back.weeks.map(strip)).toEqual([...team.weeks].sort((a, b) => a.date_start.localeCompare(b.date_start)).map(strip));
+    // 근거 전용 지표(유튜브·사진·일정)의 배지는 불러올 때 빠지므로 원본에서도 빼고 비교한다
+    const EVIDENCE = new Set(['사진 촬영 수', '심야 촬영 비율', '유튜브 시청 수', '유튜브 심야 비율', '유튜브 검색량', '일정 개수']);
+    const want = [...team.weeks].sort((a, b) => a.date_start.localeCompare(b.date_start))
+      .map((w) => ({ ...w, badges: w.badges.filter((b) => !EVIDENCE.has(b.label)) }));
+    expect(back.weeks.map(strip)).toEqual(want.map(strip));
   });
 });
 
