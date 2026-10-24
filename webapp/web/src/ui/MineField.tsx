@@ -10,6 +10,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../state/store';
 import { rangeLabel } from '../mindi/templates';
 import { playCue } from '../mindi/sound';
+import { fieldDepth, sfx, sceneOverlay } from '../mindi/soundKit';
 import { MINERAL_IMG, ART, stratumFor } from './design';
 import { MINERAL_HEX, type Mineral } from './minerals';
 import { customOreName } from './oreName';
@@ -48,9 +49,11 @@ function Ore({ w, i, onMined, picked = false }: { w: WeekRecord; i: number; onMi
     if (hits >= 3) return;
     const n = hits + 1;
     setHits(n); setHit((k) => k + 1);
+    sfx(n === 1 ? 'hit1' : n === 2 ? 'hit2' : 'hit3');
     if (n === 3) {
       if (settings.sound) playCue('mined');
       collect(w);
+      sfx('keep');
       const r = (e.currentTarget as HTMLElement).closest('.mf-content')!.getBoundingClientRect();
       setTimeout(() => { onMined(w, e.clientX - r.left, e.clientY - r.top); setHits(0); }, 260);
     }
@@ -89,7 +92,11 @@ function Timeline({ year, weeks, picking, onPick }: { year: number; weeks: WeekR
 /** ③ 내려가기의 엘리베이터: 지상에서 가장 최근 해까지 한 번 내려간다. 누르는 것은 막지 않는다 */
 function Elevator({ top }: { top: number | undefined }) {
   const [gone, setGone] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setGone(true), 1400); return () => clearTimeout(t); }, []);
+  useEffect(() => {
+    const release = sceneOverlay('elevator');
+    const t = setTimeout(() => { setGone(true); release(); }, 1400);
+    return () => { clearTimeout(t); release(); };
+  }, []);
   if (gone) return null;
   return (
     <div className="mf-elevator" aria-hidden="true">
@@ -136,6 +143,7 @@ export function MineField({ descent = 0, focusWeek: focusIn }: { descent?: numbe
     let cur = years[0];
     sc.querySelectorAll<HTMLElement>('.mf-layer').forEach((el) => { if (el.getBoundingClientRect().top <= mid) cur = Number(el.dataset.year); });
     setYear(cur);
+    fieldDepth(years.indexOf(cur), years.length);
   };
   useEffect(() => { sync(); }, [years]); // eslint-disable-line react-hooks/exhaustive-deps
   const go = (y: number | undefined) => {
@@ -184,11 +192,11 @@ export function MineField({ descent = 0, focusWeek: focusIn }: { descent?: numbe
                 <img className="mf-band" src={st.src} alt="" />
                 <span className="mf-layer-year" aria-hidden="true">{y}</span>
                 {!st.own && <span className="mf-band-note">이 해의 지층 그림은 아직 없어 다른 해 그림을 씁니다</span>}
-                {ores.map((w, n) => <Ore key={w.week} w={w} i={n} onMined={(ww, x, yy) => setCard({ w: ww, x, y: yy })} />)}
+                {ores.map((w, n) => <Ore key={w.week} w={w} i={n} onMined={(ww, x, yy) => { sfx('card'); setCard({ w: ww, x, y: yy }); }} />)}
                 {(() => {
                   const pw = picking ? byKey.get(picking) : undefined;
                   return pw && Number(pw.week.split('-W')[0]) === y && !pw.candidate
-                    ? <Ore key={`p-${pw.week}`} w={pw} i={0} picked onMined={(ww, x, yy) => { setPicking(undefined); setCard({ w: ww, x, y: yy }); }} />
+                    ? <Ore key={`p-${pw.week}`} w={pw} i={0} picked onMined={(ww, x, yy) => { sfx('card'); setPicking(undefined); setCard({ w: ww, x, y: yy }); }} />
                     : null;
                 })()}
                 {!ores.length && <p className="mf-empty">{y}년에는 평소를 벗어난 주가 없습니다. 아래 타임라인에서 주를 골라 캘 수 있습니다.</p>}

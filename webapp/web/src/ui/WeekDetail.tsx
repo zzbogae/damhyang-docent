@@ -20,6 +20,7 @@ import { MINERAL_COLOR } from './minerals';
 import { OreName } from './oreName';
 import { MINERAL_IMG, ART } from './design';
 import { playCue } from '../mindi/sound';
+import { sfx } from '../mindi/soundKit';
 const GRADE_SHORT: Partial<Record<Grade, string>> = {
   open: '아직 확인 전', returned: '돌아옴, 그 뒤 미확인', held: '그 뒤도 평소 범위', insufficient: '기록이 비어 알 수 없음',
   broken: '돌아옴, 다시 벗어남',
@@ -310,6 +311,7 @@ function MineralDig({ mineral, sound }: { mineral: keyof typeof MINERAL_IMG; sou
     if (hits >= 3) return;
     const n = hits + 1;
     setHits(n); setShake((k) => k + 1);
+    sfx(n === 1 ? 'hit1' : n === 2 ? 'hit2' : 'hit3');
     if (n === 3) {
       if (sound) playCue('mined');
       setTimeout(() => document.getElementById('wk-memos')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 420);

@@ -5,6 +5,7 @@ import { DONT_KNOW, GREETING, similarTemplate } from '../mindi/templates';
 import { polishTone } from '../mindi/tone';
 import { MindiMark } from './Icons';
 import { playCue } from '../mindi/sound';
+import { mindiSay } from '../mindi/soundKit';
 import { useEn } from '../i18n/useEn';
 import { dateEn, DONT_KNOW_EN, GREETING_EN } from '../i18n/en';
 import type { WeekRecord } from '../types';
@@ -42,7 +43,7 @@ export function MindiGreeting() {
     const r = settings.tone ? await polishTone(tpl, abort.current.signal) : { text: tpl, used: 'template' as const };
     setBusy(false);
     setAnswer({ text: r.text, used: r.used, target: sim.week });
-    if (settings.sound) playCue('found');
+    if (settings.sound && !mindiSay(r.text)) playCue('found');
   }
 
   const say = answer ? answer.text : GREETING;

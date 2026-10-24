@@ -9,6 +9,7 @@ import { customOreName, oreLabel } from './oreName';
 import { MINERAL_IMG } from './design';
 import { MINERAL_HEX, type Mineral } from './minerals';
 import { MindiMark } from './Icons';
+import { sfx } from '../mindi/soundKit';
 import { AXES, axisScreen, type Axis, type WeekRecord } from '../types';
 
 export interface SpaceRow { id: string; name: string; kind: 'island' | 'room'; ores: string[]; words: string[]; at: string }
@@ -207,7 +208,7 @@ export function Space({ onField }: { onField: () => void }) {
                 if (!ready) return;
                 const row: SpaceRow = { id: `${Date.now()}`, name: name.trim().slice(0, 20), kind, ores: chosen, words, at: new Date().toISOString() };
                 const next = [...spaces, row];
-                saveSpaces(next); setSpaces(next); setMaking(false); setName(''); setWords([]);
+                saveSpaces(next); setSpaces(next); setMaking(false); setName(''); setWords([]); sfx('spaceOpen');
               }}>
                 <input className="input" value={name} maxLength={20} onChange={(e) => setName(e.target.value)} placeholder="이 공간의 이름" aria-label="공간 이름" />
                 <button className="btn primary" type="submit" disabled={!ready}>이름 붙이고 짓기</button>

@@ -17,6 +17,7 @@ import { FOOTER_EN } from './i18n/en';
 import { ART } from './ui/design';
 import { Archive, Observatory, Talk, Today, type HubGo } from './ui/Observatory';
 import { Space } from './ui/Space';
+import { panelScene, sceneSound } from './mindi/soundKit';
 
 function Door109En() {
   return useEn() ? <span lang="en" className="muted"> · {FOOTER_EN}</span> : null;
@@ -56,6 +57,7 @@ function Shell() {
     setPanel(to);
   };
   const [roomName, setRoomName] = useState<string>();
+  useEffect(() => { sceneSound(phase !== 'ready' ? 'import' : panelScene(panel, !!selected)); }, [phase, panel, selected]);
   const [collectOf, setCollectOf] = useState<{ axis: Axis; dir: 'up' | 'down' }>();
   const rooms = useMemo(() => {
     const m = new Map<string, Set<string>>();

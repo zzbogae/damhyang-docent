@@ -1,6 +1,7 @@
 // 편지: 쓰기와 캐기. 아직 열 때가 안 된 편지는 받침대에 놓인 개수만 보여 주고, 언제 열리는지는 말하지 않는다.
 import { useEffect, useState } from 'react';
 import { HORIZONS, isDue, loadLetters, makeLetter, saveLetters, type Horizon, type Letter } from '../letters/letters';
+import { sfx } from '../mindi/soundKit';
 
 function writtenText(iso: string) {
   const d = new Date(iso);
@@ -62,7 +63,7 @@ export function Letters({ onChange }: { onChange?: () => void }) {
               <p className="when">{writtenText(l.written_at)}</p>
               {l.opened_at
                 ? <p className="text">{l.text}</p>
-                : <button className="btn" onClick={() => save(list.map((x) => (x.id === l.id ? { ...x, opened_at: new Date().toISOString() } : x)))}>편지 열기</button>}
+                : <button className="btn" onClick={() => { sfx('letter'); save(list.map((x) => (x.id === l.id ? { ...x, opened_at: new Date().toISOString() } : x))); }}>편지 열기</button>}
             </article>
           ))}
         </div>

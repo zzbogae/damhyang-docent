@@ -6,6 +6,7 @@ __pycache__/
 .pytest_cache/
 web/public/pyodide/
 web/public/models/
+web/public/sound/
 web/test-results/
 web/playwright-report/
 out/

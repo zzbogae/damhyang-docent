@@ -2,6 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { db, getKV, loadResult, setKV, type LabelRow } from '../db';
 import type { MemoRecord, MinedResult, PhotoRecord, WeekRecord } from '../types';
+import { setSoundOn } from '../mindi/soundKit';
 
 export type Phase = 'boot' | 'empty' | 'working' | 'ready';
 
@@ -76,7 +77,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setPhotos(group(photos));
     setLabels(labs);
     setGreeted(!!g);
-    if (s) setSettingsState(s);
+    if (s) { setSettingsState(s); setSoundOn(!!s.sound); }
     setPhase(r && r.weeks.length ? 'ready' : 'empty');
   }, []);
 
@@ -92,7 +93,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     greeted,
     markGreeted: () => { setGreeted(true); setKV('greeted', true); },
     settings,
-    setSettings: (s) => { setSettingsState(s); setKV('settings', s); },
+    setSettings: (s) => { setSettingsState(s); setKV('settings', s); setSoundOn(!!s.sound); },
     progress, setProgress, error, setError, reload,
     addLabel: async (week, name) => {
       const n = name.trim();
