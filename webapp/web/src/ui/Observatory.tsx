@@ -44,10 +44,13 @@ export function Observatory({ onGo }: { onGo: (to: HubGo) => void }) {
   const { weeks, greeted } = useStore();
   const collected = useCollected();
   const open = collected.length >= SPACE_NEED;
+  // 첫 인사는 「찾아가 보기」를 누르는 순간 greeted 가 되므로, 이 화면에 들어올 때 인사 중이었으면 답이 나올 때까지 인사 칸을 남겨 둔다
+  const [greeting] = useState(!greeted);
   return (
     <section className="hub" aria-labelledby="hub-title">
       <h2 id="hub-title" className="hub-title">관측소</h2>
-      {!greeted ? <MindiGreeting /> : (
+      {greeting && <MindiGreeting />}
+      {greeted && (
         <div className="mindi-panel" role="note" aria-label="민디의 오늘 한 마디">
           <div className="mindi"><MindiMark /><p className="say">{todayLine(weeks, collected.length)}</p></div>
         </div>

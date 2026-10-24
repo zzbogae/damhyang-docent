@@ -52,7 +52,9 @@ test('장면 플로우: 관측소 → 타임라인에서 고른 주 캐기 → �
   await page.goto('/?dev');
   await page.getByRole('button', { name: '합성 판정 입력(개발용)' }).click();
   await expect(page.getByRole('heading', { name: '관측소' })).toBeVisible({ timeout: 180000 });
-  await page.getByRole('button', { name: '다음에' }).click();
+  // 첫 인사에서 「찾아가 보기」를 누르면 답이 관측소에 남는다
+  await page.getByRole('button', { name: '찾아가 보기' }).click();
+  await expect(page.getByRole('button', { name: '그 주 열어 보기' })).toBeVisible();
   await expect(page.getByRole('note', { name: '민디의 오늘 한 마디' })).toBeVisible();
   await expect(page.getByText('광석 0/3 · 3개가 모이면 열립니다')).toBeVisible();
 
