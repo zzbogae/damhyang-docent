@@ -10,7 +10,7 @@ async function openRoom(page: Page, query: string) {
   for (const wk of weeks) {
     await page.locator(`[data-week="${wk}"]`).click();
     await page.getByLabel('이 주에 붙일 이름').fill('긴 겨울');
-    await page.getByRole('button', { name: '붙이기' }).click();
+    await page.getByRole('button', { name: '붙이기', exact: true }).click();
     await expect(page.locator('.label-pill', { hasText: '긴 겨울' })).toBeVisible();
   }
   await page.getByRole('button', { name: '나의 방 열기' }).click();

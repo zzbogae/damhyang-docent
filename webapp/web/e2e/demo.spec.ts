@@ -160,7 +160,7 @@ test('시연 영상', async ({ page }) => {
     const gate = page.getByRole('button', { name: '그때 기록 열어 보기' });
     if (await gate.isVisible()) await gate.click();
     await page.getByLabel('이 주에 붙일 이름').fill('긴 겨울');
-    await page.getByRole('button', { name: '붙이기' }).click();
+    await page.getByRole('button', { name: '붙이기', exact: true }).click();
     await page.waitForTimeout(200);
   }
   await page.getByRole('button', { name: '나의 방', exact: false }).first().click();

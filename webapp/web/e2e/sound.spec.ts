@@ -7,13 +7,18 @@ test('소리를 켜면 같은 출처의 키트만 불러오고 캐기까지 오�
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.goto('/');
   await page.getByRole('button', { name: '가짜 샘플 기록으로 먼저 보기' }).click();
-  await expect(page.locator('.minefield')).toBeVisible({ timeout: 180000 });
+  await expect(page.getByRole('heading', { name: '관측소' })).toBeVisible({ timeout: 180000 });
   expect(sound).toEqual([]); // 꺼져 있으면 엔진을 부르지 않는다
   await page.getByRole('button', { name: '설정' }).click();
   await page.getByText('민디 소리').click();
   await expect.poll(() => page.evaluate(() => (window as any).MineDSound?.isOn?.() ?? false), { timeout: 10000 }).toBe(true);
-  await page.getByRole('button', { name: '← 지층으로' }).click();
-  await page.waitForTimeout(800);
+  await page.getByRole('button', { name: '← 관측소로' }).click();
+  await page.waitForTimeout(300);
+  const hubZone = await page.evaluate(() => (window as any).MineDSound.state().zone);
+  await page.getByRole('button', { name: /지층으로 내려가기/ }).click();
+  await page.waitForTimeout(300);
+  const elevZone = await page.evaluate(() => (window as any).MineDSound.state().zone);
+  await page.waitForTimeout(1800);
   const zone = await page.evaluate(() => (window as any).MineDSound.state().zone);
   const ore = page.locator('.mf-ore').first();
   await ore.scrollIntoViewIfNeeded();
@@ -21,6 +26,8 @@ test('소리를 켜면 같은 출처의 키트만 불러오고 캐기까지 오�
   await expect(page.locator('.mf-card')).toBeVisible();
   await page.waitForTimeout(1500);
   console.log('zone', zone, 'sound requests', sound);
+  expect(hubZone).toBe('P3'); // 관측소
+  expect(elevZone).toBe('P5'); // 엘리베이터
   expect(zone).toBe('P6');
   expect(sound[0]).toContain('/sound/mined-sound.js');
   expect(errors).toEqual([]);

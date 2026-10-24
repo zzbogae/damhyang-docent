@@ -12,7 +12,7 @@ test('이어진 갱도: 초대·공개 범위·잇는 기준', async ({ page, ba
   // 이름 붙이기: '긴 겨울'을 한 주에
   await page.locator('.strata .wk.hit').first().click();
   await page.getByLabel('이 주에 붙일 이름').fill('긴 겨울');
-  await page.getByRole('button', { name: '붙이기' }).click();
+  await page.getByRole('button', { name: '붙이기', exact: true }).click();
   await page.getByRole('button', { name: '이어진 갱도' }).click();
   await expect(page.getByText('설계 시연 · 가상 이웃')).toBeVisible();
   await expect(page.getByText('초대받은 이웃이 없습니다.')).toBeVisible();
