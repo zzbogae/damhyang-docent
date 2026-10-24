@@ -1,0 +1,69 @@
+/* 10/23 버튼배치 확정: 왼쪽 레일 + 우상단 묶음 [?][⚙][관측소의 문] + 좌상단 ‹ 와 현재 위치 */
+.app.framed { grid-template-columns: 76px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
+.app.framed.immersive { grid-template-columns: minmax(0, 1fr); }
+.app.framed > .rail { grid-row: 1; grid-column: 1; }
+.app.framed > .stage { grid-row: 1; grid-column: 2; position: relative; min-height: 0; display: flex; flex-direction: column; }
+.app.framed.immersive > .stage { grid-column: 1; }
+.app.framed > .door { grid-column: 1 / -1; }
+
+.rail {
+  display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 28px 0;
+  background: rgba(20, 16, 24, .92); border-right: 1px solid var(--mined-line);
+}
+.rail-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; width: 64px; padding: 6px 0;
+  background: none; border: 0; color: var(--mined-ink-mute); font: 12px/1.2 var(--font); cursor: pointer; border-radius: 10px;
+}
+.rail-btn i { width: 26px; height: 26px; border-radius: 6px; border: 1.5px solid currentColor; opacity: .7; }
+.rail-btn.on { color: var(--mined-ink); }
+.rail-btn.on i { background: var(--mined-amber); border-color: var(--mined-amber); opacity: 1; }
+.rail-btn:hover { color: var(--mined-ink); }
+
+.topbar {
+  position: absolute; inset: 0 0 auto 0; z-index: 30; display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 14px 18px; pointer-events: none;
+}
+.topbar > * { pointer-events: auto; }
+.topbar-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+.tb-back, .tb-btn {
+  width: 34px; height: 34px; display: grid; place-items: center; padding: 0;
+  border-radius: 8px; border: 1px solid var(--mined-line-strong); background: rgba(20, 16, 24, .55);
+  color: var(--mined-ink); font: 600 16px/1 var(--font); cursor: pointer; backdrop-filter: blur(6px);
+}
+.tb-btn svg { width: 17px; height: 17px; }
+.tb-door {
+  height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--mined-line-strong);
+  background: rgba(20, 16, 24, .55); color: var(--mined-ink); font: 13px/1 var(--font); cursor: pointer; backdrop-filter: blur(6px);
+}
+.tb-back:hover, .tb-btn:hover, .tb-door:hover { border-color: var(--mined-amber); }
+.crumbs { margin: 0; font-size: 13px; color: var(--mined-ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+/* 위쪽 묶음 아래로 내용이 시작되게 */
+.stage-body { flex: 1; min-height: 0; overflow: auto; }
+.stage-body.padded { padding-top: 64px; }
+
+/* 겹쳐 뜨는 창: ? 안내 · 관측소의 문 */
+.fw-scrim { position: fixed; inset: 0; z-index: 80; background: rgba(10, 8, 12, .6); display: grid; place-items: center; padding: 20px; }
+.fw {
+  position: relative; width: min(520px, 100%); max-height: 86vh; overflow: auto; padding: 26px 28px;
+  background: var(--mined-panel); color: var(--mined-ink); border: 1px solid var(--mined-line-strong); border-radius: var(--mined-r-md);
+}
+.fw h2 { margin: 0 0 12px; font-size: 20px; }
+.fw-x { position: absolute; top: 10px; right: 12px; background: none; border: 0; color: var(--mined-ink-soft); font-size: 22px; cursor: pointer; }
+.fw-list dt { font-weight: 600; margin-top: 10px; }
+.fw-list dd { margin: 2px 0 0; color: var(--mined-ink-soft); font-size: 15px; }
+.fw-lines { padding-left: 0; list-style: none; }
+.fw-lines li { padding: 6px 0; border-bottom: 1px solid var(--mined-line); }
+.fw-lines b { display: inline-block; min-width: 96px; color: var(--mined-amber); }
+.fw-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+/* 모바일: 레일 → 하단 탭 바 */
+@media (max-width: 720px) {
+  .app.framed { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto auto; }
+  .app.framed > .stage { grid-column: 1; }
+  .app.framed > .rail { grid-row: 2; grid-column: 1; flex-direction: row; justify-content: space-around; padding: 6px 0; border-right: 0; border-top: 1px solid var(--mined-line); }
+  .app.framed > .door { grid-row: 3; }
+  .rail-btn i { width: 20px; height: 20px; }
+  .crumbs { max-width: 40vw; }
+  .tb-door { padding: 0 8px; font-size: 12px; }
+}

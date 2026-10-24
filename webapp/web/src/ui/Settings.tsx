@@ -1,5 +1,5 @@
 // 설정: 목소리, 말투 다듬기(외부 전송 범위를 그대로 적는다), 내 기록 모두 지우기.
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useStore } from '../state/store';
 import { getKV, wipeAll } from '../db';
 import { rerunKakaoMe } from '../pipeline';
@@ -105,13 +105,14 @@ function LabelsBackup() {
   );
 }
 
-export function Settings() {
+export function Settings({ extra }: { extra?: ReactNode } = {}) {
   const { settings, setSettings, reload, select } = useStore();
   const [confirm, setConfirm] = useState(false);
   const [voice, setVoice] = useVoice();
   return (
     <section className="settings" aria-labelledby="set-title">
       <h2 id="set-title" className="section-title">설정</h2>
+      {extra && <div className="settings-more" aria-label="다른 화면">{extra}</div>}
       <label className="toggle">
         <input type="checkbox" checked={!!settings.large} onChange={(e) => setSettings({ ...settings, large: e.target.checked })} />
         <span><span className="t">글자 크게</span><br /><span className="d">화면 전체의 글자와 버튼을 조금 더 크게 보여 줍니다.</span></span>

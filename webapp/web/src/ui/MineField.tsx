@@ -126,7 +126,8 @@ function monthOf(w: WeekRecord) {
 // 같은 내려가기(관측소에서 한 번 누름)로는 엘리베이터와 오늘 보기의 주 맞추기를 한 번만 한다(상세에서 돌아올 때는 다시 안 함)
 let shownDescent = 0;
 
-export function MineField({ descent = 0, focusWeek: focusIn }: { descent?: number; focusWeek?: string } = {}) {
+export function MineField({ descent = 0, focusWeek: focusIn, focusYear, onMine }: { descent?: number; focusWeek?: string; focusYear?: number; onMine?: (week: string) => void } = {}) {
+  void focusYear; void onMine;
   const [fresh] = useState(() => { if (descent > shownDescent) { shownDescent = descent; return true; } return false; });
   const descend = fresh;
   const focusWeek = fresh ? focusIn : undefined;

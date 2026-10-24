@@ -328,7 +328,8 @@ function MineralDig({ mineral, sound }: { mineral: keyof typeof MINERAL_IMG; sou
   );
 }
 
-export function WeekDetail({ w, team = false }: { w: WeekRecord; team?: boolean }) {
+export function WeekDetail({ w, team = false, onBack, onAsk }: { w: WeekRecord; team?: boolean; onBack?: (to: 'hub' | 'field' | 'space') => void; onAsk?: (text: string) => void }) {
+  void onBack; void onAsk;
   const { unlocked, unlock, settings } = useStore();
   const en = useEn();
   // 9/12 회의 5번: 주 단위 「한 번 더 묻기」는 없앴다. 위기 표현이 걸린 글만 하나씩 가려 두고 누르면 연다(Memos)

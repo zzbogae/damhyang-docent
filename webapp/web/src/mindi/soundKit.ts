@@ -18,6 +18,8 @@ export interface MineDSoundKit {
   isOn(): boolean;
   setZone(id: string, opts?: { env?: string }): void;
   setDepth(d: number, sec?: number): void;
+  setScene?(name: string): void;
+  setEnvironment?(name: string): void;
   descend(toDepth: number, sec?: number): Promise<void>;
   overlay(kind: 'door' | 'help' | 'panel' | 'notice', open: boolean): void;
   sfx(name: string): void;
@@ -63,6 +65,10 @@ export const SFX = {
   step: ['step'],
   send: ['send'],
   fogClear: ['fog_clear'],
+  // 10/23 버튼배치 시안의 버튼들(키트 빠짐 점검표 v3)
+  locked: ['locked'], glint: ['glint'], hide: ['hide'], erase: ['erase'], memoryNote: ['memory_note'],
+  shuffle: ['shuffle'], appear: ['appear'], spotlight: ['spotlight'], mindiSteps: ['mindi_steps'],
+  liftStart: ['lift_start'], liftArrive: ['lift_arrive'], crack: ['ore_crack'], pick: ['pick'],
 } as const satisfies Record<string, readonly string[]>;
 export type SfxName = keyof typeof SFX;
 
@@ -72,6 +78,8 @@ export function panelScene(panel: string, weekOpen: boolean): SceneName {
   if (panel === 'hub') return 'observatory';
   if (panel === 'talk') return 'ask';
   if (panel === 'collect') return 'detail';
+  if (panel === 'week') return 'detail';
+  if (panel === 'archive') return 'archive';
   if (panel === 'islands') return 'space';
   return weekOpen ? 'detail' : 'field';
 }
@@ -163,6 +171,28 @@ export function sceneOverlay(name: SceneName) {
 export function fieldDepth(index: number, count: number) {
   if (!on || !kit?.isOn() || count <= 0) return;
   kit.setDepth(Math.min(1, Math.max(0, index / Math.max(1, count - 1))));
+}
+
+/** 겹쳐 뜨는 창(? 안내 · 관측소의 문 · 하위 창 · 첫 대화 고지): 바탕 소리를 낮춘다 */
+export function kitOverlay(kind: 'door' | 'help' | 'panel' | 'notice', open: boolean) {
+  if (!on || !kit?.isOn()) return;
+  kit.overlay(kind, open);
+}
+
+/** P5 엘리베이터 하강(올라갈 때는 to 를 작게). 끝나면 resolve. 꺼져 있으면 sec 만큼만 기다린다 */
+export function kitDescend(to: number, sec = 2.4): Promise<void> {
+  if (!on || !kit?.isOn()) return new Promise((r) => setTimeout(r, sec * 1000));
+  return kit.descend(to, sec);
+}
+
+/** P3 「배경·소리 바꾸기」: lantern · rain · wind · none */
+export function kitScene(name: 'lantern' | 'rain' | 'wind' | 'none') {
+  if (on && kit?.isOn()) kit.setScene?.(name);
+}
+
+/** P11·P12 나의 공간 환경: sea · mountain · sky · jungle · room */
+export function kitEnv(name: string) {
+  if (on && kit?.isOn()) kit.setEnvironment?.(name);
 }
 
 /** 효과음 하나(표의 이름) */

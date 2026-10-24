@@ -16,7 +16,13 @@ import { useEn } from './i18n/useEn';
 import { FOOTER_EN } from './i18n/en';
 import { ART } from './ui/design';
 import { Archive, Observatory, Talk, Today, type HubGo } from './ui/Observatory';
+// 현재 위치의 주 표기: 「4월 2주」
+const rangeLabelShort = (d: string) => { const [, m, day] = d.split('-').map(Number); return `${m}월 ${Math.ceil(day / 7)}주`; };
 import { Space } from './ui/Space';
+import { Rail, TopBar, type RailId } from './ui/Frame';
+import { Lift } from './ui/Lift';
+import { Mine } from './ui/Mine';
+import { collect } from './ore/collection';
 import { panelScene, sceneSound } from './mindi/soundKit';
 
 function Door109En() {
@@ -43,17 +49,22 @@ const Eval = lazy(() => import('./ui/Eval'));
 
 type Panel = 'week' | 'settings' | 'import' | 'room' | 'islands' | 'eras' | 'eval' | 'letters' | 'collect'
   // 10/23 장면 플로우(기본 화면만): 관측소 허브와 곁가지
-  | 'hub' | 'field' | 'today' | 'talk' | 'archive' | 'space';
+  | 'hub' | 'field' | 'today' | 'talk' | 'archive' | 'space'
+  // 10/23 버튼배치 확정: P5 엘리베이터 · P7 광석 캐기는 따로 된 화면
+  | 'elevator' | 'mine';
 
 function Shell() {
   const { phase, selected, byKey, select, labels, result } = useStore();
   // 안드로이드 공유로 사진이 넘어오면 가져오기 화면부터 연다
   const [panel, setPanel] = useState<Panel>(FLAGS.has('shared') ? 'import' : GRID ? 'week' : 'hub');
   // 관측소에서 지층으로 내려갈 때만 엘리베이터를 보여 주고, 오늘 보기에서 고른 주가 있으면 그 주로 내려간다
-  const [descent, setDescent] = useState<{ n: number; focus?: string }>({ n: 0 });
+  const [descent, setDescent] = useState<{ n: number; focus?: string; year?: number }>({ n: 0 });
+  const [mining, setMining] = useState<string>();
+  const [talkWith, setTalkWith] = useState<{ week: string; text?: string }>();
   const home: Panel = GRID ? 'week' : 'hub';
+  // 관측소 Ⓑ 내려가기는 P5 엘리베이터부터(연도를 고르고 내려간다)
   const goHub = (to: HubGo) => {
-    if (to === 'field') setDescent((d) => ({ n: d.n + 1 }));
+    if (to === 'talk') setTalkWith(undefined);
     setPanel(to);
   };
   const [roomName, setRoomName] = useState<string>();
@@ -86,7 +97,7 @@ function Shell() {
   useEffect(refreshLetters, []);
   const rightRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (selected) setPanel('week');
+    if (selected) { setPanel('week'); setMining(undefined); }
     rightRef.current?.scrollTo({ top: 0 });
     if (selected && window.innerWidth <= 1080) rightRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [selected]);
@@ -166,31 +177,77 @@ function Shell() {
     );
   }
   if (!GRID) {
-    // 드라이브 디자인 + 10/23 장면 플로우: 관측소(허브) → 지층(광물 지하) → 캐기 → 열린 광석(상세). 곁가지는 가운데 한 줄로 연다.
+    // 10/23 버튼배치 확정(P0~P13 시안): 관측소(허브) → Ⓑ 엘리베이터(P5) → 연도 지층(P6) → 광석 캐기(P7) → 광석 상세(P8).
+    // 왼쪽 레일 + 우상단 [?][⚙][관측소의 문] + 좌상단 ‹ 와 현재 위치. 몰입 화면은 레일을 접는다.
     const toField = () => { select(undefined); setPanel('field'); };
     const toHub = () => { select(undefined); setPanel('hub'); };
-    const back = panel === 'week' || panel === 'collect'
-      ? <button className="btn quiet back" onClick={toField}>← 지층으로</button>
-      : <button className="btn quiet back" onClick={toHub}>← 관측소로</button>;
-    const page = panel === 'settings' ? <Settings />
+    const toSpace = () => { select(undefined); setPanel('space'); };
+    const yearOf = (k?: string) => (k ? Number(k.split('-W')[0]) : undefined);
+    const crumbs: string[] = (() => {
+      switch (panel) {
+        case 'hub': return ['관측소'];
+        case 'today': return ['관측소', '오늘'];
+        case 'elevator': return ['관측소', '엘리베이터'];
+        case 'field': return ['관측소', '지층'];
+        case 'mine': return ['관측소', `${yearOf(mining) ?? ''}년 지층`, '광석 캐기'];
+        case 'week': return w ? ['관측소', `${yearOf(w.week)}년 지층`, rangeLabelShort(w.date_start)] : ['관측소'];
+        case 'talk': return ['관측소', '민디와 이야기'];
+        case 'archive': return ['관측소', '캔 광석'];
+        case 'space': return ['관측소', '나의 공간'];
+        case 'settings': return ['설정'];
+        case 'eras': return ['관측소', '시기'];
+        case 'letters': return ['관측소', '편지'];
+        case 'collect': return ['관측소', '지층', '모아 보기'];
+        default: return ['관측소'];
+      }
+    })();
+    const back: (() => void) | undefined = panel === 'hub' ? undefined
+      : panel === 'week' || panel === 'collect' || panel === 'mine' ? toField
+      : toHub;
+    const railOn: RailId | undefined = panel === 'hub' || panel === 'today' || panel === 'archive' || panel === 'eras' || panel === 'letters' ? 'hub'
+      : panel === 'talk' ? 'talk' : panel === 'space' ? 'space' : panel === 'settings' ? 'settings' : undefined;
+    const immersive = panel === 'elevator' || panel === 'field' || panel === 'mine' || panel === 'week' || panel === 'collect';
+    const onRail = (id: RailId) => { select(undefined); if (id === 'talk') setTalkWith(undefined); setPanel(id); };
+    const page = panel === 'settings' ? <Settings extra={(
+        <div className="label-row">
+          <button className="btn" onClick={() => setPanel('eras')}>시기</button>
+          <button className="btn" onClick={() => setPanel('letters')}>{arrived ? `편지 ${arrived}통` : '편지'}</button>
+          {rooms.length > 0 && <button className="btn" onClick={() => { setRoomName(rooms[0]); setPanel('room'); }}>나의 방</button>}
+          {SHOW_ISLANDS && <button className="btn" onClick={() => setPanel('islands')}>이어진 갱도</button>}
+          {SHOW_EVAL && <button className="btn" onClick={() => setPanel('eval')}>평가</button>}
+          {!KIOSK && <button className="btn" onClick={() => setPanel('import')}>기록 다시 가져오기</button>}
+        </div>
+      )} />
       : panel === 'eras' ? <Suspense fallback={null}><Eras /></Suspense>
       : panel === 'letters' ? <Letters onChange={refreshLetters} />
       : panel === 'collect' && collectOf ? <Collect axis={collectOf.axis} dir={collectOf.dir} onClose={toField} />
-      : panel === 'today' ? <Today onDescend={(week) => { setDescent((d) => ({ n: d.n + 1, focus: week })); setPanel('field'); }} />
-      : panel === 'talk' ? <Talk onSpace={() => setPanel('space')} />
-      : panel === 'archive' ? <Archive onSpace={() => setPanel('space')} />
-      : panel === 'space' ? <Space onField={() => goHub('field')} />
-      : panel === 'week' && w ? <WeekDetail w={w} key={w.week} team />
       : null;
-    const onField = !page && panel !== 'hub';
+    const body = page ? <div className="team-page">{page}</div>
+      : panel === 'hub' ? <Observatory onGo={goHub} />
+      : panel === 'today' ? <Today onDescend={(week) => { setDescent((d) => ({ n: d.n + 1, focus: week })); setPanel('field'); }} />
+      : panel === 'talk' ? <Talk onSpace={toSpace} withWeek={talkWith?.week} firstText={talkWith?.text} />
+      : panel === 'archive' ? <Archive onSpace={toSpace} />
+      : panel === 'space' ? <Space onField={() => setPanel('elevator')} />
+      : panel === 'elevator' ? <Lift onBack={toHub} onDescend={(year) => { setDescent((d) => ({ n: d.n + 1, year })); setPanel('field'); }} />
+      : panel === 'mine' && mining && byKey.get(mining) ? (
+        <Mine w={byKey.get(mining)!}
+          onCarry={() => { collect(byKey.get(mining)!); setMining(undefined); toHub(); }}
+          onView={() => { const k = mining; collect(byKey.get(k)!); setMining(undefined); select(k); }} />
+      )
+      : panel === 'week' && w ? (
+        <WeekDetail w={w} key={w.week} team
+          onBack={(to) => (to === 'hub' ? toHub() : to === 'space' ? toSpace() : toField())}
+          onAsk={(text) => { setTalkWith({ week: w.week, text }); select(undefined); setPanel('talk'); }} />
+      )
+      : <MineField descent={descent.n} focusWeek={descent.focus} focusYear={descent.year} onMine={(k) => { setMining(k); setPanel('mine'); }} />;
+    const padded = !!page || panel === 'today' || panel === 'talk' || panel === 'archive' || panel === 'space';
     return (
-      <div className={`app team${onField ? ' on-field' : ''}`}>
-        {header}
-        <main className="team-main" ref={rightRef}>
-          {page ? <div className="team-page">{back}{page}</div>
-            : panel === 'hub' ? <div className="team-page"><Observatory onGo={goHub} /></div>
-            : <MineField descent={descent.n} focusWeek={descent.focus} />}
-        </main>
+      <div className={`app team framed${immersive ? ' immersive' : ''}${panel === 'field' ? ' on-field' : ''}`}>
+        {!immersive && <Rail on={railOn} onGo={onRail} />}
+        <div className="stage">
+          <TopBar crumbs={crumbs} onBack={back} onSettings={() => { select(undefined); setPanel('settings'); }} />
+          <main className={`stage-body team-main${padded ? ' padded' : ''}`} ref={rightRef}>{body}</main>
+        </div>
         {door}
       </div>
     );

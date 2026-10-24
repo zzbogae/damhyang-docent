@@ -16,7 +16,7 @@ import { requestNewSpace, SpaceButton } from './SpaceButton';
 import { GYEOL_TEXT } from './Gyeol';
 import type { WeekRecord } from '../types';
 
-export type HubGo = 'field' | 'today' | 'talk' | 'archive' | 'space';
+export type HubGo = 'elevator' | 'today' | 'talk' | 'archive' | 'space';
 
 /** 기록이 남은 가장 최근 주(관측된 계열이 하나라도 있는 주) */
 export function latestObserved(weeks: WeekRecord[]): WeekRecord | undefined {
@@ -59,7 +59,7 @@ export function Observatory({ onGo }: { onGo: (to: HubGo) => void }) {
         </div>
       )}
       <nav className="hub-buttons" aria-label="관측소에서 갈 곳">
-        <button className="hub-btn primary" onClick={() => onGo('field')}><b>지층으로 내려가기</b><span>연도마다 쌓인 지층에서 광석을 캡니다</span></button>
+        <button className="hub-btn primary" onClick={() => onGo('elevator')}><b>지층으로 내려가기</b><span>연도마다 쌓인 지층에서 광석을 캡니다</span></button>
         <button className="hub-btn" onClick={() => onGo('today')}><b>오늘 보기</b><span>가장 최근 주와 닮은 지난 주 다섯</span></button>
         <button className="hub-btn" onClick={() => onGo('talk')}><b>민디와 이야기</b><span>설명 듣기 · 그냥 이야기하기</span></button>
         <button className="hub-btn" onClick={() => onGo('archive')}><b>캔 광석 보관함</b><span>{collected.length ? `${collected.length}개` : '아직 캔 광석이 없습니다'}</span></button>
@@ -109,7 +109,8 @@ export function Today({ onDescend }: { onDescend: (week: string) => void }) {
 }
 
 /** Ⓒ 민디와 이야기: 설명 듣기 / 그냥 이야기하기. 상관없는 이야기도 받아 준다(지어내지 않고 모른다고 답한다) */
-export function Talk({ onSpace }: { onSpace?: () => void }) {
+export function Talk({ onSpace, withWeek, firstText }: { onSpace?: () => void; withWeek?: string; firstText?: string }) {
+  void withWeek; void firstText;
   const { weeks } = useStore();
   const [mode, setMode] = useState<'explain' | 'chat'>('explain');
   const cur = useMemo(() => latestObserved(weeks), [weeks]);
