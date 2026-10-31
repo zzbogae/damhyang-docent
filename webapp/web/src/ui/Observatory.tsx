@@ -1,7 +1,7 @@
 // 관측소 허브(P3)와 곁가지 화면: 오늘 보기(P4) · 민디와 이야기(P9) · 캔 광석 보관함(P10).
 // 자리는 팀 10/23 버튼배치 확정 시안(P03·P04·P09·P10)과 화면설계 v6 §6 을 따른다.
 // 원칙 3: 앱이 고른 것으로 먼저 말 걸지 않는다. 오늘의 한 마디는 판정이 아니라 지층에 대한 사실 한 줄이고, 닮은 주는 사용자가 「비슷한 주 찾기」를 눌렀을 때만 찾는다.
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useStore } from '../state/store';
 import { dateLabel, rangeLabel } from '../mindi/templates';
 import { oreMineral, pickedMineral, SPACE_NEED, useCollected } from '../ore/collection';
@@ -14,6 +14,7 @@ import { MindiMark } from './Icons';
 import { applyVoice, useVoice } from '../mindi/voices';
 import { NOTICE_FIRST_CHAT } from '../mindi/scripts.gen';
 import { dailyLine, openerLine } from '../mindi/talk';
+import * as lifebot from '../mindi/lifebot';
 import type { Voice } from '../mindi/voices';
 import { VoiceChip } from './VoiceChip';
 import { requestNewSpace, SpaceButton } from './SpaceButton';
@@ -221,6 +222,9 @@ export function Talk({ onSpace, withWeek, firstText }: { onSpace?: () => void; w
   const [round, setRound] = useState(0);
   const [menu, setMenu] = useState(false);
   const [draft, setDraft] = useState('');
+  // 라이프로그 챗봇이 연결돼 있으면 쓴 말이 서버로 간다는 것을 설명에 밝힌다
+  const [bot, setBot] = useState(false);
+  useEffect(() => { void lifebot.available().then(setBot); }, []);
   const latest = useMemo(() => latestObserved(weeks), [weeks]);
   const base = (chip && byKey.get(chip)) || latest;
   const [voice, setVoice] = useVoice();
@@ -268,7 +272,9 @@ export function Talk({ onSpace, withWeek, firstText }: { onSpace?: () => void; w
                 <p>{v('모든 주는 지층의 결로 남아 있습니다. 걸음·수면·언어·소통 넷 가운데 기록이 직전 1년의 당신과 견주어 크게 벗어난 주에는 광석이 박혀 있습니다. 아무 주나 골라 캐도 광석이 됩니다.')}</p>
                 <p>{v('광석을 캐면 그때 남긴 사진과 글과 숫자가 그대로 열립니다.')}</p>
                 <p>{v(`광석이 ${SPACE_NEED}개 모이면 안개 옆에 나만의 섬을 놓을 자리가 생깁니다.`)}</p>
-                <p className="small muted">기록은 이 브라우저 밖으로 나가지 않습니다.</p>
+                <p className="small muted">{bot
+                  ? '가져온 기록은 이 브라우저 밖으로 나가지 않습니다. 이야기 나누기에서 쓴 말은 연결된 라이프로그 챗봇 서버로 보내 답을 받습니다.'
+                  : '기록은 이 브라우저 밖으로 나가지 않습니다.'}</p>
               </div></div>
             </div>
             {chipEl}

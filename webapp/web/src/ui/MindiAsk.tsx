@@ -12,6 +12,7 @@ import { answerEn, axisDirEn, DONT_KNOW_EN, FEELING_EN, UNCLEAR_EN, UNKNOWN_EN }
 import { DONT_KNOW } from '../mindi/templates';
 import { applyVoice, speakAs, useVoice, type Voice } from '../mindi/voices';
 import { fixedKind, fixedLine, scriptedReply } from '../mindi/talk';
+import * as lifebot from '../mindi/lifebot';
 import { MindiMark } from './Icons';
 import { VoiceChip } from './VoiceChip';
 import type { Axis, WeekRecord } from '../types';
@@ -38,6 +39,11 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
   const [base, setBase] = useState<Answer | null>(null);
   // 대본집 문장으로 받은 말(공감·돌려 답하기). 말투를 바꾸면 같은 줄의 다른 결로
   const [said, setSaid] = useState<string | null>(null);
+  // 라이프로그 챗봇(서버에 연결돼 있을 때만). 정해진 질문으로 못 잇는 말을 챗봇이 받는다
+  const [bot, setBot] = useState(false);
+  const turns = useRef<lifebot.Turn[]>([]);
+  const [found, setFound] = useState<string[]>([]);
+  useEffect(() => { void lifebot.available().then(setBot); }, []);
   useEffect(() => {
     if (said) { const r = scriptedReply(said, voice); if (r) setA({ text: r, dontKnow: false }); }
     else if (base) voiced(base, voice);
@@ -76,7 +82,28 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
   function show(b: Answer) {
     setBase(b);
     setSaid(null);
+    setFound([]);
     return voiced(b);
+  }
+
+  // 챗봇 답은 챗봇이 고른 말투 그대로(앱의 어미 규칙을 다시 입히지 않는다). 실패하면 기기 안 규칙 답으로
+  async function askBot(q: string, fallback: Answer) {
+    setBase(null);
+    setSaid(null);
+    setSrc(null);
+    setA(null);
+    setBusy(true);
+    try {
+      const r = await lifebot.chat(q, turns.current, voice);
+      turns.current = [...turns.current, { role: 'user', content: q }, { role: 'assistant', content: r.reply }];
+      setFound(r.tools ?? []);
+      setA({ text: r.reply, dontKnow: false, used: 'lifebot' });
+    } catch {
+      setSrc({ kind: fallback.text === FEELING_TEXT ? 'feeling' : 'unknown' });
+      await show(fallback);
+    } finally {
+      setBusy(false);
+    }
   }
 
   // 대본집 문장을 그대로(말투 규칙을 다시 입히지 않는다)
@@ -116,8 +143,10 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
       setChoices((['up', 'down'] as const).map((dir) => ({ axis: it.axis, dir, text: AXIS_DIR_QUESTION[it.axis][dir] })));
       return show({ text: UNCLEAR_TEXT, dontKnow: false });
     }
+    const fallback = { text: it.kind === 'feeling' ? FEELING_TEXT : UNKNOWN_TEXT, dontKnow: false };
+    if (bot) return askBot(q, fallback);
     setSrc({ kind: it.kind === 'feeling' ? 'feeling' : 'unknown' });
-    return show({ text: it.kind === 'feeling' ? FEELING_TEXT : UNKNOWN_TEXT, dontKnow: false });
+    return show(fallback);
   }
 
   async function ask(id: QuestionId, keepHeard = false) {
@@ -151,6 +180,11 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
         {a.collect && <button className="btn" onClick={() => window.dispatchEvent(new CustomEvent('mined:collect', { detail: a.collect }))}>그 주들 모아 보기</button>}
       </div>
       {a.used === 'llm' && <p className="small muted" style={{ marginTop: 6 }}>말투는 외부 모델이 다듬었습니다. 숫자와 날짜는 계산한 값 그대로입니다.</p>}
+      {a.used === 'lifebot' && (
+        <p className="small muted" style={{ marginTop: 6 }}>
+          이 답은 라이프로그 챗봇이 만들었습니다.{found.length > 0 && <> 찾아본 기록: {found.join(' · ')}</>}
+        </p>
+      )}
     </div>
   );
 
