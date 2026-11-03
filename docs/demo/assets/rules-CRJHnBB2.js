@@ -1,0 +1,1 @@
+var e=324e5;function t(e){return e.normalize(`NFC`)}export{t as n,e as t};
