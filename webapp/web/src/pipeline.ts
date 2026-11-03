@@ -1,6 +1,7 @@
 // 가져오기 → 메모 필터 → 저장 → 판정(Pyodide 워커) → 저장. 모든 단계가 이 브라우저 안에서 끝난다.
 import * as Comlink from 'comlink';
 import { saveImport, saveResult } from './db';
+import { DEMO_SNAPSHOT, loadDemoSnapshot } from './demo/snapshot';
 import { scanMemo, toMemoFlags } from './filter/memoFilter';
 import type { JudgeAPI } from './judge/judge.worker';
 import type { DailyMeta, DailyRow, MemoRecord, MinedResult, PhotoRecord } from './types';
@@ -57,6 +58,7 @@ export async function importAndJudge(files: File[], folder: (File | { file: File
 
 /** 가짜 샘플 원천 파일(public/sample)로 전 과정을 돌린다. */
 export async function runSample(onProgress: (p: Progress) => void): Promise<MinedResult> {
+  if (DEMO_SNAPSHOT) { onProgress({ stage: '시연용 가짜 샘플 불러오는 중' }); return loadDemoSnapshot(); }
   judgeApi().warmup().catch(() => undefined);
   const { importSampleViaWorker } = await import('./importBridge');
   const imp = await importSampleViaWorker(onProgress);

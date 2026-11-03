@@ -1,0 +1,93 @@
+/* P5 엘리베이터: 가운데 세로 그림 + 오른쪽 층 표시기 + 하단 가운데 확인 쌍 */
+.lift { position: relative; height: 100%; min-height: 560px; overflow: hidden; color: var(--mined-ink);
+  background: radial-gradient(ellipse 60% 70% at 50% 40%, #1d1a20 0%, #0d0c10 60%, #060508 100%); }
+.lift-shaft { position: absolute; inset: 0; overflow: hidden;
+  --floor: 210px; --surface: 300px; --cage-y: 52%; }
+/* 갱도 기둥: --d 층만큼 위로. 지상(0)일 때 승강장이 관측소 바닥에 서 있다 */
+.lift-column { position: absolute; left: 0; right: 0; top: var(--cage-y); will-change: transform;
+  transform: translateY(calc(-1 * (var(--surface) + var(--d) * var(--floor) - 30px)));
+  transition: transform 0s cubic-bezier(.45, 0, .25, 1); }
+.lift-surface { height: var(--surface); background: #0d0c10 center 70% / cover no-repeat; position: relative; }
+.lift-surface::after { content: ''; position: absolute; inset: auto 0 0; height: 70px; background: linear-gradient(transparent, #120f14); }
+.lift-stratum { position: relative; height: var(--floor); background: #120f14 center 52% / max(100%, calc(var(--floor) * 7.4)) auto no-repeat; border-top: 1px solid rgba(0, 0, 0, .6);
+  box-shadow: inset 0 14px 18px -10px rgba(0, 0, 0, .8), inset 0 -14px 18px -10px rgba(0, 0, 0, .8); }
+.lift-wall-ore { position: absolute; width: 34px; height: 34px; object-fit: contain; transform: rotate(var(--r, 0deg));
+  filter: drop-shadow(0 0 10px rgba(255, 220, 160, .35)) brightness(1.05); }
+.lift-stratum.pick { outline: 1px solid rgba(242, 170, 85, .35); outline-offset: -1px; }
+.lift-year { position: absolute; left: calc(50% - 150px); transform: translateX(-100%); top: 12px; font: 600 13px/1 var(--font); color: rgba(243, 233, 220, .55); letter-spacing: .08em; font-variant-numeric: tabular-nums; }
+.lift-stratum.pick .lift-year { color: var(--mined-amber); }
+.lift-bottom { height: 400px; background: linear-gradient(#0d0c10, #050406); }
+/* 철제 레일 · 승강장 */
+.lift-rail { position: absolute; top: 0; bottom: 0; width: 10px; z-index: 2;
+  background: repeating-linear-gradient(180deg, #2c2730 0 26px, #4a4350 26px 28px, #2c2730 28px 54px); box-shadow: 0 0 0 1px rgba(0, 0, 0, .6); }
+.lift-rail.l { left: calc(50% - 112px); } .lift-rail.r { left: calc(50% + 102px); }
+.lift-cage { position: absolute; left: 50%; top: var(--cage-y); width: 220px; height: 210px; transform: translate(-50%, -100%); z-index: 3; }
+.lift-cage.moving { animation: lift-sway .6s ease-in-out infinite alternate; }
+@keyframes lift-sway { from { transform: translate(calc(-50% - 1px), -100%) rotate(-.3deg); } to { transform: translate(calc(-50% + 1px), calc(-100% + 1px)) rotate(.3deg); } }
+.lift-cable { position: absolute; left: 50%; bottom: 100%; width: 3px; height: 100vh; transform: translateX(-50%);
+  background: repeating-linear-gradient(180deg, #59505e 0 6px, #3a333f 6px 9px); }
+.lift-cage-top { position: absolute; left: 6px; right: 6px; top: 0; height: 12px; border-radius: 3px;
+  background: linear-gradient(#5d5560, #2f2a33); box-shadow: 0 2px 0 rgba(0, 0, 0, .5); }
+.lift-cage::before, .lift-cage::after { content: ''; position: absolute; top: 10px; bottom: 16px; width: 6px; background: linear-gradient(90deg, #4a4350, #2a252e); }
+.lift-cage::before { left: 10px; } .lift-cage::after { right: 10px; }
+.lift-rider { position: absolute; left: 50%; bottom: 16px; height: 150px; transform: translateX(-50%); filter: drop-shadow(0 6px 6px rgba(0, 0, 0, .55)); }
+.lift-cage-floor { position: absolute; left: 0; right: 0; bottom: 0; height: 18px; border-radius: 3px;
+  background: repeating-linear-gradient(90deg, #6b5440 0 34px, #574332 34px 36px); box-shadow: 0 6px 14px rgba(0, 0, 0, .6), inset 0 2px 0 rgba(255, 220, 170, .15); }
+.lift-lamp { position: absolute; right: 18px; top: -26px; width: 12px; height: 16px; border-radius: 3px; background: #f2aa55;
+  box-shadow: 0 0 18px 6px rgba(242, 170, 85, .45), 0 0 60px 20px rgba(242, 170, 85, .15); }
+.lift-cage.moving .lift-lamp { animation: lift-flicker 1.4s steps(2) infinite; }
+@keyframes lift-flicker { 50% { opacity: .82; } }
+.lift-passing { position: absolute; left: 50%; top: calc(var(--cage-y) + 16px); transform: translateX(-50%); z-index: 4;
+  font: 700 34px/1 var(--font); color: rgba(242, 170, 85, .9); letter-spacing: .04em; text-shadow: 0 2px 10px rgba(0, 0, 0, .8); animation: lift-pass .5s both; }
+@keyframes lift-pass { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.lift-shade { position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background: radial-gradient(ellipse 38% 60% at 50% 50%, rgba(242, 170, 85, .08), transparent 70%), linear-gradient(90deg, rgba(6, 5, 8, .55), transparent 12%, transparent 88%, rgba(6, 5, 8, .55)),
+    linear-gradient(180deg, rgba(6, 5, 8, .55), transparent 18%, transparent 80%, rgba(6, 5, 8, .7)); }
+
+.lift-indicator { position: absolute; right: 30px; top: 76px; bottom: 96px; width: 150px; z-index: 5; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.lift-arrow { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--mined-line-strong); background: rgba(20, 16, 24, .7); color: var(--mined-ink); font-size: 14px; cursor: pointer; flex: none; }
+.lift-arrow:hover:not(:disabled) { border-color: var(--mined-amber); color: var(--mined-amber); }
+.lift-arrow:disabled { opacity: .3; cursor: default; }
+.lift-floors { list-style: none; margin: 0; padding: 18px 14px; flex: 1; min-height: 0; overflow-y: auto; width: 100%;
+  border: 1px solid var(--mined-line-strong); border-radius: 12px; background: rgba(14, 12, 18, .78); scrollbar-width: thin; }
+.lift-ground { font-size: 14px; color: var(--mined-ink-mute); padding: 4px 0 8px 22px; }
+.lift-floor { position: relative; display: flex; align-items: center; gap: 6px; width: 100%; padding: 6px 0 10px; border: 0; background: none;
+  color: var(--mined-ink-soft); font: 15px/1 var(--font); cursor: pointer; text-align: left; font-variant-numeric: tabular-nums; }
+.lift-mark { width: 16px; font-size: 11px; color: var(--mined-amber); opacity: 0; }
+.lift-floor.on { color: var(--mined-amber); font-weight: 700; }
+.lift-floor.on .lift-mark { opacity: 1; }
+.lift-floor:hover:not(:disabled) { color: var(--mined-ink); }
+.lift-bar { position: absolute; left: 22px; bottom: 4px; height: 2px; max-width: 64px; background: rgba(243, 233, 220, .28); border-radius: 1px; }
+.lift-floor.on .lift-bar { background: rgba(242, 170, 85, .55); }
+
+.lift-confirm { position: absolute; left: 50%; bottom: 34px; transform: translateX(-50%); z-index: 6; display: flex; gap: 70px; }
+.lift-btn { min-height: 44px; padding: 0 18px; border-radius: 8px; border: 1px solid var(--mined-line-strong); background: rgba(20, 16, 24, .82);
+  color: var(--mined-ink); font: 600 15px/1 var(--font); cursor: pointer; white-space: nowrap; }
+.lift-btn.primary { background: var(--mined-amber); border-color: var(--mined-amber); color: #1b1620; }
+.lift-btn:hover:not(:disabled) { filter: brightness(1.08); }
+.lift-btn:disabled { opacity: .55; cursor: default; }
+
+@media (max-width: 720px) {
+  .lift-shaft { --floor: 170px; --surface: 240px; --cage-y: 50%; }
+  .lift-cage { width: 180px; height: 170px; } .lift-rider { height: 118px; }
+  .lift-rail.l { left: calc(50% - 92px); } .lift-rail.r { left: calc(50% + 82px); }
+  /* 모바일: 층 표시기를 하단 가로 칩 줄로(v6 P5 초안) */
+  .lift-indicator { left: 12px; right: 12px; top: auto; bottom: 84px; width: auto; flex-direction: row; gap: 6px; }
+  .lift-arrow { width: 34px; height: 34px; transform: rotate(-90deg); }
+  .lift-floors { display: flex; gap: 4px; padding: 6px 8px; overflow-x: auto; overflow-y: hidden; border-radius: 10px; }
+  .lift-floors li { flex: none; }
+  .lift-ground { padding: 6px 6px; }
+  .lift-floor { width: auto; padding: 6px 8px 10px; font-size: 14px; }
+  .lift-mark { display: none; }
+  .lift-bar { left: 8px; }
+  .lift-confirm { gap: 12px; bottom: 22px; width: calc(100% - 24px); justify-content: center; }
+  .lift-btn { flex: 1; padding: 0 10px; font-size: 14px; }
+}
+@media (prefers-reduced-motion: reduce) { .lift-column { transition: none !important; } .lift-cage.moving, .lift-cage.moving .lift-lamp { animation: none; } }
+
+/* v2(11/03) 민디 대사(대본집 5-1~5-3) */
+.lift-say { position: absolute; left: 50%; top: 84px; transform: translateX(-50%); z-index: 6; display: flex; gap: 10px; align-items: center;
+  background: #f6efe4; color: #241f2c; border-radius: 16px; padding: 9px 16px; max-width: min(88%, 460px); box-shadow: 0 10px 30px rgba(0,0,0,.5); animation: lift-say-in .25s both; }
+.lift-say p { margin: 0; font-size: 15px; line-height: 1.5; }
+@keyframes lift-say-in { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@media (max-width: 720px) { .lift-say { top: 64px; max-width: calc(100% - 24px); } .lift-say p { font-size: 14px; } }

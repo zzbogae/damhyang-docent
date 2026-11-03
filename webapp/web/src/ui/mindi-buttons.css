@@ -52,7 +52,7 @@
 .voice-opt.on::before { box-shadow: inset 0 0 0 1.5px var(--mined-amber), inset 0 0 0 4px var(--mined-panel), inset 0 0 0 7px var(--mined-amber); }
 .voice-opt:disabled { opacity: .5; cursor: not-allowed; }
 .voice-name { font-size: 15px; font-weight: 600; line-height: 1.35; }
-.voice-name small { font-size: 12px; font-weight: 400; color: var(--mined-ink-mute); }
+.voice-name small { font-size: 12px; font-weight: 400; color: inherit; }
 .voice-opt.on .voice-name { color: var(--mined-core-light); }
 .voice-hint { grid-column: 2; font-size: 13px; line-height: 1.45; color: var(--mined-ink-soft); }
 .voice-sample { grid-column: 2; margin-top: 4px; font-size: 14px; line-height: 1.55; color: var(--mined-ink); opacity: .85; }
@@ -105,10 +105,14 @@
 
 /* 민디와 이야기(대본집 §11-1): `민디 · AI` 상시 표시 · 첫 대화 고지 · 첫 한 마디 · 입력칸 아래 안내띠 */
 .talk-chat { display: grid; gap: 12px; }
-.ai-tag { justify-self: start; font-size: 12px; letter-spacing: .06em; color: var(--mined-ink-mute);
+.ai-tag { justify-self: start; align-self: flex-start; width: max-content; margin: 0; font-size: 12px; letter-spacing: .06em; color: var(--mined-ink-mute);
   padding: 3px 10px; border-radius: var(--mined-r-pill); box-shadow: inset 0 0 0 1px var(--mined-line-strong); }
 .talk-chat > .bubble { display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; padding: 14px 16px;
   background: var(--mined-panel); border-radius: var(--mined-r-lg); box-shadow: var(--shadow); font-size: 17px; line-height: 1.65; }
+/* P9 새 배치(대화창 안): 첫 대화 고지·첫 한 마디도 민디 말풍선 모양으로 */
+.bubble.notice, .bubble.opener { display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; padding: 14px 16px;
+  background: var(--mined-panel); border-radius: var(--mined-r-lg); box-shadow: var(--shadow); }
+.bubble.notice p, .bubble.opener p { margin: 0; }
 .talk-chat .bubble.notice { box-shadow: 0 0 0 1px rgba(242, 170, 85, .35), var(--shadow); }
 .talk-chat .bubble.notice p, .talk-chat .bubble.opener p { margin: 0; }
 .talk-band { font-size: 13px; color: var(--mined-ink-mute); }

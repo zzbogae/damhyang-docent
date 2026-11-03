@@ -10,7 +10,9 @@ function ensure(onStage?: (s: string) => void): Promise<PyodideAPI> {
   if (!ready) {
     ready = (async () => {
       onStage?.('Python 런타임 불러오는 중');
-      const base = new URL(import.meta.env.BASE_URL + 'pyodide/', self.location.origin).href;
+      // 상대 base('./')로 빌드하면 워커는 assets/ 안에 있으므로 한 단계 위를 기준으로 잡는다
+      const b = import.meta.env.BASE_URL;
+      const base = b.startsWith('.') ? new URL('../' + b.replace(/^\.\//, '') + 'pyodide/', self.location.href).href : new URL(b + 'pyodide/', self.location.origin).href;
       const py = await loadPyodide({ indexURL: base });
       onStage?.('numpy 불러오는 중');
       await py.loadPackage('numpy');

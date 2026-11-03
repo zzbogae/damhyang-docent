@@ -21,9 +21,52 @@ import st2024 from '../assets/design/stratum_2024.webp';
 import st2025 from '../assets/design/stratum_2025.webp';
 import st2026 from '../assets/design/stratum_2026.webp';
 import fluorite from '../assets/design/mineral_fluorite.webp';
+// v2(11/03): 관측소 내부(Mine Hall Concept A), 첫 화면 안개 관측소, 나의 공간 섬 3종(안개 걷힘 · 들어간 뒤). 드라이브 03_에셋_디자인 · 나의공간 예시영상 4안
+import obsHall from '../assets/design/obs_hall.webp';
+import fogMain from '../assets/design/fog_main.webp';
+import seaReveal from '../assets/design/island_sea_reveal.webp';
+import seaInside from '../assets/design/island_sea_inside.webp';
+import mountainReveal from '../assets/design/island_mountain_reveal.webp';
+import mountainInside from '../assets/design/island_mountain_inside.webp';
+import jungleReveal from '../assets/design/island_jungle_reveal.webp';
+import jungleInside from '../assets/design/island_jungle_inside.webp';
+// 10/23 버튼배치 시안(P00~P13)이 쓰는 아트: 드라이브 Team Art Assets 원본을 webp 로 줄였다
+import observatoryBg from '../assets/design/observatory_bg.webp';
+import liftShaft from '../assets/design/lift_shaft.webp';
+import liftWide from '../assets/design/lift_wide.webp';
+import mindiFull from '../assets/design/mindi_full.webp';
+import stoneBasic from '../assets/design/stone_basic.webp';
+import stoneCut from '../assets/design/stone_cut.webp';
+import stoneFragment from '../assets/design/stone_fragment.webp';
+import envSea from '../assets/design/env_sea.webp';
+import envMountain from '../assets/design/env_mountain.webp';
+import envSky from '../assets/design/env_sky.webp';
+import envJungle from '../assets/design/env_jungle.webp';
+import envRoom from '../assets/design/env_room.webp';
 import type { Mineral } from './minerals';
 
-export const ART = { introFog, introPoster, logoLight, logoDark, mindiCharacter, pickaxe };
+export const ART = {
+  introFog, introPoster, logoLight, logoDark, mindiCharacter, pickaxe, obsHall, fogMain,
+  observatoryBg, liftShaft, liftWide, mindiFull, stoneBasic, stoneCut, stoneFragment,
+};
+
+/** 나의 공간 섬 그림 3종. 장소 선택을 가장 가까운 예시 그림에 잇는다(예시 그림이 더 생기면 여기만 늘린다) */
+export type IslandArt = 'sea' | 'mountain' | 'jungle';
+export const ISLAND_ART: Record<IslandArt, { reveal: string; inside: string; label: string }> = {
+  sea: { reveal: seaReveal, inside: seaInside, label: '바다 섬' },
+  mountain: { reveal: mountainReveal, inside: mountainInside, label: '산 섬' },
+  jungle: { reveal: jungleReveal, inside: jungleInside, label: '숲 섬' },
+};
+
+/** P11·P12 나의 공간 환경(10/23 섬·방 키프레임 v5~v9). 섬과 방은 같은 「나의 공간」이라 한 줄에 둔다 */
+export const ENV = [
+  { id: 'sea', name: '바다', src: envSea },
+  { id: 'mountain', name: '산', src: envMountain },
+  { id: 'sky', name: '하늘', src: envSky },
+  { id: 'jungle', name: '정글', src: envJungle },
+  { id: 'room', name: '작은 방', src: envRoom },
+] as const;
+export type EnvId = (typeof ENV)[number]['id'];
 
 /**
  * 광물 9종 그림: 드라이브 Team Art Assets / 03 앱 지층 / Mine-D_핸드오프.zip 의 gems/png(@3x) 그대로.

@@ -1,19 +1,23 @@
 // 10/23 장면 플로우 ⑥ 나의 공간(P11~P12): 캔 광석이 3개 모이면 안개가 걷히고, 광석 셋으로 섬이나 방을 짓는다.
 // 섬 생성 원칙(10/02): 민디는 사실을 펼치고, 결론은 사용자가 말한다. 단어 후보는 고른 광석의 날짜·지표·사용자가 붙인 이름에서만 나오고,
 // 원문(글·사진)은 쓰지 않는다. 사용자가 고른 단어와 이름만 이 기기 브라우저에 저장한다(원칙 4: 꾸미지 않고 배치·이름·연결만).
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useStore } from '../state/store';
 import { dateLabel, josa } from '../mindi/templates';
 import { oreMineral, pickedMineral, SPACE_NEED, useCollected } from '../ore/collection';
 import { customOreName, oreLabel } from './oreName';
-import { MINERAL_IMG } from './design';
+import { ISLAND_ART, MINERAL_IMG } from './design';
+import { artFor, IslandMake, optsLine, type IslandOpts } from './IslandMake';
+import { IslandVisit } from './IslandVisit';
+import { IslandPick } from './IslandPick';
+import { clipOf, type ClipKey } from './islandClips';
 import { MINERAL_HEX, type Mineral } from './minerals';
 import { MindiMark } from './Icons';
 import { sfx } from '../mindi/soundKit';
-import { takeNewSpaceRequest } from './SpaceButton';
+import { takeNewSpaceRequest, takeVisitRequest } from './SpaceButton';
 import { AXES, axisScreen, type Axis, type WeekRecord } from '../types';
 
-export interface SpaceRow { id: string; name: string; kind: 'island' | 'room'; ores: string[]; words: string[]; at: string }
+export interface SpaceRow { id: string; name: string; kind: 'island' | 'room'; ores: string[]; words: string[]; at: string; /** v2: 민디와 고른 여섯 가지 */ opts?: IslandOpts; /** v2: 넷 가운데 고른 섬 영상 */ clip?: ClipKey }
 const KEY = 'mined.spaces.v1';
 
 export function loadSpaces(): SpaceRow[] {
@@ -26,7 +30,7 @@ function saveSpaces(rows: SpaceRow[]) {
 const SEASON = (m: number) => (m <= 2 || m === 12 ? '겨울' : m <= 5 ? '봄' : m <= 8 ? '여름' : '가을');
 const AXIS_WORD: Record<Axis, { up: string; down: string }> = {
   move: { up: '많이 걸은', down: '덜 걸은' }, rest: { up: '오래 잔', down: '덜 잔' },
-  lang: { up: '많이 적은', down: '덜 적은' }, talk: { up: '많이 주고받은', down: '조용했던' },
+  lang: { up: '글을 많이 쓴', down: '글을 덜 쓴' }, talk: { up: '많이 주고받은', down: '조용했던' },
 };
 
 /** 광석 하나에서 나오는 사실: 날짜, 계절, 가장 크게 움직인 지표와 방향(데이터 광석은 배지, 고른 광석은 축 대표값) */
@@ -81,10 +85,23 @@ export function spreadFacts(ws: WeekRecord[], counts: (w: WeekRecord) => { memos
   return lines;
 }
 
-function Scene({ row, byKey }: { row: SpaceRow; byKey: Map<string, WeekRecord> }) {
+function Scene({ row, byKey, onVisit }: { row: SpaceRow; byKey: Map<string, WeekRecord>; onVisit?: () => void }) {
   const ores = row.ores.map((k) => byKey.get(k)).filter(Boolean) as WeekRecord[];
+  if (row.opts) {
+    const art = ISLAND_ART[artFor(row.opts.place)];
+    const clip = clipOf(row.clip);
+    return (
+      <figure className="space-scene island v2" aria-label={`${row.name} · 섬`}>
+        {clip ? <video className="space-bg" src={clip.src} poster={clip.poster} muted loop playsInline autoPlay preload="metadata" aria-hidden="true" /> : <img className="space-bg" src={art.reveal} alt="" />}
+        <div className="space-words">{row.words.map((t) => <span key={t} className="chip">{t}</span>)}</div>
+        <figcaption><span className="space-name">{row.name}</span><small>{optsLine(row.opts)}</small></figcaption>
+        {onVisit && <button className="btn primary space-go" onClick={onVisit}>섬으로 가기</button>}
+      </figure>
+    );
+  }
   return (
     <figure className={`space-scene ${row.kind}`} aria-label={`${row.name} · ${row.kind === 'island' ? '섬' : '방'}`}>
+      {onVisit && <button className="btn primary space-go" onClick={onVisit}>섬으로 가기</button>}
       <svg viewBox="0 0 600 300" aria-hidden="true" className="space-bg">
         {row.kind === 'island' ? (
           <>
@@ -127,10 +144,11 @@ export function Space({ onField }: { onField: () => void }) {
   const [making, setMaking] = useState(() => takeNewSpaceRequest() || spaces.length === 0);
   const pool = useMemo(() => collected.map((c) => byKey.get(c.week)).filter(Boolean) as WeekRecord[], [collected, byKey]);
   const [chosen, setChosen] = useState<string[]>(() => pool.slice(-SPACE_NEED).map((w) => w.week));
-  const [words, setWords] = useState<string[]>([]);
-  const [own, setOwn] = useState('');
-  const [kind, setKind] = useState<'island' | 'room'>('island');
-  const [name, setName] = useState('');
+  const [talking, setTalking] = useState(false);
+  const [built, setBuilt] = useState<SpaceRow | null>(null);
+  const [building, setBuilding] = useState(false);
+  const [visit, setVisit] = useState<SpaceRow | null>(() => (takeVisitRequest() ? spaces[spaces.length - 1] ?? null : null));
+  useEffect(() => { if (!building) return; const t = setTimeout(() => { setBuilding(false); sfx('spaceOpen'); }, 2600); return () => clearTimeout(t); }, [building]);
   const labelsByWeek = useMemo(() => {
     const m = new Map<string, string[]>();
     for (const l of labels) m.set(l.week, [...(m.get(l.week) ?? []), l.name]);
@@ -152,23 +170,62 @@ export function Space({ onField }: { onField: () => void }) {
   const facts = chosenWs.length === SPACE_NEED
     ? spreadFacts(chosenWs, (w) => ({ memos: memosByWeek.get(w.week)?.length ?? 0, photos: photosByWeek.get(w.week)?.length ?? 0 }))
     : [];
-  const choices = wordChoices(chosenWs, labelsByWeek);
-  const toggleOre = (k: string) => setChosen((c) => c.includes(k) ? c.filter((x) => x !== k) : c.length < SPACE_NEED ? [...c, k] : c);
-  const toggleWord = (t: string) => setWords((ws) => ws.includes(t) ? ws.filter((x) => x !== t) : ws.length < 3 ? [...ws, t] : ws);
-  const ready = chosenWs.length === SPACE_NEED && name.trim().length > 0;
+  // 추천 단어: 고른 세 광석의 단어 후보를, 캔 광석 전체에서 많이 나온 순으로(같으면 원래 순서)
+  const choices = (() => {
+    const base = wordChoices(chosenWs, labelsByWeek);
+    const freq = new Map<string, number>();
+    for (const w of pool) for (const t of wordChoices([w], labelsByWeek)) freq.set(t, (freq.get(t) ?? 0) + 1);
+    // 「2월」처럼 달 이름만 있는 단어는 뒤로 미룬다(단어가 모자랄 때만 쓴다)
+    const dateOnly = (t: string) => /^\d{1,2}월$|^\d{4}년?$/.test(t);
+    return base.map((t, i) => ({ t, i, n: freq.get(t) ?? 0 })).sort((a, b) => Number(dateOnly(a.t)) - Number(dateOnly(b.t)) || b.n - a.n || a.i - b.i).map((x) => x.t);
+  })();
+  const toggleOre = (k: string) => { setTalking(false); setChosen((c) => c.includes(k) ? c.filter((x) => x !== k) : c.length < SPACE_NEED ? [...c, k] : c); };
+  const today = new Date();
+  const defaultName = `${today.getMonth() + 1}월 ${today.getDate()}일의 섬`;
+  const build = (opts: IslandOpts, words: string[], name: string) => {
+    const row: SpaceRow = { id: `${Date.now()}`, name, kind: 'island', ores: chosen, words, at: new Date().toISOString(), opts };
+    const next = [...spaces, row];
+    saveSpaces(next); setSpaces(next); setBuilt(row); setBuilding(true); setTalking(false);
+  };
 
   return (
     <section className="stack" aria-labelledby="space-title">
       <h2 id="space-title" className="h2">나의 공간</h2>
-      {spaces.length > 0 && !making && (
+      {visit && <IslandVisit row={visit} byKey={byKey} onExit={() => setVisit(null)} />}
+      {built && (
+        <div className="stack isl-built" role="status">
+          {building ? (
+            <div className="isl-msg mindi building"><MindiMark size={36} mood="thinking" /><p>안개 속에 섬을 놓을 자리를 찾고 있어요…</p></div>
+          ) : (
+            <>
+              {built.opts && !built.clip ? (
+                <IslandPick opts={built.opts} onGo={(k) => {
+                  const row = { ...built, clip: k };
+                  const next = spaces.map((r) => r.id === row.id ? row : r);
+                  saveSpaces(next); setSpaces(next); setBuilt(row); setVisit(row);
+                }} />
+              ) : (
+                <>
+                  <div className="isl-msg mindi"><MindiMark size={36} mood="found" /><p>섬이 준비됐어요. 안개 너머에 있어요.</p></div>
+                  <Scene row={built} byKey={byKey} onVisit={() => setVisit(built)} />
+                </>
+              )}
+              <div className="label-row">
+                <button className="btn quiet" onClick={() => { setBuilt(null); setMaking(false); }}>지은 공간 모두 보기</button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+      {!built && spaces.length > 0 && !making && (
         <>
-          {spaces.map((r) => <Scene key={r.id} row={r} byKey={byKey} />)}
+          {spaces.map((r) => <Scene key={r.id} row={r} byKey={byKey} onVisit={() => setVisit(r)} />)}
           <div className="label-row">
-            <button className="btn" onClick={() => setMaking(true)}>새 공간 짓기</button>
+            <button className="btn" onClick={() => { setMaking(true); setTalking(false); }}>민디와 새 섬 만들기</button>
           </div>
         </>
       )}
-      {making && (
+      {!built && making && (
         <div className="stack space-make">
           <p>안개가 걷혔습니다. 캔 광석 가운데 {SPACE_NEED}개를 고르세요.</p>
           <ul className="space-pool" aria-label="광석 고르기">
@@ -186,36 +243,13 @@ export function Space({ onField }: { onField: () => void }) {
             })}
           </ul>
           {facts.length > 0 && (
-            <div className="bubble" role="status"><MindiMark size={36} /><div className="stack">{facts.map((f) => <p key={f}>{f}</p>)}</div></div>
+            <div className="bubble" role="status"><MindiMark size={36} /><div className="stack">{facts.slice(0, -1).map((f) => <p key={f}>{f}</p>)}</div></div>
           )}
-          {chosenWs.length === SPACE_NEED && (
-            <>
-              <h3 className="h3">곁에 둘 단어 (세 개까지)</h3>
-              <div className="label-row" role="group" aria-label="단어 고르기">
-                {choices.map((t) => <button key={t} className="chip" aria-pressed={words.includes(t)} onClick={() => toggleWord(t)}>{t}</button>)}
-                {words.filter((t) => !choices.includes(t)).map((t) => <button key={t} className="chip" aria-pressed onClick={() => toggleWord(t)}>{t}</button>)}
-              </div>
-              <form className="label-row" onSubmit={(e) => { e.preventDefault(); const t = own.trim().slice(0, 12); if (t) { toggleWord(t); setOwn(''); } }}>
-                <input className="input" value={own} maxLength={12} onChange={(e) => setOwn(e.target.value)} placeholder="직접 적기" aria-label="단어 직접 적기" />
-                <button className="btn" type="submit" disabled={!own.trim()}>더하기</button>
-              </form>
-              <h3 className="h3">어떤 곳으로 지을까요</h3>
-              <div className="label-row" role="radiogroup" aria-label="공간 종류">
-                <button role="radio" aria-checked={kind === 'island'} className={`btn${kind === 'island' ? ' primary' : ''}`} onClick={() => setKind('island')}>섬</button>
-                <button role="radio" aria-checked={kind === 'room'} className={`btn${kind === 'room' ? ' primary' : ''}`} onClick={() => setKind('room')}>방</button>
-              </div>
-              <form className="label-row" onSubmit={(e) => {
-                e.preventDefault();
-                if (!ready) return;
-                const row: SpaceRow = { id: `${Date.now()}`, name: name.trim().slice(0, 20), kind, ores: chosen, words, at: new Date().toISOString() };
-                const next = [...spaces, row];
-                saveSpaces(next); setSpaces(next); setMaking(false); setName(''); setWords([]); sfx('spaceOpen');
-              }}>
-                <input className="input" value={name} maxLength={20} onChange={(e) => setName(e.target.value)} placeholder="이 공간의 이름" aria-label="공간 이름" />
-                <button className="btn primary" type="submit" disabled={!ready}>이름 붙이고 짓기</button>
-              </form>
-              {name.trim() && <Scene row={{ id: 'preview', name: name.trim(), kind, ores: chosen, words, at: '' }} byKey={byKey} />}
-            </>
+          {chosenWs.length === SPACE_NEED && !talking && (
+            <div><button className="btn primary" onClick={() => { sfx('confirm'); setTalking(true); }}>민디와 섬 만들기 시작</button></div>
+          )}
+          {chosenWs.length === SPACE_NEED && talking && (
+            <IslandMake key={chosen.join()} suggestions={choices} defaultName={defaultName} onDone={build} />
           )}
           {spaces.length > 0 && <button className="btn quiet" onClick={() => setMaking(false)}>지은 공간 보기</button>}
         </div>

@@ -19,6 +19,6 @@ createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictM
 
 // 오프라인 캐시(배포 빌드에서만). 한 번 연 뒤에는 인터넷 없이도 열린다.
 declare const __BUILD_ID__: string;
-if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+if (import.meta.env.PROD && import.meta.env.VITE_DEMO_SNAPSHOT !== '1' && 'serviceWorker' in navigator) {
   navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js?v=${__BUILD_ID__}`).catch(() => undefined);
 }

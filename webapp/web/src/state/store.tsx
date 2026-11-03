@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { db, getKV, loadResult, setKV, type LabelRow } from '../db';
 import type { MemoRecord, MinedResult, PhotoRecord, WeekRecord } from '../types';
 import { setSoundOn } from '../mindi/soundKit';
+import { DEMO_SNAPSHOT } from '../demo/snapshot';
 
 export type Phase = 'boot' | 'empty' | 'working' | 'ready';
 
@@ -62,7 +63,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [labels, setLabels] = useState<LabelRow[]>([]);
   const [selected, setSelected] = useState<string>();
   const [greeted, setGreeted] = useState(false);
-  const [settings, setSettingsState] = useState<Settings>({ tone: false, screenRead: false });
+  // 시연 빌드(VITE_DEMO_SNAPSHOT=1)는 소리를 켠 채로 시작한다(11/03 보별: 시연에 소리가 없음). 실제 앱은 기본 꺼짐 그대로
+  const [settings, setSettingsState] = useState<Settings>({ tone: false, screenRead: false, sound: DEMO_SNAPSHOT });
   const [progress, setProgress] = useState<Progress>();
   const [error, setError] = useState<string>();
   const [unlocked, setUnlocked] = useState<Set<string>>(new Set());
@@ -77,7 +79,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setPhotos(group(photos));
     setLabels(labs);
     setGreeted(!!g);
-    if (s) { setSettingsState(s); setSoundOn(!!s.sound); }
+    if (s) { setSettingsState(s); setSoundOn(!!s.sound); } else if (DEMO_SNAPSHOT) setSoundOn(true);
     setPhase(r && r.weeks.length ? 'ready' : 'empty');
   }, []);
 

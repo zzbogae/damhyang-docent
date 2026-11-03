@@ -18,6 +18,9 @@ export interface MineDSoundKit {
   isOn(): boolean;
   setZone(id: string, opts?: { env?: string }): void;
   setDepth(d: number, sec?: number): void;
+  setMusic(v: boolean): void;
+  setScene?(name: string): void;
+  setEnvironment?(name: string): void;
   descend(toDepth: number, sec?: number): Promise<void>;
   overlay(kind: 'door' | 'help' | 'panel' | 'notice', open: boolean): void;
   sfx(name: string): void;
@@ -63,6 +66,10 @@ export const SFX = {
   step: ['step'],
   send: ['send'],
   fogClear: ['fog_clear'],
+  // 10/23 버튼배치 시안의 버튼들(키트 빠짐 점검표 v3)
+  locked: ['locked'], glint: ['glint'], hide: ['hide'], erase: ['erase'], memoryNote: ['memory_note'],
+  shuffle: ['shuffle'], appear: ['appear'], spotlight: ['spotlight'], mindiSteps: ['mindi_steps'],
+  liftStart: ['lift_start'], liftArrive: ['lift_arrive'], crack: ['ore_crack'], pick: ['pick'],
 } as const satisfies Record<string, readonly string[]>;
 export type SfxName = keyof typeof SFX;
 
@@ -72,6 +79,7 @@ export function panelScene(panel: string, weekOpen: boolean): SceneName {
   if (panel === 'hub') return 'observatory';
   if (panel === 'talk') return 'ask';
   if (panel === 'collect') return 'detail';
+  if (panel === 'archive') return 'archive';
   if (panel === 'islands') return 'space';
   return weekOpen ? 'detail' : 'field';
 }
@@ -130,12 +138,13 @@ function apply(name: SceneName) {
 /** 설정의 「민디 소리」와 맞춘다. 스토어가 설정을 읽거나 바꿀 때 부른다 */
 export function setSoundOn(v: boolean) {
   on = v;
-  if (!v) { if (kit?.isOn()) kit.disable(); return; }
+  if (!v) { if (kit?.isOn()) kit.disable(); applyChoice(); return; }
   void loadKit().then((k) => {
     if (!k || !on) return;
     // 설정 화면에서 방금 켠 경우처럼 사용자 활성화가 남아 있으면 바로 켜지고, 아니면 다음 클릭 때 켠다
     if (!k.enable() || !k.isOn()) armUnlock();
     const c = current(); if (c) apply(c);
+    applyChoice();
   });
   armUnlock();
 }
@@ -165,6 +174,28 @@ export function fieldDepth(index: number, count: number) {
   kit.setDepth(Math.min(1, Math.max(0, index / Math.max(1, count - 1))));
 }
 
+/** 겹쳐 뜨는 창(? 안내 · 관측소의 문 · 하위 창 · 첫 대화 고지): 바탕 소리를 낮춘다 */
+export function kitOverlay(kind: 'door' | 'help' | 'panel' | 'notice', open: boolean) {
+  if (!on || !kit?.isOn()) return;
+  kit.overlay(kind, open);
+}
+
+/** P5 엘리베이터 하강(올라갈 때는 to 를 작게). 끝나면 resolve. 꺼져 있으면 sec 만큼만 기다린다 */
+export function kitDescend(to: number, sec = 2.4): Promise<void> {
+  if (!on || !kit?.isOn()) return new Promise((r) => setTimeout(r, sec * 1000));
+  return kit.descend(to, sec);
+}
+
+/** P3 「배경·소리 바꾸기」: lantern · rain · wind · none */
+export function kitScene(name: 'lantern' | 'rain' | 'wind' | 'none') {
+  if (on && kit?.isOn()) kit.setScene?.(name);
+}
+
+/** P11·P12 나의 공간 환경: sea · mountain · sky · jungle · room */
+export function kitEnv(name: string) {
+  if (on && kit?.isOn()) kit.setEnvironment?.(name);
+}
+
 /** 효과음 하나(표의 이름) */
 export function sfx(name: SfxName) {
   if (!on || !kit?.isOn()) return;
@@ -187,3 +218,106 @@ export function kitCue(kind: 'found' | 'wait' | 'mined') {
 
 /** 시험용: 엔진을 불러왔는지 */
 export const kitLoaded = () => !!kit || !!loading;
+
+// ── 음악 고르기(v2, 11/03): 머리줄 「♪ 음악」 버튼 ─────────────────────────────
+// 「장소에 맞춤」(기본)은 키트가 구역마다 정한 곡을 그대로 쓰고, 나의 공간 안에서는 그 섬을 지을 때 고른 곡을 튼다.
+// 곡 하나를 고르면 키트 음악을 끄고 그 곡만 이어서 튼다. 「음악 없음」은 바탕 소리·효과음만 남긴다.
+// 이 부분도 기록 내용은 받지 않는다. 곡은 사용자가 고른 것과 지금 있는 장면으로만 정해진다.
+export const TRACKS = {
+  fog: { label: '안개', file: 'mus_home.mp3', note: '첫 화면 · 입장' },
+  hearth: { label: '등불', file: 'mus_hearth.mp3', note: '관측소 · 이야기' },
+  open: { label: '열림', file: 'mus_open.mp3', note: '나의 공간이 열릴 때' },
+  sea: { label: '바다', file: 'mus_island_sea.mp3', note: '섬 · 파도와 함께' },
+  sky: { label: '하늘산', file: 'mus_island_sky.mp3', note: '섬 · 높은 바람' },
+  jungle: { label: '정글', file: 'mus_island_jungle.mp3', note: '섬 · 숲의 숨' },
+  music: { label: '음악방', file: 'mus_island_music.mp3', note: '섬 · 조용한 방' },
+} as const;
+export type TrackKey = keyof typeof TRACKS;
+export type MusicChoice = 'auto' | 'off' | TrackKey;
+
+const MUSIC_KEY = 'mined.music.v1';
+let musicChoice: MusicChoice = (() => {
+  try { const v = localStorage.getItem(MUSIC_KEY); return v && (v === 'auto' || v === 'off' || v in TRACKS) ? v as MusicChoice : 'auto'; } catch { return 'auto'; }
+})();
+let islandTrack: TrackKey | undefined;   // 나의 공간 안에 있을 때 그 섬의 곡
+let player: HTMLAudioElement | undefined;
+let playing: TrackKey | undefined;
+const listeners = new Set<() => void>();
+
+function fadeTo(a: HTMLAudioElement, v: number, ms: number, done?: () => void) {
+  const from = a.volume, t0 = performance.now();
+  const step = (t: number) => {
+    const k = Math.min(1, (t - t0) / ms);
+    a.volume = Math.max(0, Math.min(1, from + (v - from) * k));
+    if (k < 1) requestAnimationFrame(step); else done?.();
+  };
+  requestAnimationFrame(step);
+}
+
+/** 지금 따로 틀어야 하는 곡(없으면 키트 구역 음악 또는 무음) */
+function wantedTrack(): TrackKey | undefined {
+  if (!on) return undefined;
+  if (musicChoice === 'off') return undefined;
+  if (musicChoice === 'auto') return islandTrack;
+  return musicChoice;
+}
+
+function applyChoice() {
+  const want = wantedTrack();
+  // 키트 음악은 「장소에 맞춤」이고 섬 곡이 없을 때만 흐른다
+  kit?.setMusic?.(on && musicChoice === 'auto' && !islandTrack);
+  if (want === playing) { if (want && player?.paused) void player.play().catch(armMusicUnlock); return; }
+  const old = player;
+  if (old) fadeTo(old, 0, 1500, () => old.pause());
+  player = undefined; playing = undefined;
+  const doc = g.document;
+  if (!want || !doc) return;
+  const a = new Audio(`${base()}sound/audio/${TRACKS[want].file}`);
+  a.loop = true; a.volume = 0;
+  player = a; playing = want;
+  // 안개가 걷힐 때처럼 2~3초에 걸쳐 들어온다(나의 공간 사운드 규칙)
+  void a.play().then(() => fadeTo(a, 0.55, 2500)).catch(armMusicUnlock);
+}
+
+let musicUnlockArmed = false;
+function armMusicUnlock() {
+  const doc = g.document;
+  if (musicUnlockArmed || !doc) return;
+  musicUnlockArmed = true;
+  const go = () => {
+    musicUnlockArmed = false;
+    doc.removeEventListener('pointerdown', go, true);
+    if (player && player.paused) void player.play().then(() => player && fadeTo(player, 0.55, 2500)).catch(() => undefined);
+  };
+  doc.addEventListener('pointerdown', go, true);
+}
+
+export const getMusicChoice = () => musicChoice;
+export const nowPlaying = (): TrackKey | undefined => playing;
+export function onMusicChange(f: () => void) { listeners.add(f); return () => { listeners.delete(f); }; }
+
+/** 머리줄 음악 버튼에서 고를 때. 소리가 꺼져 있으면 호출한 쪽이 먼저 「민디 소리」를 켠다 */
+export function setMusicChoice(c: MusicChoice) {
+  musicChoice = c;
+  try { localStorage.setItem(MUSIC_KEY, c); } catch { /* 이번 화면에서만 */ }
+  applyChoice();
+  listeners.forEach((f) => f());
+}
+
+/** 나의 공간에 들어가고 나올 때. 그 섬을 지을 때 고른 곡(없으면 undefined) */
+export function setIslandTrack(t: TrackKey | undefined) {
+  islandTrack = t;
+  applyChoice();
+  listeners.forEach((f) => f());
+}
+
+/** 섬을 지을 때 곡 미리 듣기(소리 설정과 상관없이 사용자가 누른 순간에만, 8초) */
+let preview: HTMLAudioElement | undefined;
+export function previewTrack(t: TrackKey) {
+  preview?.pause();
+  const a = new Audio(`${base()}sound/audio/${TRACKS[t].file}`);
+  a.volume = 0.5; preview = a;
+  void a.play().catch(() => undefined);
+  setTimeout(() => { if (preview === a) fadeTo(a, 0, 800, () => a.pause()); }, 8000);
+}
+export function stopPreview() { preview?.pause(); preview = undefined; }

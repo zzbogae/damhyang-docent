@@ -1,0 +1,4 @@
+*.tsbuildinfo
+
+# 섬 영상 넷 고르기 시연 클립(각 1.2MB 안팎)
+!src/assets/design/island_clip_*.mp4
