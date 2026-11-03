@@ -66,9 +66,8 @@ export function Mine({ w, onCarry, onView }: { w: WeekRecord; onCarry: () => voi
       </div>
       <button type="button" className={`mine-ore ${stage}`} key={shake} onClick={hit} disabled={done}
         aria-label={done ? `${monthWeek(w)} 광석을 캤습니다` : `${monthWeek(w)} 광석 캐기 (${hits}/${need})`}>
-        {done && (w.candidate && m && m in MINERAL_IMG
-          ? <span className="mine-core split"><OreSplit img={core} bands={bands} size={220} label={`${monthWeek(w)} 광석의 쪼갠 단면`} /></span>
-          : <img className="mine-core" src={core} alt="" />)}
+        {/* 11/03 보별: 데이터 광석이든 직접 고른 주(회색 돌)든 깨진 안쪽에 결 띠를 그린다. 오른쪽 범례와 같은 색 */}
+        {done && <span className="mine-core split"><OreSplit img={core} bands={bands} size={220} label={`${monthWeek(w)} 광석의 쪼갠 단면`} /></span>}
         <img className="mine-shell" src={ART.stoneBasic} alt="" />
         <svg className="mine-crack" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path className="c1" d={CRACK_C1} /><path className="c2" d={CRACK_C2} /></svg>
         <img className="mine-frag" src={ART.stoneFragment} alt="" aria-hidden="true" />

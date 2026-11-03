@@ -58,6 +58,10 @@
 .mine-say p { margin: 0; font-size: 15px; }
 .mine-core.split { inset: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 0 26px rgba(242, 195, 116, .35)); }
 .mine-core.split .ore-split { width: 100% !important; height: 70% !important; }
+/* 11/03 단면을 크게: 결 띠가 한눈에 보이도록 가운데 단면을 키우고 양쪽 껍질은 더 벌린다 */
+.mine-core.split .ore-split .ore-core { inset: -6% 6%; width: 88%; height: 112%; }
+.mine-core.split .ore-split.open .ore-half.l { transform: translateX(-58%) rotate(-14deg); opacity: .8; }
+.mine-core.split .ore-split.open .ore-half.r { transform: translateX(58%) rotate(14deg); opacity: .8; }
 .mine-open { position: absolute; right: max(24px, 5vw); top: 50%; transform: translateY(-50%); z-index: 4; width: min(320px, 36vw); display: grid; gap: 10px;
   background: rgba(20, 16, 24, .9); border: 1px solid rgba(217, 154, 63, .4); border-radius: 14px; padding: 14px 16px; animation: mine-fade .4s .5s both; }
 .mine-open-say { display: flex; gap: 10px; align-items: flex-start; }
