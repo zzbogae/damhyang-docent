@@ -284,15 +284,15 @@ function Shell() {
   );
 }
 
-// 입장 인트로는 이 탭에서 처음 열 때 한 번. 자동 시험(webdriver)에서는 건너뛰고, 주소에 ?intro 를 붙이면 언제든 다시 본다.
+// 입장 인트로(첫 홈: 안개 · 로고 · 입장하기)는 페이지를 열 때마다 먼저 보인다(11/03 보별: 시연은 늘 첫 홈에서 시작).
+// 자동 시험(webdriver)에서는 건너뛰고, 주소에 ?intro 를 붙이면 언제든 다시 본다.
 function useIntro() {
   const force = FLAGS.has('intro');
   const auto = typeof navigator !== 'undefined' && navigator.webdriver;
-  const seen = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('mined.entered') === '1';
-  const [show, setShow] = useState(force || (!auto && !seen));
+  const [show, setShow] = useState(force || !auto);
   // 머리줄 로고를 누르면 첫 홈(안개 · 로고 · 입장하기)을 다시 연다
   useEffect(() => { const on = () => setShow(true); addEventListener(HOME_EVENT, on); return () => removeEventListener(HOME_EVENT, on); }, []);
-  return [show, () => { sessionStorage.setItem('mined.entered', '1'); setShow(false); }] as const;
+  return [show, () => { try { sessionStorage.setItem('mined.entered', '1'); } catch { /* 저장소를 못 써도 진행 */ } setShow(false); }] as const;
 }
 
 export default function App() {

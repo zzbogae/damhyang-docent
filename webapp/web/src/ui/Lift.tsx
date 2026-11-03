@@ -2,10 +2,13 @@
 // 오른쪽 세로 층 표시기 + 위 ▲ / 아래 ▼(Time Machine), 하단 가운데 확인 쌍 「돌아가기 / ○○년으로 내려간다」(하빈 UI 시트).
 // 층 이름은 연도만. 층마다 그해 기록 양을 작은 막대로(Wayback Machine 연도 막대) 보여 주되 좋고 나쁨 색으로 칠하지 않는다.
 // 휠로도 한 층씩 움직인다. 연출 줄이기(OS 설정)가 켜져 있으면 하강 연출 없이 바로 넘어간다.
+// v2(11/03) 하강 장면: 정지 그림 한 장을 확대하던 것을, 기존 그림을 조합한 세로 갱도로 바꿨다.
+//  지상(관측소 바닥 그림) 아래로 연도별 지층 그림(stratum_YYYY)을 한 해씩 쌓고, 가운데 철제 승강장에 민디(mindi_full)가 타고 있다.
+//  내려가면 갱도가 위로 흘러가며 지나는 해의 이름이 바뀌고, 층마다 「딸깍」. 고른 해에서 멈추고 「○○년입니다.」
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../state/store';
 import { kitDescend, sfx } from '../mindi/soundKit';
-import { ART } from './design';
+import { ART, stratumFor } from './design';
 import { MindiMark } from './Icons';
 import { mindiSay } from '../mindi/soundKit';
 import './lift.css';
@@ -56,22 +59,54 @@ export function Lift({ onBack, onDescend }: { onBack: () => void; onDescend: (ye
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
   });
+  const [depth, setDepth] = useState(-1); // 승강장이 지금 있는 층(-1 = 지상)
+  const [passing, setPassing] = useState<number | null>(null);
+  const [dur, setDur] = useState(0);
+  const timers = useRef<number[]>([]);
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
   const descend = async () => {
     if (!cur || going) return;
     sfx('confirm');
     if (reduced()) { onDescend(cur.year); return; }
     setGoing(true);
     setSaid(L53); mindiSay(L53);
-    const arrive = setTimeout(() => setSaid(`${cur.year}년입니다.`), 1500);
-    await kitDescend(Math.min(1, (at + 1) / Math.max(1, floors.length)), 2.2);
-    clearTimeout(arrive);
+    // 한 층 0.55초(최소 1.6초, 최대 4.2초). 지나가는 해마다 층 표시와 딸깍
+    const per = Math.max(0.35, Math.min(0.55, 4.2 / (at + 1)));
+    const total = Math.max(1.6, per * (at + 1));
+    setDur(total);
+    requestAnimationFrame(() => setDepth(at));
+    for (let k = 0; k <= at; k++) {
+      timers.current.push(window.setTimeout(() => { setPassing(k); if (k < at) sfx('floor'); }, ((k + 0.5) / (at + 1)) * total * 1000));
+    }
+    void kitDescend(Math.min(1, (at + 1) / Math.max(1, floors.length)), total);
+    await new Promise((r) => { timers.current.push(window.setTimeout(r, total * 1000)); });
+    setSaid(`${cur.year}년입니다.`);
+    sfx('floor');
+    await new Promise((r) => { timers.current.push(window.setTimeout(r, 900)); });
     onDescend(cur.year);
   };
   if (!floors.length) return <p className="muted" style={{ padding: 80 }}>아직 내려갈 지층이 없습니다.</p>;
   return (
     <section className={`lift${going ? ' going' : ''}`} aria-label="민디의 리프트 · 엘리베이터" onWheel={onWheel}>
       <div className="lift-shaft" aria-hidden="true">
-        <img src={ART.liftShaft} alt="" style={{ ['--lift-depth' as string]: String((at + 1) / (floors.length + 1)) }} />
+        {/* 세로 갱도: 지상 + 한 해 한 층. 승강장은 가운데 고정, 갱도가 위로 흐른다 */}
+        <div className="lift-column" style={{ ['--d' as string]: String(depth + 1), transitionDuration: `${dur}s` }}>
+          <div className="lift-surface" style={{ backgroundImage: `url(${ART.observatoryBg})` }} />
+          {floors.map((f, k) => (
+            <div key={f.year} className={`lift-stratum${k === at ? ' pick' : ''}`} style={{ backgroundImage: `url(${stratumFor(f.year).src})` }}>
+              <span className="lift-year">{f.year}</span>
+            </div>
+          ))}
+          <div className="lift-bottom" />
+        </div>
+        <div className="lift-rail l" /><div className="lift-rail r" />
+        <div className={`lift-cage${going ? ' moving' : ''}`}>
+          <i className="lift-cable" />
+          <div className="lift-cage-top" />
+          <img className="lift-rider" src={ART.mindiFull} alt="" />
+          <div className="lift-cage-floor"><i className="lift-lamp" /></div>
+        </div>
+        {going && passing !== null && floors[passing] && <div className="lift-passing" key={passing}>{floors[passing].year}</div>}
         <div className="lift-shade" />
       </div>
       <div className="lift-say" key={said} aria-live="polite"><MindiMark size={30} /><p>{said}</p></div>
