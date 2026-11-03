@@ -31,10 +31,12 @@ export function IslandPick({ opts, onGo }: { opts: IslandOpts; onGo: (k: ClipKey
                 <dl>
                   <dt>시간</dt><dd>{c.opts.time}</dd>
                   <dt>날씨·계절</dt><dd>{c.opts.weather.join(' · ')}</dd>
-                  <dt>장소</dt><dd>{c.opts.place}</dd>
+                  <dt>장소</dt><dd>{c.opts.place}{c.opts.placeNote && ` (직접 쓰기: ${c.opts.placeNote})`}</dd>
                   <dt>시대</dt><dd>{c.opts.era}</dd>
                   <dt>머물 곳</dt><dd>{c.opts.dwelling}</dd>
                   <dt>소리</dt><dd>♪ {c.opts.music}</dd>
+                  <dt>추천 단어</dt><dd>{c.opts.words.join(' · ')}</dd>
+                  <dt>뺀 단어</dt><dd>{c.opts.dropped} <small className="muted">(화면에 없음)</small></dd>
                 </dl>
                 <ol className="small">{c.beats.map((b) => <li key={b}>{b}</li>)}</ol>
               </div>
