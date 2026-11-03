@@ -1,18 +1,20 @@
 /* P5 엘리베이터: 가운데 세로 그림 + 오른쪽 층 표시기 + 하단 가운데 확인 쌍 */
 .lift { position: relative; height: 100%; min-height: 560px; overflow: hidden; color: var(--mined-ink);
   background: radial-gradient(ellipse 60% 70% at 50% 40%, #1d1a20 0%, #0d0c10 60%, #060508 100%); }
-.lift-shaft { position: absolute; top: 0; bottom: 0; left: 50%; transform: translateX(-50%); height: 100%; width: min(560px, 56vw); overflow: hidden;
+.lift-shaft { position: absolute; inset: 0; overflow: hidden;
   --floor: 210px; --surface: 300px; --cage-y: 52%; }
 /* 갱도 기둥: --d 층만큼 위로. 지상(0)일 때 승강장이 관측소 바닥에 서 있다 */
 .lift-column { position: absolute; left: 0; right: 0; top: var(--cage-y); will-change: transform;
   transform: translateY(calc(-1 * (var(--surface) + var(--d) * var(--floor) - 30px)));
   transition: transform 0s cubic-bezier(.45, 0, .25, 1); }
-.lift-surface { height: var(--surface); background: #0d0c10 center 62% / auto 150% no-repeat; position: relative; }
+.lift-surface { height: var(--surface); background: #0d0c10 center 70% / cover no-repeat; position: relative; }
 .lift-surface::after { content: ''; position: absolute; inset: auto 0 0; height: 70px; background: linear-gradient(transparent, #120f14); }
-.lift-stratum { position: relative; height: var(--floor); background: #120f14 center 52% / auto 205% no-repeat; border-top: 1px solid rgba(0, 0, 0, .6);
+.lift-stratum { position: relative; height: var(--floor); background: #120f14 center 52% / max(100%, calc(var(--floor) * 7.4)) auto no-repeat; border-top: 1px solid rgba(0, 0, 0, .6);
   box-shadow: inset 0 14px 18px -10px rgba(0, 0, 0, .8), inset 0 -14px 18px -10px rgba(0, 0, 0, .8); }
+.lift-wall-ore { position: absolute; width: 34px; height: 34px; object-fit: contain; transform: rotate(var(--r, 0deg));
+  filter: drop-shadow(0 0 10px rgba(255, 220, 160, .35)) brightness(1.05); }
 .lift-stratum.pick { outline: 1px solid rgba(242, 170, 85, .35); outline-offset: -1px; }
-.lift-year { position: absolute; left: 14px; top: 12px; font: 600 13px/1 var(--font); color: rgba(243, 233, 220, .55); letter-spacing: .08em; font-variant-numeric: tabular-nums; }
+.lift-year { position: absolute; left: calc(50% - 150px); transform: translateX(-100%); top: 12px; font: 600 13px/1 var(--font); color: rgba(243, 233, 220, .55); letter-spacing: .08em; font-variant-numeric: tabular-nums; }
 .lift-stratum.pick .lift-year { color: var(--mined-amber); }
 .lift-bottom { height: 400px; background: linear-gradient(#0d0c10, #050406); }
 /* 철제 레일 · 승강장 */
@@ -39,7 +41,7 @@
   font: 700 34px/1 var(--font); color: rgba(242, 170, 85, .9); letter-spacing: .04em; text-shadow: 0 2px 10px rgba(0, 0, 0, .8); animation: lift-pass .5s both; }
 @keyframes lift-pass { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
 .lift-shade { position: absolute; inset: 0; pointer-events: none; z-index: 1;
-  background: linear-gradient(90deg, rgba(6, 5, 8, .95), rgba(6, 5, 8, .2) 18%, transparent 30%, transparent 70%, rgba(6, 5, 8, .2) 82%, rgba(6, 5, 8, .95)),
+  background: radial-gradient(ellipse 38% 60% at 50% 50%, rgba(242, 170, 85, .08), transparent 70%), linear-gradient(90deg, rgba(6, 5, 8, .55), transparent 12%, transparent 88%, rgba(6, 5, 8, .55)),
     linear-gradient(180deg, rgba(6, 5, 8, .55), transparent 18%, transparent 80%, rgba(6, 5, 8, .7)); }
 
 .lift-indicator { position: absolute; right: 30px; top: 76px; bottom: 96px; width: 150px; z-index: 5; display: flex; flex-direction: column; align-items: center; gap: 10px; }
@@ -66,7 +68,7 @@
 .lift-btn:disabled { opacity: .55; cursor: default; }
 
 @media (max-width: 720px) {
-  .lift-shaft { width: 100vw; --floor: 170px; --surface: 240px; --cage-y: 50%; }
+  .lift-shaft { --floor: 170px; --surface: 240px; --cage-y: 50%; }
   .lift-cage { width: 180px; height: 170px; } .lift-rider { height: 118px; }
   .lift-rail.l { left: calc(50% - 92px); } .lift-rail.r { left: calc(50% + 82px); }
   /* 모바일: 층 표시기를 하단 가로 칩 줄로(v6 P5 초안) */

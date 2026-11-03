@@ -8,7 +8,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../state/store';
 import { kitDescend, sfx } from '../mindi/soundKit';
-import { ART, stratumFor } from './design';
+import { ART, MINERAL_IMG, stratumFor } from './design';
+import { oreMineral } from '../ore/collection';
+import type { Mineral } from './minerals';
 import { MindiMark } from './Icons';
 import { mindiSay } from '../mindi/soundKit';
 import './lift.css';
@@ -33,6 +35,19 @@ export function Lift({ onBack, onDescend }: { onBack: () => void; onDescend: (ye
     return [...m.entries()].sort((a, b) => b[0] - a[0]).map(([year, n]) => ({ year, n }));
   }, [weeks]);
   const max = Math.max(1, ...floors.map((f) => f.n));
+  // 그해 지층 벽에 박힌 광석(그해 광석 주의 광물 그림). 벽 양쪽에 번갈아, 한 층에 최대 6개
+  const wallOres = useMemo(() => {
+    const m = new Map<number, string[]>();
+    for (const w of weeks) {
+      const min = oreMineral(w) as Mineral | null;
+      if (!w.candidate || !min || !(min in MINERAL_IMG)) continue;
+      const y = Number(w.week.split('-W')[0]);
+      const a = m.get(y) ?? [];
+      if (a.length < 6) a.push(MINERAL_IMG[min]);
+      m.set(y, a);
+    }
+    return m;
+  }, [weeks]);
   const first = Math.max(0, floors.findIndex((f) => f.n > 0));
   const [at, setAt] = useState(first);
   const [going, setGoing] = useState(false);
@@ -95,6 +110,10 @@ export function Lift({ onBack, onDescend }: { onBack: () => void; onDescend: (ye
           {floors.map((f, k) => (
             <div key={f.year} className={`lift-stratum${k === at ? ' pick' : ''}`} style={{ backgroundImage: `url(${stratumFor(f.year).src})` }}>
               <span className="lift-year">{f.year}</span>
+              {(wallOres.get(f.year) ?? []).map((src, i) => (
+                <img key={i} className="lift-wall-ore" src={src} alt=""
+                  style={{ [i % 2 ? 'right' : 'left']: `${(i % 2 ? 16 : 5) + ((i * 37) % 17)}%`, top: `${26 + ((i * 53) % 46)}%`, ['--r' as string]: `${(i * 47) % 50 - 25}deg` }} />
+              ))}
             </div>
           ))}
           <div className="lift-bottom" />

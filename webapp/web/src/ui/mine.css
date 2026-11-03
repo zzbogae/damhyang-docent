@@ -73,3 +73,21 @@
   .mine-bands { grid-template-columns: 1fr 1fr; font-size: 12px; }
   .mine.done-open .mine-say { display: none; }
 }
+
+/* v2(11/03) 민디와 함께 캐기: 광석 왼쪽에 민디, 곡괭이를 오른손에 들고 칠 때마다 내리친다 */
+.mine-mindi { position: absolute; bottom: calc(22% - 6px); left: calc(50% - min(22vh, 40vw) * .5 - 150px); width: 150px; height: 230px; z-index: 2; pointer-events: none; transition: transform .4s, opacity .4s; }
+.mine-mindi-body { position: absolute; left: 0; bottom: 0; height: 210px; filter: drop-shadow(0 12px 14px rgba(0, 0, 0, .7)); }
+.mine-mindi-pick { position: absolute; left: 78px; bottom: 96px; width: 92px; transform-origin: 14% 86%; transform: rotate(-28deg); filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .6)); }
+.mine-mindi-pick[data-swing] { animation: mine-swing .42s cubic-bezier(.3, 0, .2, 1); }
+@keyframes mine-swing { 0% { transform: rotate(-28deg); } 35% { transform: rotate(-70deg); } 62% { transform: rotate(38deg); } 100% { transform: rotate(-28deg); } }
+.mine-spark { position: absolute; left: 160px; bottom: 90px; width: 10px; height: 10px; border-radius: 50%; background: #ffd79a;
+  box-shadow: 0 0 12px 6px rgba(255, 200, 120, .7), 14px -10px 0 -2px #ffe6be, -10px -14px 0 -3px #ffe6be, 18px 6px 0 -3px #ffcf8a;
+  opacity: 0; animation: mine-spark .38s .2s ease-out; }
+@keyframes mine-spark { 0% { opacity: 1; transform: scale(.4); } 100% { opacity: 0; transform: scale(1.6) translateY(-8px); } }
+.mine-mindi.done .mine-mindi-pick { transform: rotate(-110deg) translate(-6px, 4px); transition: transform .4s; }
+.mine.leaving-up .mine-mindi { opacity: 0; }
+@media (max-width: 720px) {
+  .mine-mindi { left: calc(50% - min(36vw, 170px) * .5 - 104px); width: 110px; height: 170px; bottom: calc(26% - 4px); }
+  .mine-mindi-body { height: 150px; } .mine-mindi-pick { left: 56px; bottom: 70px; width: 66px; } .mine-spark { left: 112px; bottom: 64px; }
+}
+@media (prefers-reduced-motion: reduce) { .mine-mindi-pick[data-swing], .mine-spark { animation: none; } }

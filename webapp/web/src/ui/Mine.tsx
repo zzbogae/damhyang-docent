@@ -58,6 +58,12 @@ export function Mine({ w, onCarry, onView }: { w: WeekRecord; onCarry: () => voi
     <section className={`mine${leaving === 'up' ? ' leaving-up' : ''}`} aria-label={`광석 캐기 · ${monthWeek(w)}`}>
       <img className="mine-band" src={stratumFor(year).src} alt="" aria-hidden="true" />
       {!done && <p className="mine-hint" aria-hidden="true"><img src={ART.pickaxe} alt="" />눌러서 캐기 ({need}번)</p>}
+      {/* v2(11/03) 민디가 곡괭이를 들고 광석 옆에 선다. 칠 때마다 곡괭이를 내리친다(누르는 건 사용자, 휘두르는 건 민디) */}
+      <div className={`mine-mindi${done ? ' done' : ''}`} aria-hidden="true">
+        <img className="mine-mindi-body" src={ART.mindiFull} alt="" />
+        <img className="mine-mindi-pick" key={`p${shake}`} src={ART.pickaxe} alt="" data-swing={shake > 0 && !done ? 'y' : undefined} />
+        {shake > 0 && <i className="mine-spark" key={`s${shake}`} />}
+      </div>
       <button type="button" className={`mine-ore ${stage}`} key={shake} onClick={hit} disabled={done}
         aria-label={done ? `${monthWeek(w)} 광석을 캤습니다` : `${monthWeek(w)} 광석 캐기 (${hits}/${need})`}>
         {done && (w.candidate && m && m in MINERAL_IMG
