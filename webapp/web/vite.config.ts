@@ -6,7 +6,7 @@ import { mindiRelay } from './src/mindi/relay-plugin.ts';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, path.resolve(import.meta.dirname, '..'), '');
   return {
-    plugins: [react(), mindiRelay(env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY)],
+    plugins: [react(), mindiRelay(env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY, env.MINDI_MODEL || process.env.MINDI_MODEL)],
     server: { port: 5181, fs: { allow: [path.resolve(import.meta.dirname, '..')] } },
     preview: { port: 5182 },
     worker: { format: 'es' },

@@ -2,7 +2,7 @@
 // 요청 본문과 응답은 기록하지 않는다.
 import type { Plugin } from 'vite';
 
-export function mindiRelay(apiKey?: string): Plugin {
+export function mindiRelay(apiKey?: string, defaultModel?: string): Plugin {
   const handler = async (req: any, res: any) => {
         if (req.method !== 'POST') { res.statusCode = 405; res.end(); return; }
         if (!apiKey) { res.statusCode = 503; res.end(JSON.stringify({ error: 'no_key' })); return; }
@@ -14,7 +14,7 @@ export function mindiRelay(apiKey?: string): Plugin {
             method: 'POST',
             headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              model: model || 'anthropic/claude-haiku-4.5',
+              model: model || defaultModel || 'anthropic/claude-haiku-4.5',
               temperature: 0.4,
               max_tokens: 400,
               messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
