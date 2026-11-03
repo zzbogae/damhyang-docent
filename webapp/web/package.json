@@ -11,6 +11,7 @@
     "test": "vitest run",
     "e2e": "playwright test",
     "assets": "node ../scripts/fetch-assets.mjs",
+    "key:check": "node ../scripts/openrouter-check.mjs",
     "cli:build": "vite build -c vite.cli.config.ts --logLevel error",
     "cli": "npm run -s cli:build && node dist-cli/mined.mjs"
   },

@@ -52,6 +52,8 @@ npm run dev           # http://localhost:5181 — "가짜 샘플 기록으로 �
 
 민디 말투 다듬기를 켜려면 `OPENROUTER_API_KEY` 를 환경변수로 두고 dev/preview 서버를 띄운다. 브라우저는 판정 문장만 `/api/mindi` 로 보내고, 키는 서버 쪽에만 있다. 키가 없으면 템플릿 문장을 그대로 쓴다.
 
+키는 `webapp/.env` 에 둔다(`.env.example` 을 복사, 저장소에는 안 올라감). `npm run key:check` 로 키가 살아 있는지와 남은 한도·크레딧을 본다(키는 가려서 찍음, `-- --ping` 은 한 단어 시험 호출). 모델을 바꾸려면 `MINDI_MODEL` 을 둔다(기본 `anthropic/claude-haiku-4.5`). 실제 개인 기록 원문은 이 중계로 보내지 않는다.
+
 ## 시험
 
 ```bash
