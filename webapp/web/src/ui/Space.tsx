@@ -9,13 +9,15 @@ import { customOreName, oreLabel } from './oreName';
 import { ISLAND_ART, MINERAL_IMG } from './design';
 import { artFor, IslandMake, optsLine, type IslandOpts } from './IslandMake';
 import { IslandVisit } from './IslandVisit';
+import { IslandPick } from './IslandPick';
+import { clipOf, type ClipKey } from './islandClips';
 import { MINERAL_HEX, type Mineral } from './minerals';
 import { MindiMark } from './Icons';
 import { sfx } from '../mindi/soundKit';
 import { takeNewSpaceRequest, takeVisitRequest } from './SpaceButton';
 import { AXES, axisScreen, type Axis, type WeekRecord } from '../types';
 
-export interface SpaceRow { id: string; name: string; kind: 'island' | 'room'; ores: string[]; words: string[]; at: string; /** v2: 민디와 고른 여섯 가지 */ opts?: IslandOpts }
+export interface SpaceRow { id: string; name: string; kind: 'island' | 'room'; ores: string[]; words: string[]; at: string; /** v2: 민디와 고른 여섯 가지 */ opts?: IslandOpts; /** v2: 넷 가운데 고른 섬 영상 */ clip?: ClipKey }
 const KEY = 'mined.spaces.v1';
 
 export function loadSpaces(): SpaceRow[] {
@@ -87,9 +89,10 @@ function Scene({ row, byKey, onVisit }: { row: SpaceRow; byKey: Map<string, Week
   const ores = row.ores.map((k) => byKey.get(k)).filter(Boolean) as WeekRecord[];
   if (row.opts) {
     const art = ISLAND_ART[artFor(row.opts.place)];
+    const clip = clipOf(row.clip);
     return (
       <figure className="space-scene island v2" aria-label={`${row.name} · 섬`}>
-        <img className="space-bg" src={art.reveal} alt="" />
+        {clip ? <video className="space-bg" src={clip.src} poster={clip.poster} muted loop playsInline autoPlay preload="metadata" aria-hidden="true" /> : <img className="space-bg" src={art.reveal} alt="" />}
         <div className="space-words">{row.words.map((t) => <span key={t} className="chip">{t}</span>)}</div>
         <figcaption><span className="space-name">{row.name}</span><small>{optsLine(row.opts)}</small></figcaption>
         {onVisit && <button className="btn primary space-go" onClick={onVisit}>섬으로 가기</button>}
@@ -195,8 +198,18 @@ export function Space({ onField }: { onField: () => void }) {
             <div className="isl-msg mindi building"><MindiMark size={36} mood="thinking" /><p>안개 속에 섬을 놓을 자리를 찾고 있어요…</p></div>
           ) : (
             <>
-              <div className="isl-msg mindi"><MindiMark size={36} mood="found" /><p>섬이 준비됐어요. 안개 너머에 있어요.</p></div>
-              <Scene row={built} byKey={byKey} onVisit={() => setVisit(built)} />
+              {built.opts && !built.clip ? (
+                <IslandPick opts={built.opts} onGo={(k) => {
+                  const row = { ...built, clip: k };
+                  const next = spaces.map((r) => r.id === row.id ? row : r);
+                  saveSpaces(next); setSpaces(next); setBuilt(row); setVisit(row);
+                }} />
+              ) : (
+                <>
+                  <div className="isl-msg mindi"><MindiMark size={36} mood="found" /><p>섬이 준비됐어요. 안개 너머에 있어요.</p></div>
+                  <Scene row={built} byKey={byKey} onVisit={() => setVisit(built)} />
+                </>
+              )}
               <div className="label-row">
                 <button className="btn quiet" onClick={() => { setBuilt(null); setMaking(false); }}>지은 공간 모두 보기</button>
               </div>

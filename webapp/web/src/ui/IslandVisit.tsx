@@ -6,12 +6,13 @@ import { ART, ISLAND_ART, MINERAL_IMG } from './design';
 import { setIslandTrack, sfx } from '../mindi/soundKit';
 import { artFor, optsLine, trackFor, type IslandOpts } from './IslandMake';
 import { MusicButton } from './MusicButton';
+import { clipOf } from './islandClips';
 import { oreMineral } from '../ore/collection';
 import { MINERAL_HEX, type Mineral } from './minerals';
 import { dateLabel } from '../mindi/templates';
 import type { WeekRecord } from '../types';
 
-export interface VisitRow { id: string; name: string; ores: string[]; words: string[]; opts?: IslandOpts }
+export interface VisitRow { id: string; name: string; ores: string[]; words: string[]; opts?: IslandOpts; clip?: string }
 
 const TINT: Record<string, string> = {
   새벽: 'rgba(90, 120, 190, .28)', 아침: 'rgba(255, 220, 170, .14)', 점심: 'rgba(255, 255, 255, 0)',
@@ -67,12 +68,14 @@ function Weather({ kinds }: { kinds: string[] }) {
 export function IslandVisit({ row, byKey, onExit }: { row: VisitRow; byKey: Map<string, WeekRecord>; onExit: () => void }) {
   const o: IslandOpts = row.opts ?? { weather: [], excluded: [] };
   const art = ISLAND_ART[artFor(o.place)];
+  const clip = clipOf(row.clip);
+  const track = clip && !o.music ? clip.track : trackFor(o);
   const still = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const [phase, setPhase] = useState<'fog' | 'clearing' | 'revealed' | 'inside'>(still ? 'revealed' : 'fog');
   const [view, setView] = useState<'inside' | 'above'>('inside');
   useEffect(() => {
-    if (still) { setIslandTrack(trackFor(o)); return () => setIslandTrack(undefined); }
-    const a = setTimeout(() => { setPhase('clearing'); sfx('fogClear'); setIslandTrack(trackFor(o)); }, 1400);
+    if (still) { setIslandTrack(track); return () => setIslandTrack(undefined); }
+    const a = setTimeout(() => { setPhase('clearing'); sfx('fogClear'); setIslandTrack(track); }, 1400);
     const b = setTimeout(() => setPhase('revealed'), 5200);
     return () => { clearTimeout(a); clearTimeout(b); setIslandTrack(undefined); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -88,7 +91,9 @@ export function IslandVisit({ row, byKey, onExit }: { row: VisitRow; byKey: Map<
       {!inside && (
         <div className="isl-reveal">
           <img className="isl-from" src={ART.introPoster} alt="" />
-          <img className="isl-to" src={art.reveal} alt={`안개가 걷힌 자리에 ${art.label}이 보입니다`} />
+          {clip
+            ? <video className="isl-to" src={clip.src} poster={clip.poster} muted loop playsInline autoPlay={!still} aria-label={`안개가 걷힌 자리에 ${clip.label}이 보입니다`} />
+            : <img className="isl-to" src={art.reveal} alt={`안개가 걷힌 자리에 ${art.label}이 보입니다`} />}
           <div className="isl-fog f1" aria-hidden="true" /><div className="isl-fog f2" aria-hidden="true" />
           <p className="isl-cap">{phase === 'fog' ? '안개가 걷히고 있어요' : phase === 'clearing' ? '' : row.name}</p>
           {phase === 'revealed' && (
@@ -97,12 +102,14 @@ export function IslandVisit({ row, byKey, onExit }: { row: VisitRow; byKey: Map<
               <button className="btn quiet" onClick={onExit}>관측소로 돌아가기</button>
             </div>
           )}
-          <p className="isl-note small">가장 가까운 예시 그림으로 보여 드립니다 · {art.label}</p>
+          <p className="isl-note small">{clip ? `고른 영상 · ${clip.label}` : `가장 가까운 예시 그림으로 보여 드립니다 · ${art.label}`}</p>
         </div>
       )}
       {inside && (
         <div className="isl-inside">
-          <img className="isl-room" src={view === 'inside' ? art.inside : art.reveal} alt={view === 'inside' ? `${row.name} 안` : `${row.name}을 내려다본 모습`} />
+          {clip && view === 'inside'
+            ? <video className="isl-room" src={clip.src} poster={clip.poster} muted loop playsInline autoPlay={!still} aria-label={`${row.name} 안`} />
+            : <img className="isl-room" src={view === 'inside' ? art.inside : art.reveal} alt={view === 'inside' ? `${row.name} 안` : `${row.name}을 내려다본 모습`} />}
           {view === 'inside' && o.time && <div className="isl-tint" style={{ background: TINT[o.time] ?? 'transparent' }} aria-hidden="true" />}
           <Weather kinds={[...o.weather, ...(o.time === '새벽' ? ['안개'] : [])]} />
           <header className="isl-hud">

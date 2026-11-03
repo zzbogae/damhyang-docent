@@ -935,3 +935,22 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 .intro-island-btn { background: rgba(242, 170, 85, .28); }
 .intro-island-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; letter-spacing: .1em; }
 .intro-island-note { flex-basis: 100%; text-align: center; font-size: 13px; color: rgba(38, 50, 59, .75); }
+
+/* v2(11/03) 섬 영상 넷 고르기 */
+.isl-reveal video, .isl-inside video.isl-room { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.isl-pick-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 640px) { .isl-pick-grid { grid-template-columns: 1fr; } }
+.isl-pick-card { border: 2px solid transparent; border-radius: 14px; background: var(--surface, rgba(0,0,0,.04)); padding: 6px; display: grid; gap: 4px; }
+.isl-pick-card.on { border-color: var(--accent, #c9a46a); }
+.isl-pick-btn { all: unset; cursor: pointer; display: grid; gap: 4px; border-radius: 10px; }
+.isl-pick-btn:focus-visible { outline: 2px solid var(--accent, #c9a46a); outline-offset: 2px; }
+.isl-pick-btn video { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 10px; background: #111; display: block; }
+.isl-pick-name { font-weight: 600; padding: 0 4px; }
+.isl-pick-mark { color: var(--accent, #c9a46a); }
+.isl-pick-same { padding: 0 4px; opacity: .75; }
+.isl-pick-why { justify-self: start; font-size: .85em; }
+.isl-pick-opts { padding: 4px 6px 8px; font-size: .9em; }
+.isl-pick-opts dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 0 0 6px; }
+.isl-pick-opts dt { opacity: .7; }
+.isl-pick-opts dd { margin: 0; }
+.isl-pick-opts ol { margin: 0; padding-left: 1.3em; }
