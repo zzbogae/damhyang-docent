@@ -13,10 +13,12 @@ import { MindiAsk } from './MindiAsk';
 import { MindiMark } from './Icons';
 import { applyVoice, useVoice } from '../mindi/voices';
 import { NOTICE_FIRST_CHAT } from '../mindi/scripts.gen';
+import { ORIGIN_SCENES } from '../mindi/originStory';
 import { dailyLine, openerLine } from '../mindi/talk';
 import type { Voice } from '../mindi/voices';
 import { VoiceChip } from './VoiceChip';
-import { requestNewSpace, SpaceButton } from './SpaceButton';
+import { requestNewSpace, requestVisitLatest, SpaceButton } from './SpaceButton';
+import { loadSpaces } from './Space';
 import { GYEOL_TEXT } from './Gyeol';
 import type { WeekRecord } from '../types';
 
@@ -68,6 +70,7 @@ export function Observatory({ onGo }: { onGo: (to: HubGo) => void }) {
   const [hubVoice] = useVoice();
   const collected = useCollected();
   const open = collected.length >= SPACE_NEED;
+  const [islands] = useState(loadSpaces);
   // 첫 인사는 「찾아가 보기」를 누르는 순간 greeted 가 되므로, 이 화면에 들어올 때 인사 중이었으면 답이 나올 때까지 인사 칸을 남겨 둔다
   const [greeting] = useState(!greeted);
   const [ready, setReady] = useState(false);
@@ -82,9 +85,14 @@ export function Observatory({ onGo }: { onGo: (to: HubGo) => void }) {
         <button className="hub-btn" onClick={() => onGo('today')}><b>오늘 보기</b><span>가장 최근 주와 닮은 지난 주 다섯</span></button>
         <button className="hub-btn" onClick={() => onGo('talk')}><b>민디와 이야기</b><span>설명 듣기 · 그냥 이야기하기</span></button>
         <button className="hub-btn" onClick={() => onGo('archive')}><b>캔 광석 보관함</b><span>{collected.length ? `${collected.length}개` : '아직 캔 광석이 없습니다'}</span></button>
-        <button className="hub-btn" onClick={() => onGo('space')} aria-describedby="hub-space-note">
-          <b>나의 공간 · 섬 만들기</b>
-          <span id="hub-space-note">{open ? '안개가 걷혔습니다 · 민디와 섬을 지어요' : `광석 ${collected.length}/${SPACE_NEED} · ${SPACE_NEED}개가 모이면 열립니다`}</span>
+        {islands.length > 0 && (
+          <button className="hub-btn primary" onClick={() => { requestVisitLatest(); onGo('space'); }}>
+            <b>섬으로 가기</b><span>{islands[islands.length - 1].name} · 안개가 걷히고 섬으로 들어갑니다</span>
+          </button>
+        )}
+        <button className="hub-btn" onClick={() => { if (islands.length && open) requestNewSpace(); onGo('space'); }} aria-describedby="hub-space-note">
+          <b>{islands.length ? '나의 공간 · 새 섬 만들기' : '나의 공간 · 섬 만들기'}</b>
+          <span id="hub-space-note">{!open ? `광석 ${collected.length}/${SPACE_NEED} · ${SPACE_NEED}개가 모이면 열립니다` : islands.length ? `지은 섬 ${islands.length}개 · 민디와 섬을 하나 더 지어요` : '안개가 걷혔습니다 · 민디와 섬을 지어요'}</span>
         </button>
       </nav>
     </section>
@@ -132,7 +140,7 @@ const NOTICE_KEY = 'mined.chat.notice.v1';
 /** Ⓒ 민디와 이야기: 설명 듣기 / 그냥 이야기하기. 상관없는 이야기도 받아 준다(지어내지 않고 모른다고 답한다) */
 export function Talk({ onSpace }: { onSpace?: () => void }) {
   const { weeks } = useStore();
-  const [mode, setMode] = useState<'explain' | 'chat'>('explain');
+  const [mode, setMode] = useState<'explain' | 'chat' | 'story'>('explain');
   const cur = useMemo(() => latestObserved(weeks), [weeks]);
   const [voice, setVoice] = useVoice();
   const collected = useCollected();
@@ -149,9 +157,21 @@ export function Talk({ onSpace }: { onSpace?: () => void }) {
       <div className="label-row" role="tablist" aria-label="이야기 방식">
         <button role="tab" aria-selected={mode === 'explain'} className={`btn${mode === 'explain' ? ' primary' : ''}`} onClick={() => setMode('explain')}>설명 듣기</button>
         <button role="tab" aria-selected={mode === 'chat'} className={`btn${mode === 'chat' ? ' primary' : ''}`} onClick={() => setMode('chat')}>그냥 이야기하기</button>
+        <button role="tab" aria-selected={mode === 'story'} className={`btn${mode === 'story' ? ' primary' : ''}`} onClick={() => setMode('story')}>민디의 지난 이야기</button>
       </div>
       </div>
-      {mode === 'explain' ? (
+      {mode === 'story' ? (
+        <ol className="origin-list" aria-label="민디의 지난 이야기 열두 장면">
+          {ORIGIN_SCENES.map((c) => (
+            <li key={c.no} className="origin-scene">
+              <p className="origin-head"><span>S#{c.no}</span> {c.place} · <b>{c.title}</b></p>
+              <p>{c.text}</p>
+              {c.line && <p className="origin-line"><MindiMark size={22} /> 「{c.line}」</p>}
+            </li>
+          ))}
+          <li className="origin-end small muted">묻힌 것은 사라진 것이 아닙니다. 그리고 오늘도 한 층이 쌓입니다.</li>
+        </ol>
+      ) : mode === 'explain' ? (
         <div className="bubble"><MindiMark size={36} /><div className="stack">
           <p>{v('이곳은 당신의 기록이 해마다 한 겹씩 쌓인 광산입니다. 아래로 내려갈수록 오래된 해입니다.')}</p>
           <p>{v('모든 주는 지층의 결로 남아 있습니다. 걸음·수면·언어·소통 넷 가운데 기록이 직전 1년의 당신과 견주어 크게 벗어난 주에는 광석이 박혀 있습니다. 아무 주나 골라 캐도 광석이 됩니다.')}</p>

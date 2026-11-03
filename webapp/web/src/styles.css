@@ -899,3 +899,15 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 .isl-panel .chip[disabled] { opacity: .45; cursor: not-allowed; }
 @media (max-width: 640px) { .isl-panel { max-height: 42vh; } .isl-hud { padding: 10px; } }
 @media (prefers-reduced-motion: reduce) { .isl-from, .isl-to, .isl-fog { transition: none; } .isl-mist { animation: none; } }
+
+/* v2(11/03) 민디의 지난 이야기 */
+.origin-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.origin-scene { padding: 14px 16px; border-radius: 14px; background: var(--mined-surface, rgba(255,255,255,.04)); border: 1px solid rgba(255,255,255,.06); }
+.origin-scene p { margin: 4px 0; line-height: 1.6; }
+.origin-head { font-size: .85rem; opacity: .8; }
+.origin-head span { font-family: 'MaruBuri', serif; color: var(--mined-amber, #e8a24a); margin-right: 4px; }
+.origin-head b { font-family: 'MaruBuri', serif; font-weight: 600; opacity: 1; }
+.origin-line { display: flex; gap: 8px; align-items: center; color: var(--mined-amber, #e8a24a); }
+.origin-end { text-align: center; padding: 8px 0 4px; }
+/* 휴대폰 폭: 머리줄이 한 줄에 들어가도록 음악 버튼은 ♪ 만(이름은 aria-label 에 있다) */
+@media (max-width: 520px) { .music-word { display: none; } .top .actions { gap: 0; } .top .actions .btn { padding: 0 8px; } .top .actions .music-btn { padding: 0 6px; } }

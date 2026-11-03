@@ -25,6 +25,15 @@ export function takeNewSpaceRequest(): boolean {
   try { const on = sessionStorage.getItem(NEW_KEY) === '1'; sessionStorage.removeItem(NEW_KEY); return on; } catch { return false; }
 }
 
+// 관측소의 「섬으로 가기」: 나의 공간 화면을 열자마자 가장 최근 섬으로 간다(안개가 걷히는 장면부터). 이 탭에서 한 번만
+const VISIT_KEY = 'mined.space.visit';
+export function requestVisitLatest(): void {
+  try { sessionStorage.setItem(VISIT_KEY, '1'); } catch { /* 없음 */ }
+}
+export function takeVisitRequest(): boolean {
+  try { const on = sessionStorage.getItem(VISIT_KEY) === '1'; sessionStorage.removeItem(VISIT_KEY); return on; } catch { return false; }
+}
+
 interface Props {
   /** 지금까지 캔 광석 수 */
   count: number;

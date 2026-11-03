@@ -12,7 +12,7 @@ import { IslandVisit } from './IslandVisit';
 import { MINERAL_HEX, type Mineral } from './minerals';
 import { MindiMark } from './Icons';
 import { sfx } from '../mindi/soundKit';
-import { takeNewSpaceRequest } from './SpaceButton';
+import { takeNewSpaceRequest, takeVisitRequest } from './SpaceButton';
 import { AXES, axisScreen, type Axis, type WeekRecord } from '../types';
 
 export interface SpaceRow { id: string; name: string; kind: 'island' | 'room'; ores: string[]; words: string[]; at: string; /** v2: 민디와 고른 여섯 가지 */ opts?: IslandOpts }
@@ -28,7 +28,7 @@ function saveSpaces(rows: SpaceRow[]) {
 const SEASON = (m: number) => (m <= 2 || m === 12 ? '겨울' : m <= 5 ? '봄' : m <= 8 ? '여름' : '가을');
 const AXIS_WORD: Record<Axis, { up: string; down: string }> = {
   move: { up: '많이 걸은', down: '덜 걸은' }, rest: { up: '오래 잔', down: '덜 잔' },
-  lang: { up: '많이 적은', down: '덜 적은' }, talk: { up: '많이 주고받은', down: '조용했던' },
+  lang: { up: '글을 많이 쓴', down: '글을 덜 쓴' }, talk: { up: '많이 주고받은', down: '조용했던' },
 };
 
 /** 광석 하나에서 나오는 사실: 날짜, 계절, 가장 크게 움직인 지표와 방향(데이터 광석은 배지, 고른 광석은 축 대표값) */
@@ -144,7 +144,7 @@ export function Space({ onField }: { onField: () => void }) {
   const [talking, setTalking] = useState(false);
   const [built, setBuilt] = useState<SpaceRow | null>(null);
   const [building, setBuilding] = useState(false);
-  const [visit, setVisit] = useState<SpaceRow | null>(null);
+  const [visit, setVisit] = useState<SpaceRow | null>(() => (takeVisitRequest() ? spaces[spaces.length - 1] ?? null : null));
   useEffect(() => { if (!building) return; const t = setTimeout(() => { setBuilding(false); sfx('spaceOpen'); }, 2600); return () => clearTimeout(t); }, [building]);
   const labelsByWeek = useMemo(() => {
     const m = new Map<string, string[]>();

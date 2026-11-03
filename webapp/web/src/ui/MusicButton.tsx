@@ -30,7 +30,7 @@ export function MusicButton() {
     <div className="music" ref={box}>
       <button className={`btn quiet music-btn${soundOn && choice !== 'off' ? ' on' : ''}`} aria-haspopup="dialog" aria-expanded={open}
         onClick={() => setOpen((o) => !o)} aria-label={`음악 고르기 · 지금 ${label}`}>
-        <span aria-hidden="true" className="music-note">♪</span>음악
+        <span aria-hidden="true" className="music-note">♪</span><span className="music-word">음악</span>
       </button>
       {open && (
         <div className="music-pop" role="dialog" aria-label="음악 고르기">
