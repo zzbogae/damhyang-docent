@@ -39,6 +39,7 @@ const GUIDE: { title: string; steps: string[] }[] = [
 
 import { ExtrasPanel } from './ExtrasPanel';
 import { getKV, setKV } from '../db';
+import { ENTRY_EVENT, takeSampleEntry } from './Intro';
 
 /**
  * 가져올 기록 고르기(9/12 회의 1번 「달리기 앱처럼 토글로」의 겉보기 토글).
@@ -89,6 +90,14 @@ export function ImportPanel({ onDone, onEval }: { onDone?: () => void; onEval?: 
       if (fs.length) { setFolder((f) => [...f, ...fs]); setShared(fs.length); }
     }).catch(() => undefined);
   }, []);
+
+  // 입장 카드에서 「샘플로 둘러보기」를 골랐으면 가짜 샘플을 바로 연다
+  useEffect(() => {
+    const go = () => { if (takeSampleEntry()) run(() => runSample((p) => setProgress(p))); };
+    go();
+    addEventListener(ENTRY_EVENT, go);
+    return () => removeEventListener(ENTRY_EVENT, go);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function run(fn: () => Promise<unknown>) {
     setError(undefined);

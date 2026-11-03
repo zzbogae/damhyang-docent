@@ -911,3 +911,18 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 .origin-end { text-align: center; padding: 8px 0 4px; }
 /* 휴대폰 폭: 머리줄이 한 줄에 들어가도록 음악 버튼은 ♪ 만(이름은 aria-label 에 있다) */
 @media (max-width: 520px) { .music-word { display: none; } .top .actions { gap: 0; } .top .actions .btn { padding: 0 8px; } .top .actions .music-btn { padding: 0 6px; } }
+
+/* v2(11/03) 입장 카드: 같은 크기 두 장 + 만 14세 확인. 계정은 없다 */
+.intro-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px 16px; background: radial-gradient(ellipse at 50% 30%, #2a2230 0%, #15121a 70%); }
+.intro-card-logo { width: 150px; opacity: .92; }
+.intro-card-title { font-family: 'MaruBuri', serif; font-weight: 600; font-size: 24px; color: var(--mined-ink, #f3ece2); margin: 0; }
+.entry-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 240px)); gap: 14px; width: 100%; justify-content: center; }
+.entry-card { appearance: none; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 8px; min-height: 132px; padding: 20px; border-radius: 18px; border: 1px solid rgba(242, 170, 85, .35); background: rgba(242, 170, 85, .07); color: var(--mined-ink, #f3ece2); font: inherit; transition: background .2s, transform .2s, opacity .2s; }
+.entry-card b { font-family: 'MaruBuri', serif; font-size: 18px; color: var(--mined-amber, #F2AA55); }
+.entry-card span { font-size: 14px; line-height: 1.5; opacity: .82; }
+.entry-card:not(:disabled):hover { background: rgba(242, 170, 85, .16); transform: translateY(-2px); }
+.entry-card:disabled { opacity: .45; cursor: not-allowed; }
+.entry-age { display: flex; gap: 10px; align-items: center; font-size: 15px; color: var(--mined-ink, #f3ece2); cursor: pointer; }
+.entry-age input { width: 20px; height: 20px; accent-color: var(--mined-amber, #F2AA55); }
+.entry-note { font-size: 13px; opacity: .7; margin: 0; text-align: center; }
+@media (max-width: 520px) { .entry-cards { grid-template-columns: 1fr; max-width: 340px; } .entry-card { min-height: 0; } }

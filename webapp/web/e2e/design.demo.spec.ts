@@ -38,6 +38,8 @@ test('작동 영상', async ({ page }) => {
   await cap(page, '민디가 안내합니다. 민디는 「언제」까지만 알고, 「왜」는 모른다고 말합니다.', 3500, true);
   for (let i = 0; i < 3; i++) { await page.getByRole('button', { name: '다음' }).click(); await page.waitForTimeout(1600); }
   await page.getByRole('button', { name: '시작하기' }).click();
+  await page.getByLabel('만 14세 이상입니다').check();
+  await page.getByRole('button', { name: /내 기록으로 시작/ }).click();
   await page.waitForTimeout(1200);
   await cap(page, '기록은 이 브라우저 밖으로 나가지 않습니다.', 3000);
 

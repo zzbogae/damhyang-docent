@@ -12,6 +12,8 @@ for (const vp of [{ name: 'desktop', width: 1360, height: 900 }, { name: 'phone'
     await page.getByRole('button', { name: '입장하기' }).click();
     for (let i = 0; i < 3; i++) await page.getByRole('button', { name: '다음' }).click();
     await page.getByRole('button', { name: '시작하기' }).click();
+    await page.getByLabel('만 14세 이상입니다').check();
+    await page.getByRole('button', { name: /내 기록으로 시작/ }).click();
     await page.getByRole('button', { name: '가짜 샘플 기록으로 먼저 보기' }).click();
     await expect(page.getByRole('heading', { name: '관측소' })).toBeVisible({ timeout: 180000 });
     await shot('1_hub');

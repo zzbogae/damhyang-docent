@@ -10,6 +10,8 @@ test('입장 인트로와 민디 소개는 스크롤 없이 한 화면씩 넘어
   await expect(page.getByText('안녕하세요, 저는 민디예요.')).toBeVisible();
   for (let i = 0; i < 3; i++) await page.getByRole('button', { name: '다음' }).click();
   await page.getByRole('button', { name: '시작하기' }).click();
+  await page.getByLabel('만 14세 이상입니다').check();
+  await page.getByRole('button', { name: /내 기록으로 시작/ }).click();
   await expect(page.getByRole('heading', { name: '기록을 가져옵니다' })).toBeVisible();
   await expect(page.locator('.intro')).toHaveCount(0);
 });
