@@ -1,0 +1,146 @@
+# Mine D 나의 공간 24컷 — 짧은 프롬프트 v3 (2026-11-03, 카이스트 플랫폼 Seedance 2.0 · 사운드 ON · 8초 · 16:9)
+# 시작 프레임만 사용(끝 프레임 없음). 프롬프트는 그대로 붙여넣기.
+
+## 바다 S0
+START: 261023_MineD_관측소_안개_START_v2.png
+WATCH: 관측소가 섬 안에 다시 보이지 않는지 · 안개가 끝 프레임에 남지 않는지 · 섬이 자라나거나 조립되지 않는지
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. Standing at the observatory in soft fog, I slowly turn my head right. The fog drifts across the lens and clears, revealing my sunlit sea island with a wooden cabin and dock, already there. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: fog wind opening into gentle waves. Ambient sound only.
+
+## 바다 S1
+START: 261023_MineD_바다섬_맑은낮_첫발견_v6.png
+WATCH: 손가락 5개 · 손목 방향 유지 · 난간이 휘지 않는지
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. Standing at eye level, my right hand rests on the weathered rail, presses the rough wood, then lifts off. Slight breathing sway. Water glints, the boat rocks gently. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: palm on wood, small waves, one distant gull. Ambient sound only.
+
+## 바다 S2
+START: 261023_MineD_바다섬_K02_선착장진입_v8.png
+WATCH: 고개를 들면 발이 화면 밖으로(억지로 남지 않음) · 걸음 2회와 흔들림 일치 · 물 위로 떠가지 않는지
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. I look down at the dock boards, then lift my gaze to the cabin and take two calm steps forward; the view dips with each footstep and my feet leave the frame. Dock and boat stay fixed on the water. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: rope creak, two footsteps on wood, ripples. Ambient sound only.
+
+## 바다 S3
+START: 261023_MineD_바다섬_K03_창문열기_v8.png
+WATCH: 창문이 사라지지 않는지(이전 실패) · 경첩 축 유지
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. Inside the cabin, my right hand turns the window latch and pushes the window open on its hinge. The cloth lifts in the breeze; the same coast stays outside. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: latch click, wood creak, waves grow louder. Ambient sound only.
+
+## 바다 S4
+START: 261023_MineD_바다섬_맑은낮_체류_v9.png
+WATCH: 잔이 입가로 다가오는 줌처럼 보이지 않는지 · 린넨 덮개 유지
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. Seated, looking down at my lap, my right hand lifts the cup a few centimeters and sets it back. Linen stays over my legs. Only breathing moves the view. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: chair creak, ceramic on wood, one soft breath. Ambient sound only.
+
+## 바다 S5
+START: 261023_MineD_바다섬_K05_물가체류_v8.png
+WATCH: 다리 길이(VIDEO WATCH) · 발이 물에 잠기거나 늘어나지 않는지
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. Seated on the dock edge looking down, my feet hang still over the water; my left hand slides over a smooth stone and rests. The boat rocks on its rope. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: hand on stone, water lapping, dock creak. Ambient sound only.
+
+## 하늘산 S0
+START: 261023_MineD_관측소_안개_START_v2.png
+WATCH: 관측소가 섬 안에 다시 보이지 않는지 · 안개가 끝 프레임에 남지 않는지 · 섬이 자라나거나 조립되지 않는지
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. Standing at the observatory in soft fog, I slowly turn my head right. The fog drifts across the lens and clears, revealing my cliff-top study above a sea of clouds, already there. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: fog wind thinning into high thin wind. Ambient sound only.
+
+## 하늘산 S1
+START: 261023_MineD_하늘산섬_구름위_첫발견_v6.png
+WATCH: 손가락 5개 · 구름이 정지하지 않는지
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. Standing at eye level, my right hand rests on the rough stone wall, then lifts off. Slight breathing sway. The cloud sea drifts below in clear morning light. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: palm on stone, thin wind, cloth flutter. Ambient sound only.
+
+## 하늘산 S2
+START: 261023_MineD_하늘산섬_K02_돌길진입_v8.png
+WATCH: 뒤로 물러나지 않는지(10/28 실패) · 고개를 들면 발이 화면 밖으로 · 순간이동 없음
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. I look down at the first stone step, then lift my gaze to the study and climb two steps, moving forward and up; my feet leave the frame. My left hand slides along the wall. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: two stone footsteps, hand brushing stone. Ambient sound only.
+
+## 하늘산 S3
+START: 261023_MineD_하늘산섬_K03_책꺼내기_v8.png
+WATCH: 팔이 늘어나지 않는지(이전 실패) · 책 개수 유지 · 글자 없음
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. Standing at the bookshelf, my right hand tilts one old book out by its top edge and draws it halfway. The other books stay in place; spines are blank. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: book sliding on wood, cloth cover rustle. Ambient sound only.
+
+## 하늘산 S4
+START: 261023_MineD_하늘산섬_구름위_체류_v6.png
+WATCH: 발 고정 · 컵 수평
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. Seated on the bench, looking down at my knees, my right hand lowers the mug onto my knee. Clouds and their shadows drift below. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: bench creak, low wind. Ambient sound only.
+
+## 하늘산 S5
+START: 261023_MineD_하늘산섬_K05_창가독서_v8.png
+WATCH: 페이지가 여러 장 넘어가지 않는지 · 글자 없음
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. Seated by the window, looking down at the open book on my lap, my right hand turns one page and rests on it. The mug stays on the sill; clouds drift outside. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: one page turning, distant cloth. Ambient sound only.
+
+## 정글 S0
+START: 261023_MineD_관측소_안개_START_v2.png
+WATCH: 관측소가 섬 안에 다시 보이지 않는지 · 안개가 끝 프레임에 남지 않는지 · 섬이 자라나거나 조립되지 않는지
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. Standing at the observatory in soft fog, I slowly turn my head right. The fog drifts across the lens and clears, revealing my jungle pavilion in steady rain, already there. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: fog wind turning into rain on leaves. Ambient sound only.
+
+## 정글 S1
+START: 261023_MineD_정글섬_비_첫발견_v6.png
+WATCH: 잎이 사라지지 않는지(이전 실패) · 비가 멈추지 않는지
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. Standing at eye level, my left hand presses a wet broad leaf aside and holds it; drops fall from it. The pavilion appears; real rain falls, the waterfall flows. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: wet leaf rustle, falling drops, rain. Ambient sound only.
+
+## 정글 S2
+START: 261023_MineD_정글섬_K02_젖은돌길_v8.png
+WATCH: 고개를 들면 발이 화면 밖으로 · 쉼터 기울어짐 없음(이전 실패)
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. I look down at the wet stones, then lift my gaze to the pavilion and take two careful steps; my feet leave the frame. The pavilion stays level. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: two footsteps on wet stone, rain. Ambient sound only.
+
+## 정글 S3
+START: 261023_MineD_정글섬_K03_차준비_v8.png
+WATCH: 물줄기가 컵 밖으로 새거나 역류하지 않는지 · 손 2개만
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. Under the dry roof, my right hand tilts the iron kettle and pours a thin stream into the cup in my left hand, then levels it. Rain falls outside. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: water pouring, ceramic cup, rain on roof. Ambient sound only.
+
+## 정글 S4
+START: 261023_MineD_정글섬_비_체류_v6.png
+WATCH: 해먹 흔들림 1회 후 정지 · 발 1회만 움직임
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. Reclined in the hammock, looking along my legs, the hammock sways once and settles. One hand holds the mug; the rain chain drips nearby. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: rope tension, fabric rustle, rain chain. Ambient sound only.
+
+## 정글 S5
+START: 261023_MineD_정글섬_K05_비바라보기_v8.png
+WATCH: 새로 만드는 컷 · 발 고정
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. Seated on the dry threshold, looking down at my feet on the mat, my left hand rests on the beam. Rain falls past the eaves; the waterfall flows. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: soft breath, rain chain, waterfall. Ambient sound only.
+
+## 음악방 S0
+START: 261023_MineD_관측소_안개_START_v2.png
+WATCH: 관측소가 섬 안에 다시 보이지 않는지 · 안개가 끝 프레임에 남지 않는지 · 섬이 자라나거나 조립되지 않는지
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. Standing at the observatory in soft fog, I slowly turn my head right. The fog drifts across the lens and clears, revealing my music room in late-afternoon light, already there. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: fog wind fading into quiet room air. Ambient sound only.
+
+## 음악방 S1
+START: 261023_MineD_음악방_노을빛_첫발견_v6.png
+WATCH: 끝 프레임이 진행 방향 앞쪽인지(교훈) · 다리·발 안 보임 · 피아노 1대
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. At the doorway, my left hand releases the door frame and I take two slow steps into the room toward the LP wall. One upright piano, two speakers and the lounge chair stay in place. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: two footsteps on wood, warm room air. Ambient sound only.
+
+## 음악방 S2
+START: 261023_MineD_음악방_K02_공간진입_v9.png
+WATCH: 다리·발 안 보임(VIDEO WATCH) · 장비 개수 유지
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. My left hand slides along the LP shelf edge as I take two slow steps toward the listening chair and stop. Furniture stays in place. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: footsteps on wood, palm on shelf. Ambient sound only.
+
+## 음악방 S3
+START: 261023_MineD_음악방_K03_LP선택_v9.png
+WATCH: 다리·발 안 보임 · 재킷 글자 없음 · 손 2개
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. At the LP wall, both hands draw one plain record sleeve halfway out and hold it. The other sleeves stay upright; no text. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: paper sleeve friction. Ambient sound only.
+
+## 음악방 S4
+START: 261023_MineD_음악방_K04_피아노연주_v9.png
+WATCH: 피아노 1대 · 왼손 저음·오른손 고음 · 건반-손가락 일치
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. Seated at the single upright piano, looking down at the keys, my left hand on low keys and right hand on high keys play five slow single notes, then rest. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: five soft piano notes F, A-flat, B-flat, C, E-flat, hammer and damper sounds. Ambient sound only.
+
+## 음악방 S5
+START: 261023_MineD_음악방_K05_청음체류_v9.png
+WATCH: 손과 노브만(VIDEO WATCH) · 몸·다리 안 보임
+PROMPT:
+First-person POV, one continuous 8-second take, handheld at eye level, 35mm lens. At the audio rack, my right hand turns one amplifier knob slightly clockwise and lowers away. The turntable spins; the tubes glow. 35mm film look, fine grain, soft highlights, plum-charcoal shadows, warm ivory light, one dim amber lamp. Calm, level horizon, body settles at the end. Sound: knob click, stylus noise, room air. Ambient sound only.
