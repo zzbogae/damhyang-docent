@@ -21,9 +21,26 @@ import st2024 from '../assets/design/stratum_2024.webp';
 import st2025 from '../assets/design/stratum_2025.webp';
 import st2026 from '../assets/design/stratum_2026.webp';
 import fluorite from '../assets/design/mineral_fluorite.webp';
+// v2(11/03): 관측소 내부(Mine Hall Concept A), 첫 화면 안개 관측소, 나의 공간 섬 3종(안개 걷힘 · 들어간 뒤). 드라이브 03_에셋_디자인 · 나의공간 예시영상 4안
+import obsHall from '../assets/design/obs_hall.webp';
+import fogMain from '../assets/design/fog_main.webp';
+import seaReveal from '../assets/design/island_sea_reveal.webp';
+import seaInside from '../assets/design/island_sea_inside.webp';
+import mountainReveal from '../assets/design/island_mountain_reveal.webp';
+import mountainInside from '../assets/design/island_mountain_inside.webp';
+import jungleReveal from '../assets/design/island_jungle_reveal.webp';
+import jungleInside from '../assets/design/island_jungle_inside.webp';
 import type { Mineral } from './minerals';
 
-export const ART = { introFog, introPoster, logoLight, logoDark, mindiCharacter, pickaxe };
+export const ART = { introFog, introPoster, logoLight, logoDark, mindiCharacter, pickaxe, obsHall, fogMain };
+
+/** 나의 공간 섬 그림 3종. 장소 선택을 가장 가까운 예시 그림에 잇는다(예시 그림이 더 생기면 여기만 늘린다) */
+export type IslandArt = 'sea' | 'mountain' | 'jungle';
+export const ISLAND_ART: Record<IslandArt, { reveal: string; inside: string; label: string }> = {
+  sea: { reveal: seaReveal, inside: seaInside, label: '바다 섬' },
+  mountain: { reveal: mountainReveal, inside: mountainInside, label: '산 섬' },
+  jungle: { reveal: jungleReveal, inside: jungleInside, label: '숲 섬' },
+};
 
 /**
  * 광물 9종 그림: 드라이브 Team Art Assets / 03 앱 지층 / Mine-D_핸드오프.zip 의 gems/png(@3x) 그대로.

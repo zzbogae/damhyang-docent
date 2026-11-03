@@ -1,6 +1,7 @@
 // 기본 화면(드라이브 디자인 + 10/23 장면 플로우): 입장 인트로 → 민디 소개 → 가져오기 → 관측소 → 광물 지하 → 세 번 캐기 → 기록 조각 → 상세 → 지층으로.
 // 곁가지: 오늘 보기 · 민디와 이야기 · 캔 광석 보관함 · 나의 공간(광석 3개).
 import { expect, test } from '@playwright/test';
+import { buildIsland } from './island';
 import AxeBuilder from '@axe-core/playwright';
 
 test('입장 인트로와 민디 소개는 스크롤 없이 한 화면씩 넘어간다', async ({ page }) => {
@@ -55,7 +56,7 @@ test('장면 플로우: 관측소 → 타임라인에서 고른 주 캐기 → �
   // 첫 인사에서 「찾아가 보기」를 누르면 답이 관측소에 남는다
   await page.getByRole('button', { name: '찾아가 보기' }).click();
   await expect(page.getByRole('button', { name: '그 주 열어 보기' })).toBeVisible();
-  await expect(page.getByRole('note', { name: '민디의 오늘 한 마디' })).toBeVisible();
+  await expect(page.locator('.hall-say')).toContainText('오셨네요');
   await expect(page.getByText('광석 0/3 · 3개가 모이면 열립니다')).toBeVisible();
 
   // 나의 공간은 아직 안개
@@ -73,6 +74,8 @@ test('장면 플로우: 관측소 → 타임라인에서 고른 주 캐기 → �
   await page.getByRole('button', { name: /민디와 이야기/ }).click();
   await expect(page.getByText(/이곳은 당신의 기록이 해마다 한 겹씩 쌓인 광산입니다/)).toBeVisible();
   await page.getByRole('tab', { name: '그냥 이야기하기' }).click();
+  // 첫 대화 전 고지(대본집 §11-1)는 한 번 눌러 닫는다
+  await page.getByRole('button', { name: '알겠어요' }).click();
   await page.getByLabel('민디에게 직접 묻기').fill('오늘 점심 뭐 먹지');
   await page.getByRole('button', { name: '묻기' }).click();
   await expect(page.locator('.bubble[role="status"]')).toBeVisible();
@@ -111,18 +114,13 @@ test('장면 플로우: 관측소 → 타임라인에서 고른 주 캐기 → �
   await page.getByRole('button', { name: '이 주에 나눈 대화는?' }).click();
   await expect(page.locator('.ore-guide [role="status"]')).toContainText('이 주');
 
-  // 나의 공간: 광석 셋 → 민디가 사실을 펼치고 → 단어·종류·이름 → 짓기
+  // 나의 공간: 광석 셋 → 민디가 사실을 펼치고 → 민디와 여섯 가지 고르기 → 추천 단어 빼기 → 이름 → 섬 만들기
   await page.getByRole('button', { name: '관측소', exact: true }).click();
   await page.getByRole('button', { name: /나의 공간/ }).click();
   await expect(page.getByText('안개가 걷혔습니다. 캔 광석 가운데 3개를 고르세요.')).toBeVisible();
-  await expect(page.getByText(/이 광석들 곁에 어떤 단어를 두고 싶으세요\?/)).toBeVisible();
-  await page.getByRole('group', { name: '단어 고르기' }).getByRole('button').first().click();
-  await page.getByRole('radio', { name: '방' }).click();
-  await page.getByLabel('공간 이름').fill('세 번의 봄');
   const a11y = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   expect(a11y.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => `${v.id} ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
-  await page.getByRole('button', { name: '이름 붙이고 짓기' }).click();
-  await expect(page.locator('figure.space-scene.room')).toHaveCount(1);
-  await expect(page.locator('.space-name')).toHaveText('세 번의 봄');
+  await buildIsland(page, '세 번의 봄');
+  await expect(page.locator('figure.space-scene.v2')).toHaveCount(1);
   await page.screenshot({ path: 'test-results/flow1024-space.png' });
 });

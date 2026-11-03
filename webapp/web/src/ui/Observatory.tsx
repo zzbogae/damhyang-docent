@@ -1,11 +1,12 @@
 // 10/23 장면 플로우 ②·Ⓐ·Ⓒ·Ⓓ: 관측소 허브와 곁가지 화면(오늘 보기 · 민디와 이야기 · 캔 광석 보관함).
 // 원칙 3: 앱이 고른 것으로 먼저 말 걸지 않는다. 오늘의 한 마디는 판정이 아니라 지층에 대한 사실 한 줄이고, 닮은 주는 사용자가 「오늘 보기」를 눌렀을 때만 찾는다.
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useStore } from '../state/store';
 import { dateLabel, rangeLabel, sameDirectionText } from '../mindi/templates';
 import { oreMineral, SPACE_NEED, useCollected } from '../ore/collection';
 import { oreLabel } from './oreName';
-import { MINERAL_IMG } from './design';
+import { ART, MINERAL_IMG } from './design';
+import { mindiSay, sfx } from '../mindi/soundKit';
 import { MINERAL_HEX, type Mineral } from './minerals';
 import { MindiGreeting } from './Mindi';
 import { MindiAsk } from './MindiAsk';
@@ -36,6 +37,32 @@ export function todayLine(weeks: WeekRecord[], _collected: number, today = new D
   return dailyLine(voice, today);
 }
 
+const WALKED_KEY = 'mined.hall.walked.v1';
+/** 첫 만남(대본집 v1.1 §5-1, 확정): 첫 방문에만 굴에서 걸어 나오고, 이후엔 이미 그 자리에 있다 */
+export const FIRST_LINE = ['오셨네요.', '언젠가 오실 것 같아서, 등불은 켜 두고 있었어요.'];
+
+/** v2(11/03) 관측소 장면: 광산 홀(Mine Hall Concept A) 위에 민디가 서 있고, 말풍선 한 줄 뒤에 갈 곳이 열린다 */
+function HallScene({ line, onReady }: { line: string[]; onReady: () => void }) {
+  const still = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const [walk] = useState(() => { try { return localStorage.getItem(WALKED_KEY) !== '1'; } catch { return true; } });
+  const [said, setSaid] = useState(!walk || still);
+  useEffect(() => {
+    if (!walk || still) { onReady(); mindiSay(line.join(' ')); return; }
+    try { localStorage.setItem(WALKED_KEY, '1'); } catch { /* 이번 화면에서만 */ }
+    const steps = [300, 800, 1300, 1800].map((t) => setTimeout(() => sfx('step'), t));
+    const t = setTimeout(() => { setSaid(true); onReady(); mindiSay(line.join(' '), 'hello'); }, 2300);
+    return () => { steps.forEach(clearTimeout); clearTimeout(t); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <div className={`hall${walk && !still ? ' walk' : ''}`} role="img" aria-label="관측소 안. 굴 입구에 등불이 켜져 있고, 민디가 서 있습니다.">
+      <img className="hall-bg" src={ART.obsHall} alt="" />
+      <div className="hall-lamp" aria-hidden="true" />
+      <img className="hall-mindi" src={ART.mindiCharacter} alt="" />
+      <p className={`hall-say${said ? ' on' : ''}`} aria-live="polite">{said && line.map((l) => <span key={l}>{l}</span>)}</p>
+    </div>
+  );
+}
+
 export function Observatory({ onGo }: { onGo: (to: HubGo) => void }) {
   const { weeks, greeted } = useStore();
   const [hubVoice] = useVoice();
@@ -43,23 +70,21 @@ export function Observatory({ onGo }: { onGo: (to: HubGo) => void }) {
   const open = collected.length >= SPACE_NEED;
   // 첫 인사는 「찾아가 보기」를 누르는 순간 greeted 가 되므로, 이 화면에 들어올 때 인사 중이었으면 답이 나올 때까지 인사 칸을 남겨 둔다
   const [greeting] = useState(!greeted);
+  const [ready, setReady] = useState(false);
+  const line = greeting ? FIRST_LINE : [todayLine(weeks, collected.length, undefined, hubVoice)];
   return (
-    <section className="hub" aria-labelledby="hub-title">
+    <section className={`hub${ready ? ' ready' : ''}`} aria-labelledby="hub-title">
       <h2 id="hub-title" className="hub-title">관측소</h2>
+      <HallScene line={line} onReady={() => setReady(true)} />
       {greeting && <MindiGreeting />}
-      {greeted && (
-        <div className="mindi-panel" role="note" aria-label="민디의 오늘 한 마디">
-          <div className="mindi"><MindiMark /><p className="say">{todayLine(weeks, collected.length, undefined, hubVoice)}</p></div>
-        </div>
-      )}
       <nav className="hub-buttons" aria-label="관측소에서 갈 곳">
         <button className="hub-btn primary" onClick={() => onGo('field')}><b>지층으로 내려가기</b><span>연도마다 쌓인 지층에서 광석을 캡니다</span></button>
         <button className="hub-btn" onClick={() => onGo('today')}><b>오늘 보기</b><span>가장 최근 주와 닮은 지난 주 다섯</span></button>
         <button className="hub-btn" onClick={() => onGo('talk')}><b>민디와 이야기</b><span>설명 듣기 · 그냥 이야기하기</span></button>
         <button className="hub-btn" onClick={() => onGo('archive')}><b>캔 광석 보관함</b><span>{collected.length ? `${collected.length}개` : '아직 캔 광석이 없습니다'}</span></button>
         <button className="hub-btn" onClick={() => onGo('space')} aria-describedby="hub-space-note">
-          <b>나의 공간</b>
-          <span id="hub-space-note">{open ? '안개가 걷혔습니다' : `광석 ${collected.length}/${SPACE_NEED} · ${SPACE_NEED}개가 모이면 열립니다`}</span>
+          <b>나의 공간 · 섬 만들기</b>
+          <span id="hub-space-note">{open ? '안개가 걷혔습니다 · 민디와 섬을 지어요' : `광석 ${collected.length}/${SPACE_NEED} · ${SPACE_NEED}개가 모이면 열립니다`}</span>
         </button>
       </nav>
     </section>

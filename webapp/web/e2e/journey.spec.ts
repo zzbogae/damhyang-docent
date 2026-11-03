@@ -1,5 +1,6 @@
-// 처음부터 끝까지(10/23 장면 플로우): 입장 → 민디 소개 → 가짜 샘플 가져오기 → 관측소 → 지층 → 고른 주 캐기 → 열린 광석 → 데이터 광석 둘 → 나의 공간. 데스크톱과 휴대폰 폭, 강제 클릭 없이.
+// 처음부터 끝까지(10/23 장면 플로우 + 11/03 섬 만들기): 입장 → 민디 소개 → 가짜 샘플 가져오기 → 관측소 → 지층 → 고른 주 캐기 → 열린 광석 → 데이터 광석 둘 → 민디와 섬 만들기 → 섬으로 가기. 데스크톱과 휴대폰 폭, 강제 클릭 없이.
 import { expect, test } from '@playwright/test';
+import { buildIsland, visitIsland } from './island';
 test.use({ actionTimeout: 15000 });
 for (const vp of [{ name: 'desktop', width: 1360, height: 900 }, { name: 'phone', width: 390, height: 844 }]) {
   test('처음부터 끝까지 ' + vp.name, async ({ page }) => {
@@ -35,10 +36,9 @@ for (const vp of [{ name: 'desktop', width: 1360, height: 900 }, { name: 'phone'
     }
     await page.getByRole('button', { name: '관측소', exact: true }).click();
     await page.getByRole('button', { name: /나의 공간/ }).click();
-    await page.getByRole('group', { name: '단어 고르기' }).getByRole('button').first().click();
-    await page.getByLabel('공간 이름').fill('첫 공간');
-    await page.getByRole('button', { name: '이름 붙이고 짓기' }).click();
-    await expect(page.locator('.space-name')).toHaveText('첫 공간'); await shot('5_space');
+    await buildIsland(page, '첫 공간'); await shot('5_space');
+    await visitIsland(page, '첫 공간'); await shot('6_island');
+    await page.getByRole('button', { name: '‹ 관측소로' }).click();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
     console.log(vp.name, 'overflow', overflow, 'errors', errors.length);
     expect(errors).toEqual([]);

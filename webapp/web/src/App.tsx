@@ -17,6 +17,7 @@ import { FOOTER_EN } from './i18n/en';
 import { ART } from './ui/design';
 import { Archive, Observatory, Talk, Today, type HubGo } from './ui/Observatory';
 import { Space } from './ui/Space';
+import { MusicButton } from './ui/MusicButton';
 import { panelScene, sceneSound } from './mindi/soundKit';
 
 function Door109En() {
@@ -108,6 +109,7 @@ function Shell() {
           {SHOW_EVAL && <button className="btn quiet" onClick={() => setPanel('eval')}>평가</button>}
           {!KIOSK && <button className="btn quiet" onClick={() => setPanel('import')}>다시 가져오기</button>}
           {KIOSK && <FullscreenButton />}
+          <MusicButton />
           <button className="btn quiet" onClick={() => setPanel('settings')} aria-label="설정"><IconSettings />설정</button>
         </div>
       )}
