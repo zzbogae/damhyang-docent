@@ -84,6 +84,7 @@ export function Lift({ onBack, onDescend }: { onBack: () => void; onDescend: (ye
     sfx('confirm');
     if (reduced()) { onDescend(cur.year); return; }
     setGoing(true);
+    sfx('liftStart');
     setSaid(L53); mindiSay(L53);
     // 한 층 0.55초(최소 1.6초, 최대 4.2초). 지나가는 해마다 층 표시와 딸깍
     const per = Math.max(0.35, Math.min(0.55, 4.2 / (at + 1)));
@@ -96,7 +97,7 @@ export function Lift({ onBack, onDescend }: { onBack: () => void; onDescend: (ye
     void kitDescend(Math.min(1, (at + 1) / Math.max(1, floors.length)), total);
     await new Promise((r) => { timers.current.push(window.setTimeout(r, total * 1000)); });
     setSaid(`${cur.year}년입니다.`);
-    sfx('floor');
+    sfx('liftArrive');
     await new Promise((r) => { timers.current.push(window.setTimeout(r, 900)); });
     onDescend(cur.year);
   };
