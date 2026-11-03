@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { StoreProvider, useStore } from './state/store';
 import { Strata } from './ui/Strata';
 import { MineField } from './ui/MineField';
-import { Intro } from './ui/Intro';
+import { GO_ISLAND_EVENT, Intro } from './ui/Intro';
 import { Summary } from './ui/Summary';
 import { WeekDetail } from './ui/WeekDetail';
 import { Overview } from './ui/Overview';
@@ -28,6 +28,7 @@ import { arrivedCount, loadLetters } from './letters/letters';
 
 // 발표·일반 흐름에서는 감추고 주소로만 여는 화면(팀 9/23 §2-2, 회의 질문 5).
 // 평가: ?eval — 팀원 실기록 평가용 / 이어진 갱도(옛 이어진 섬): ?islands — 확장 가능성 시연용
+const HOME_EVENT = 'mined:home';
 const FLAGS = new URLSearchParams(typeof location !== 'undefined' ? location.search : '');
 export const SHOW_EVAL = FLAGS.has('eval');
 export const SHOW_ISLANDS = FLAGS.has('islands');
@@ -50,6 +51,8 @@ function Shell() {
   const { phase, selected, byKey, select, labels, result } = useStore();
   // 안드로이드 공유로 사진이 넘어오면 가져오기 화면부터 연다
   const [panel, setPanel] = useState<Panel>(FLAGS.has('shared') ? 'import' : GRID ? 'week' : 'hub');
+  const [spaceKey, setSpaceKey] = useState(0);
+  useEffect(() => { const on = () => { setSpaceKey((k) => k + 1); setPanel('space'); }; addEventListener(GO_ISLAND_EVENT, on); return () => removeEventListener(GO_ISLAND_EVENT, on); }, []);
   // 관측소에서 지층으로 내려갈 때만 엘리베이터를 보여 주고, 오늘 보기에서 고른 주가 있으면 그 주로 내려간다
   const [descent, setDescent] = useState<{ n: number; focus?: string }>({ n: 0 });
   const home: Panel = GRID ? 'week' : 'hub';
@@ -94,7 +97,7 @@ function Shell() {
 
   const header = (
     <header className="top">
-      <div className="wordmark"><img src={ART.logoLight} alt="" /><span className="sr-only">Mine D</span></div>
+      <button type="button" className="wordmark wordmark-btn" onClick={() => dispatchEvent(new Event(HOME_EVENT))} aria-label="Mine D 처음 화면으로" title="처음 화면(안개)으로"><img src={ART.logoLight} alt="" /></button>
       <p className="promise">기록은 이 브라우저 밖으로 나가지 않습니다.</p>
       <div className="spacer" />
       {phase === 'ready' && (
@@ -181,7 +184,7 @@ function Shell() {
       : panel === 'today' ? <Today onDescend={(week) => { setDescent((d) => ({ n: d.n + 1, focus: week })); setPanel('field'); }} />
       : panel === 'talk' ? <Talk onSpace={() => setPanel('space')} />
       : panel === 'archive' ? <Archive onSpace={() => setPanel('space')} />
-      : panel === 'space' ? <Space onField={() => goHub('field')} />
+      : panel === 'space' ? <Space key={spaceKey} onField={() => goHub('field')} />
       : panel === 'week' && w ? <WeekDetail w={w} key={w.week} team />
       : null;
     const onField = !page && panel !== 'hub';
@@ -228,6 +231,8 @@ function useIntro() {
   const auto = typeof navigator !== 'undefined' && navigator.webdriver;
   const seen = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('mined.entered') === '1';
   const [show, setShow] = useState(force || (!auto && !seen));
+  // 머리줄 로고를 누르면 첫 홈(안개 · 로고 · 입장하기)을 다시 연다
+  useEffect(() => { const on = () => setShow(true); addEventListener(HOME_EVENT, on); return () => removeEventListener(HOME_EVENT, on); }, []);
   return [show, () => { sessionStorage.setItem('mined.entered', '1'); setShow(false); }] as const;
 }
 

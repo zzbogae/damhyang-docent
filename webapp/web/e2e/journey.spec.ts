@@ -41,6 +41,14 @@ for (const vp of [{ name: 'desktop', width: 1360, height: 900 }, { name: 'phone'
     await buildIsland(page, '첫 공간'); await shot('5_space');
     await visitIsland(page, '첫 공간'); await shot('6_island');
     await page.getByRole('button', { name: '‹ 관측소로' }).click();
+    // 첫 홈(로고)에서 「섬으로 들어가기」 → 같은 안개 그림에서 안개가 걷히고 섬
+    await page.getByRole('button', { name: 'Mine D 처음 화면으로' }).click();
+    const fromHome = page.locator('.intro').getByRole('button', { name: '섬으로 들어가기' });
+    await expect(fromHome).toBeEnabled({ timeout: 8000 }); await page.waitForTimeout(4500); await shot('7_home'); await fromHome.click();
+    await expect(page.locator('.intro')).toHaveCount(0);
+    await expect(page.locator('.isl-visit-full')).toBeVisible();
+    await page.getByRole('button', { name: '섬으로 들어가기' }).click({ timeout: 15000 });
+    await page.getByRole('button', { name: '‹ 관측소로' }).click();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
     console.log(vp.name, 'overflow', overflow, 'errors', errors.length);
     expect(errors).toEqual([]);

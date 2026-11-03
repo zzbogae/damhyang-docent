@@ -926,3 +926,12 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 .entry-age input { width: 20px; height: 20px; accent-color: var(--mined-amber, #F2AA55); }
 .entry-note { font-size: 13px; opacity: .7; margin: 0; text-align: center; }
 @media (max-width: 520px) { .entry-cards { grid-template-columns: 1fr; max-width: 340px; } .entry-card { min-height: 0; } }
+/* 로고 = 첫 홈으로 가는 버튼 */
+.wordmark-btn { appearance: none; background: none; border: 0; padding: 4px; margin: 0; cursor: pointer; border-radius: 8px; }
+.wordmark-btn:hover img { opacity: .8; }
+.wordmark-btn:focus-visible { outline: 2px solid var(--mined-amber, #F2AA55); outline-offset: 2px; }
+/* 첫 홈: 입장하기 옆 「섬으로 들어가기」(섬이 있을 때만 누를 수 있음) */
+.intro-enter.play { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; width: max-content; max-width: 92vw; }
+.intro-island-btn { background: rgba(242, 170, 85, .28); }
+.intro-island-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; letter-spacing: .1em; }
+.intro-island-note { flex-basis: 100%; text-align: center; font-size: 13px; color: rgba(38, 50, 59, .75); }

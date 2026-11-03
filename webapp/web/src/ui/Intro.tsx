@@ -6,6 +6,8 @@
 import { useEffect, useState } from 'react';
 import { ART } from './design';
 import { mindiSay, sceneOverlay, sfx } from '../mindi/soundKit';
+import { loadSpaces } from './Space';
+import { requestVisitLatest } from './SpaceButton';
 
 const TUTORIAL: { eyebrow: string; line: string[] }[] = [
   { eyebrow: '민디', line: ['안녕하세요, 저는 민디예요.', '당신의 기록에서 광물을 캡니다.'] },
@@ -16,6 +18,8 @@ const TUTORIAL: { eyebrow: string; line: string[] }[] = [
 
 const ENTRY_KEY = 'mined.entry.sample';
 export const ENTRY_EVENT = 'mined:entry-sample';
+/** 첫 홈의 「섬으로 들어가기」: 나의 공간을 열고 가장 최근 섬으로 간다(같은 안개 그림에서 안개가 걷힌다) */
+export const GO_ISLAND_EVENT = 'mined:go-island';
 /** 입장 카드에서 「샘플로 둘러보기」를 골랐으면 한 번만 true(가져오기 화면이 가짜 샘플을 바로 연다) */
 export function takeSampleEntry(): boolean {
   try { const on = sessionStorage.getItem(ENTRY_KEY) === '1'; sessionStorage.removeItem(ENTRY_KEY); return on; } catch { return false; }
@@ -24,6 +28,8 @@ export function takeSampleEntry(): boolean {
 export function Intro({ onDone }: { onDone: () => void }) {
   const [stage, setStage] = useState<0 | 1 | 2>(0);
   const [age, setAge] = useState(false);
+  const [island] = useState(() => loadSpaces().slice(-1)[0]);
+  const goIsland = () => { if (!island) return; requestVisitLatest(); dispatchEvent(new Event(GO_ISLAND_EVENT)); onDone(); };
   const [logo, setLogo] = useState(false);
   const [btn, setBtn] = useState(false);
   const [step, setStep] = useState(0);
@@ -59,6 +65,11 @@ export function Intro({ onDone }: { onDone: () => void }) {
           <button className="intro-enter-btn" onClick={() => { sfx('door'); setStage(1); }} tabIndex={stage === 0 ? 0 : -1}>
             <span className="dot" />입장하기
           </button>
+          <button className="intro-enter-btn intro-island-btn" onClick={goIsland} disabled={!island} tabIndex={stage === 0 ? 0 : -1}
+            title={island ? `${island.name}으로` : '광석 셋으로 섬을 지으면 열립니다'}>
+            섬으로 들어가기
+          </button>
+          {!island && <span className="intro-island-note">광석 셋으로 섬을 지으면 열립니다</span>}
         </div>
       </section>
       <section className={`intro-screen intro-mindi${stage === 1 ? ' on' : ''}`} aria-hidden={stage !== 1}>
