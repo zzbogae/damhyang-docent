@@ -23,6 +23,10 @@ const EXAMPLES = ['이 주에 무엇이 달랐어?', '이 주와 닮은 주는 �
  *  chat: 민디와 이야기(P9) 배치 — 대화가 위로 쌓이고 「함께 보는 기록」 칩(chip)과 입력창이 아래에 붙는다
  *  initial: 열자마자 보낼 첫 질문(광석 상세의 입력창에서 넘어온 말)
  *  onAsk: 사용자가 먼저 물었을 때(민디와 이야기의 첫 한 마디를 거둔다) */
+const SLOW_MS = 6000;
+const TIMEOUT_MS = 30000;
+const STOPPED_TEXT = '기다리기를 멈췄어요. 다른 걸 물어봐도 돼요.';
+
 export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onAsk }: { w: WeekRecord; voiceChip?: boolean; chat?: boolean; initial?: string; chip?: ReactNode; onAsk?: () => void }) {
   const { result, byKey, memosByWeek, select, settings } = useStore();
   const [q, setQ] = useState<QuestionId | null>(null);
@@ -43,6 +47,11 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
   const [bot, setBot] = useState(false);
   const turns = useRef<lifebot.Turn[]>([]);
   const [found, setFound] = useState<string[]>([]);
+  const [slow, setSlow] = useState(false);
+  const [err, setErr] = useState<{ q: string; fallback: Answer; kind: 'offline' | 'timeout'; again?: boolean } | null>(null);
+  const [retrying, setRetrying] = useState(false);
+  const waitCtl = useRef<AbortController | null>(null);
+  useEffect(() => () => waitCtl.current?.abort(), []);
   useEffect(() => { void lifebot.available().then(setBot); }, []);
   useEffect(() => {
     if (said) { const r = scriptedReply(said, voice); if (r) setA({ text: r, dontKnow: false }); }
@@ -66,6 +75,7 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
     if (a && asked) setLog((l) => [...l, { q: asked, a: a.text }]);
     setAsked(q);
     setWhy(false);
+    setErr(null);
     setText('');
     return askFree(q);
   }
@@ -86,24 +96,53 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
     return voiced(b);
   }
 
-  // 챗봇 답은 챗봇이 고른 말투 그대로(앱의 어미 규칙을 다시 입히지 않는다). 실패하면 기기 안 규칙 답으로
+  // 챗봇 답은 챗봇이 고른 말투 그대로(앱의 어미 규칙을 다시 입히지 않는다). 실패하면 기기 안 규칙 답으로.
+  // v2(11/03) 상태 화면: 기다리는 중(6초가 넘으면 「조금 더」 + 그만 기다리기) · 연결 오류(30초 시간 초과 포함 → 다시 연결해 보기)
   async function askBot(q: string, fallback: Answer) {
     setBase(null);
     setSaid(null);
     setSrc(null);
     setA(null);
+    setErr(null);
+    setSlow(false);
     setBusy(true);
+    const ctl = new AbortController();
+    waitCtl.current = ctl;
+    let timedOut = false;
+    const slowT = setTimeout(() => setSlow(true), SLOW_MS);
+    const stopT = setTimeout(() => { timedOut = true; ctl.abort(); }, TIMEOUT_MS);
     try {
-      const r = await lifebot.chat(q, turns.current, voice);
+      const r = await lifebot.chat(q, turns.current, voice, null, ctl.signal);
       turns.current = [...turns.current, { role: 'user', content: q }, { role: 'assistant', content: r.reply }];
       setFound(r.tools ?? []);
       setA({ text: r.reply, dontKnow: false, used: 'lifebot' });
     } catch {
-      setSrc({ kind: fallback.text === FEELING_TEXT ? 'feeling' : 'unknown' });
-      await show(fallback);
+      if (ctl.signal.aborted && !timedOut) {
+        // 사용자가 「그만 기다리기」를 눌렀다: 오류가 아니다
+        setA({ text: STOPPED_TEXT, dontKnow: false });
+      } else {
+        setErr({ q, fallback, kind: timedOut ? 'timeout' : 'offline' });
+        setSrc({ kind: fallback.text === FEELING_TEXT ? 'feeling' : 'unknown' });
+        await show(fallback);
+      }
     } finally {
+      clearTimeout(slowT);
+      clearTimeout(stopT);
+      waitCtl.current = null;
+      setSlow(false);
       setBusy(false);
     }
+  }
+
+  async function retryBot() {
+    if (!err) return;
+    sfx('tap');
+    setRetrying(true);
+    const ok = await lifebot.recheck();
+    setRetrying(false);
+    if (!ok) { setErr({ ...err, kind: 'offline', again: true }); return; }
+    setBot(true);
+    return askBot(err.q, err.fallback);
   }
 
   // 대본집 문장을 그대로(말투 규칙을 다시 입히지 않는다)
@@ -185,6 +224,18 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
           이 답은 라이프로그 챗봇이 만들었습니다.{found.length > 0 && <> 찾아본 기록: {found.join(' · ')}</>}
         </p>
       )}
+      {err && (
+        <div className="chat-err" role="alert">
+          <p className="small">
+            <strong>{err.kind === 'timeout' ? '챗봇의 답이 30초 안에 오지 않았어요.' : '챗봇과 연결되지 않았어요.'}</strong>{' '}
+            그래서 위 답은 이 기기 안의 기록으로만 만들었어요.
+            {err.again && ' 방금 다시 확인했지만 아직 연결되지 않아요.'}
+          </p>
+          <button type="button" className="btn quiet" onClick={() => void retryBot()} disabled={retrying || busy}>
+            {retrying ? '연결 확인 중…' : '다시 연결해 보기'}
+          </button>
+        </div>
+      )}
     </div>
   );
 
@@ -211,7 +262,18 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
                 </div>
               )}
             </div>
-          ) : busy ? <p className="small muted">민디가 기록을 찾는 중입니다.</p> : (
+          ) : busy ? (
+            <div className="chat-pair chat-wait" role="status" aria-live="polite">
+              <div className="bubble">
+                <MindiMark size={30} />
+                <div>
+                  <p><span className="typing" aria-hidden="true"><i /><i /><i /></span> 민디가 기록을 찾는 중이에요.</p>
+                  {slow && <p className="small muted">조금 더 걸리고 있어요. 기록이 많으면 시간이 걸려요.</p>}
+                  {waitCtl.current && <button type="button" className="linkish small" onClick={() => { sfx('tap'); waitCtl.current?.abort(); }}>그만 기다리기</button>}
+                </div>
+              </div>
+            </div>
+          ) : (
             <p className="small muted">
               예:{' '}
               {EXAMPLES.map((ex, i) => (

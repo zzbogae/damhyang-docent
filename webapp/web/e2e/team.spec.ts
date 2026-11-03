@@ -78,7 +78,7 @@ test('장면 플로우: 오늘 보기 → 고른 주 캐기 → 보관함 → �
 
   // 나의 공간은 아직 잠김
   await page.getByRole('navigation', { name: '주 메뉴' }).getByRole('button', { name: '나의 공간' }).click();
-  await expect(page.getByText(/0\/3/).first()).toBeVisible();
+  await expect(page.getByText(/지금 0개를 캤습니다/).first()).toBeVisible();
   await page.getByRole('button', { name: '뒤로 가기' }).click();
 
   // Ⓐ 오늘 보기: 비슷한 주 찾기를 눌러야 다섯이 나온다

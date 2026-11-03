@@ -174,3 +174,14 @@
 .obs-extra-btn.primary { background: #d99a3f; color: #1b1620; border-color: #d99a3f; font-weight: 600; }
 .obs-extra-btn.primary span { color: #3b2b18; }
 @media (prefers-reduced-motion: reduce) { .obs-mindi.walk { animation: none; } }
+
+/* v2(11/03) 대화 상태: 답 기다리는 중 · 연결 오류 */
+.chat-wait .bubble { opacity: .92; }
+.typing { display: inline-flex; gap: 4px; vertical-align: middle; margin-right: 4px; }
+.typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--mined-ink, #f6efe4); opacity: .35; animation: mined-typing 1.2s infinite ease-in-out; }
+.typing i:nth-child(2) { animation-delay: .2s; }
+.typing i:nth-child(3) { animation-delay: .4s; }
+@keyframes mined-typing { 0%, 80%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: .9; transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) { .typing i { animation: none; opacity: .6; } }
+.chat-err { margin-top: 8px; padding: 8px 10px; border-radius: 10px; border: 1px dashed rgba(246,239,228,.35); background: rgba(12,10,16,.45); display: grid; gap: 6px; justify-items: start; }
+.chat-err p { margin: 0; }

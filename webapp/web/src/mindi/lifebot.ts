@@ -30,6 +30,12 @@ export function available(): Promise<boolean> {
   return alive;
 }
 
+/** 연결 오류 뒤 「다시 연결해 보기」: 확인을 한 번 더 한다 */
+export function recheck(): Promise<boolean> {
+  alive = null;
+  return available();
+}
+
 export function chat(message: string, history: Turn[], voice: Voice, focus: Focus | null = null, signal?: AbortSignal) {
   return post<LifebotReply>('chat', { message, history, focus, style: STYLE[voice] }, signal);
 }
