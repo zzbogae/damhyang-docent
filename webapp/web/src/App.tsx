@@ -18,6 +18,7 @@ import { ART } from './ui/design';
 import { Archive, Observatory, Talk, Today, type HubGo } from './ui/Observatory';
 import { Space } from './ui/Space';
 import { MusicButton } from './ui/MusicButton';
+import { OreReadGuide } from './ui/OreReadGuide';
 import { panelScene, sceneSound } from './mindi/soundKit';
 
 function Door109En() {
@@ -119,7 +120,7 @@ function Shell() {
     </header>
   );
 
-  const door = <>{resetting && <KioskOverlay />}<footer className="door" role="note">이야기를 들어 줄 곳 · <b>자살예방상담전화 109</b> (24시간)<Door109En /></footer></>;
+  const door = <><OreReadGuide />{resetting && <KioskOverlay />}<footer className="door" role="note">이야기를 들어 줄 곳 · <b>자살예방상담전화 109</b> (24시간)<Door109En /></footer></>;
   if (phase === 'boot') return <div className="app">{header}<main />{door}</div>;
   if (panel === 'eval' && phase !== 'working') {
     return (

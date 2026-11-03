@@ -17,6 +17,14 @@ import { customOreName } from './oreName';
 import { collect, missingUsual, oreMineral, pickedMineral } from '../ore/collection';
 import { axisScreen, CHANNEL_LABEL, type WeekRecord } from '../types';
 import { GYEOL_TEXT } from './Gyeol';
+import { OreSplit, bandColor, bandWord, bandsOf } from './OreSplit';
+import { openOreRead } from './OreReadGuide';
+import { MindiMark } from './Icons';
+
+// 민디 대사 정본(전체대본집 v1.1 §6 따라가기, 조용한 결): 엘리베이터 5-1·5-3, 캐기 7-2·7-3
+const LIFT_LINES = ['여기 한 층이 한 해예요. 깊이 내려갈수록 오래된 해고요.', '조금만 더 내려갈게요.'];
+const HIT_LINES = ['음, 단단하네요.', '조금만 더요.', '아, 열렸다.'];
+export const OPEN_LINE = '꺼냈습니다. 생각보다 큰데요. 안쪽 줄무늬가 결이에요. 띠가 두꺼운 색일수록 그 주를 많이 차지한 거예요.';
 
 const ROW: Record<string, number> = { 호박: 0, 황철석: 0, 청금석: 1, 월장석: 1, 자수정: 2, 홍옥: 2, 흑요석: 3, 석류석: 3, 형석: 1.5 };
 const LAYERS = [
@@ -68,6 +76,8 @@ function Ore({ w, i, onMined, picked = false, top }: { w: WeekRecord; i: number;
       {!picked && <span className="mf-glow" style={{ background: `radial-gradient(circle, ${MINERAL_HEX[m]}88, transparent 70%)` }} />}
       <img className="mf-core" src={MINERAL_IMG[m]} alt="" />
       <svg className="mf-crack" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path className="c1" d={CRACK_C1} /><path className="c2" d={CRACK_C2} /></svg>
+      {hits > 0 && <img className="mf-swing" src={ART.pickaxe} alt="" aria-hidden="true" />}
+      {hits > 0 && <span className="mf-hitline" role="status">{HIT_LINES[hits - 1]}</span>}
     </button>
   );
 }
@@ -102,18 +112,28 @@ function Timeline({ year, weeks, picking, onPick }: { year: number; weeks: WeekR
   );
 }
 
-/** ③ 내려가기의 엘리베이터: 지상에서 가장 최근 해까지 한 번 내려간다. 누르는 것은 막지 않는다 */
-function Elevator({ top }: { top: number | undefined }) {
+/** ③ 내려가기의 엘리베이터(P5 MINDY'S LIFT): 민디가 리프트 바닥에 서서 지층을 따라 내려가고, 오른쪽 층 표시기가 지상에서 가장 최근 해로 옮겨 간다.
+ *  민디 말은 대본집 5-1 → 5-3. 누르는 것은 막지 않는다(뒤 화면을 바로 써도 된다). 연출 줄이기를 켜면 보이지 않는다 */
+function Elevator({ top, years }: { top: number | undefined; years: number[] }) {
   const [gone, setGone] = useState(false);
+  const [line, setLine] = useState(0);
   useEffect(() => {
     const release = sceneOverlay('elevator');
-    const t = setTimeout(() => { setGone(true); release(); }, 1400);
-    return () => { clearTimeout(t); release(); };
+    const a = setTimeout(() => setLine(1), 1300);
+    const b = setTimeout(() => setLine(2), 2500);
+    const t = setTimeout(() => { setGone(true); release(); }, 3600);
+    return () => { clearTimeout(a); clearTimeout(b); clearTimeout(t); release(); };
   }, []);
   if (gone) return null;
+  const floors = ['지상', ...years.slice(0, 6).map(String)];
   return (
-    <div className="mf-elevator" aria-hidden="true">
-      <div className="mf-elev-cab"><span className="mf-elev-floor">지상</span><span className="mf-elev-floor">{top ?? ''}</span></div>
+    <div className="mf-elevator lift" aria-hidden="true">
+      <div className="mf-lift-shaft">
+        <div className="mf-lift-strata">{years.slice(0, 6).map((y) => <img key={y} src={stratumFor(y).src} alt="" />)}</div>
+        <img className="mf-lift-cab" src={ART.liftPlatform} alt="" />
+      </div>
+      <ol className="mf-lift-floors">{floors.map((f, k) => <li key={f} className={(line < 2 ? k === 0 : f === String(top)) ? 'on' : ''}>{f}</li>)}</ol>
+      <div className="mf-lift-say"><MindiMark size={30} /><p>{line < 2 ? LIFT_LINES[line] : `${top ?? ''}년입니다.`}</p></div>
     </div>
   );
 }
@@ -148,6 +168,8 @@ export function MineField({ descent = 0, focusWeek: focusIn }: { descent?: numbe
   const [year, setYear] = useState<number>();
   const [card, setCard] = useState<{ w: WeekRecord; x: number; y: number }>();
   const scroller = useRef<HTMLDivElement>(null);
+  // 카드가 길어져(쪼갠 단면·민디 말) 화면 아래로 넘치면 카드가 보이게 지층을 조금 올린다
+  useEffect(() => { if (card) requestAnimationFrame(() => scroller.current?.querySelector('.mf-card')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })); }, [card]);
   const content = useRef<HTMLDivElement>(null);
   // 화면 한가운데 걸친 지층의 해를 큰 연도로 보여 준다
   const sync = () => {
@@ -229,7 +251,21 @@ export function MineField({ descent = 0, focusWeek: focusIn }: { descent?: numbe
                 {rangeLabel(card.w)}{customOreName(card.w.week) ? ` · ${customOreName(card.w.week)}` : ''}
                 {card.w.candidate ? (card.w.evidence.cross_validated ? ' · 교차 확인' : '') : ' · 직접 고른 광석'}
               </div>
+              {(() => {
+                const m = (oreMineral(card.w) ?? '형석') as Mineral;
+                const bands = bandsOf(card.w, m);
+                return (
+                  <div className="mf-card-open">
+                    <OreSplit img={MINERAL_IMG[m]} bands={bands} size={104} label={`${rangeLabel(card.w)} 광석의 쪼갠 단면`} />
+                    <ul className="mf-card-bands" aria-label="안쪽 결">
+                      {bands.map((b) => <li key={b.axis}><i style={{ background: bandColor(b) }} aria-hidden="true" />{bandWord(b)}</li>)}
+                    </ul>
+                  </div>
+                );
+              })()}
+              <div className="mf-card-say"><MindiMark size={26} /><p>{OPEN_LINE}</p></div>
               <p className="mf-card-line">{card.w.candidate ? (card.w.sentence_plain ?? card.w.sentence) : pickedLine(card.w)}</p>
+              <button className="mf-card-read" onClick={() => openOreRead((oreMineral(card.w) ?? '형석') as Mineral)}>광석 읽는 법 ›</button>
               {(() => {
                 const miss = missingUsual(card.w, weeks);
                 return miss.length > 0 && <p className="mf-card-miss">그 주에 평소 있던 기록 중 {miss.length}종이 비어 있습니다({miss.map((c) => CHANNEL_LABEL[c]).join('·')}).</p>;
@@ -240,7 +276,7 @@ export function MineField({ descent = 0, focusWeek: focusIn }: { descent?: numbe
         </div>
       </div>
       <div className="mf-scanner" aria-hidden="true"><i /><i /></div>
-      {descend && <Elevator top={years[0]} />}
+      {descend && <Elevator top={years[0]} years={years} />}
       {called && <p className="mf-called" role="status">{called}</p>}
       <div className="mf-picker">
         <button className="mf-chev" onClick={() => go(years[i - 1])} disabled={i <= 0} aria-label="다음 해(위로)">‹</button>
@@ -259,7 +295,8 @@ export function MineField({ descent = 0, focusWeek: focusIn }: { descent?: numbe
         <img className="logo" src={ART.logoLight} alt="" />
         <div className="tagline">Your Mind In Your Mine D</div>
       </div>
-      <p className="mf-hint">아래로 내려갈수록 오래된 해입니다. 광물을 곡괭이로 세 번 치면 그 주의 기록 조각이 나옵니다. 타임라인에서 아무 주나 골라 캘 수도 있습니다.</p>
+      <button className="mf-read-btn" onClick={() => openOreRead()}>광석 읽는 법</button>
+      {!card && <p className="mf-hint">아래로 내려갈수록 오래된 해입니다. 광물을 곡괭이로 세 번 치면 그 주의 기록 조각이 나옵니다. 타임라인에서 아무 주나 골라 캘 수도 있습니다.</p>}
     </div>
   );
 }

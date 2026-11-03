@@ -20,6 +20,7 @@ import { VoiceChip } from './VoiceChip';
 import { requestNewSpace, requestVisitLatest, SpaceButton } from './SpaceButton';
 import { loadSpaces } from './Space';
 import { GYEOL_TEXT } from './Gyeol';
+import { openOreRead } from './OreReadGuide';
 import type { WeekRecord } from '../types';
 
 export type HubGo = 'field' | 'today' | 'talk' | 'archive' | 'space';
@@ -94,6 +95,7 @@ export function Observatory({ onGo }: { onGo: (to: HubGo) => void }) {
           <b>{islands.length ? '나의 공간 · 새 섬 만들기' : '나의 공간 · 섬 만들기'}</b>
           <span id="hub-space-note">{!open ? `광석 ${collected.length}/${SPACE_NEED} · ${SPACE_NEED}개가 모이면 열립니다` : islands.length ? `지은 섬 ${islands.length}개 · 민디와 섬을 하나 더 지어요` : '안개가 걷혔습니다 · 민디와 섬을 지어요'}</span>
         </button>
+        <button className="hub-btn" onClick={() => openOreRead()}><b>광석 읽는 법</b><span>광석 9종 · 쪼갠 단면의 결이 무엇을 말하는지</span></button>
       </nav>
     </section>
   );

@@ -954,3 +954,76 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 .isl-pick-opts dt { opacity: .7; }
 .isl-pick-opts dd { margin: 0; }
 .isl-pick-opts ol { margin: 0; padding-left: 1.3em; }
+
+/* v2(11/03) 쪼갠 광석 · 광석 읽는 법 · 민디의 리프트 · 캐기 대사 */
+.ore-split { position: relative; margin: 0; flex: 0 0 auto; }
+.ore-split .ore-half { position: absolute; inset: 6% 10%; width: 80%; height: 88%; object-fit: contain; transition: transform .7s var(--mined-ease-out, ease), opacity .7s; }
+.ore-split .ore-half.l { clip-path: polygon(0 0, 52% 0, 46% 100%, 0 100%); }
+.ore-split .ore-half.r { clip-path: polygon(52% 0, 100% 0, 100% 100%, 46% 100%); }
+.ore-split .ore-core { position: absolute; inset: 14% 24%; width: 52%; height: 72%; opacity: 0; transform: scale(.7); transition: opacity .5s .25s, transform .6s .25s; }
+.ore-split.open .ore-half.l { transform: translateX(-30%) rotate(-12deg); opacity: .9; }
+.ore-split.open .ore-half.r { transform: translateX(30%) rotate(12deg); opacity: .9; }
+.ore-split.open .ore-core { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .ore-split .ore-half, .ore-split .ore-core { transition: none; } }
+
+.mf-card-open { display: flex; gap: 10px; align-items: center; margin: 2px 0 8px; }
+.mf-card-bands { list-style: none; margin: 0; padding: 0; font-size: 12.5px; color: #e9e1d6; display: grid; gap: 3px; }
+.mf-card-bands i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.mf-card-say { display: flex; gap: 8px; align-items: flex-start; background: rgba(246, 239, 228, .06); border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; }
+.mf-card-say p { font-size: 13px; line-height: 1.6; color: #f2e8da; margin: 0; }
+.mf-card-read { background: none; border: 0; color: #c9baa9; font: inherit; font-size: 13px; cursor: pointer; padding: 6px 0 0; }
+.mf-card-read:hover { color: #fff; }
+.mf-read-btn { position: absolute; right: 18px; top: 92px; z-index: 12; background: rgba(24, 22, 32, .85); color: #f2c374; border: 1px solid rgba(217, 154, 63, .45); border-radius: 999px; padding: 6px 14px; font: inherit; font-size: 13px; cursor: pointer; }
+.mf-swing { position: absolute; width: 70%; right: -46%; top: -40%; pointer-events: none; transform-origin: 80% 80%; animation: mf-swing .26s ease-out; filter: drop-shadow(0 4px 6px rgba(0,0,0,.5)); }
+@keyframes mf-swing { 0% { transform: rotate(-40deg); } 60% { transform: rotate(12deg); } 100% { transform: rotate(0); } }
+.mf-hitline { position: absolute; left: 50%; bottom: calc(100% + 10px); transform: translateX(-50%); white-space: nowrap; background: #f6efe4; color: #241f2c; font-size: 13px; border-radius: 12px; padding: 4px 10px; pointer-events: none; animation: mf-card-in .2s ease both; }
+.mf-hitline::after { content: ''; position: absolute; left: 50%; top: 100%; border: 6px solid transparent; border-top-color: #f6efe4; transform: translateX(-50%); }
+
+.mf-elevator.lift { animation: mf-elev-out .5s ease 3.1s forwards; background: #0b0a0e; }
+.mf-lift-shaft { position: relative; width: min(46vh, 86vw); height: min(82vh, 760px); overflow: hidden; border-radius: 14px; box-shadow: 0 0 0 1px rgba(217, 154, 63, .25); }
+.mf-lift-strata { position: absolute; inset: 0; display: flex; flex-direction: column; animation: mf-lift-strata 3.2s cubic-bezier(.45, 0, .25, 1) forwards; }
+.mf-lift-strata img { width: 100%; height: 34%; object-fit: cover; flex: 0 0 34%; filter: brightness(.7); }
+@keyframes mf-lift-strata { from { transform: translateY(70%); } to { transform: translateY(-60%); } }
+.mf-lift-cab { position: absolute; left: 0; right: 0; top: 4%; width: 100%; animation: mf-lift-bob 3.2s ease-in-out forwards; -webkit-mask-image: linear-gradient(#000 78%, transparent); mask-image: linear-gradient(#000 78%, transparent); }
+@keyframes mf-lift-bob { 0% { transform: translateY(0); } 15% { transform: translateY(3%); } 85% { transform: translateY(5%); } 100% { transform: translateY(2%); } }
+.mf-lift-floors { position: absolute; right: max(16px, 6vw); top: 50%; transform: translateY(-50%); list-style: none; margin: 0; padding: 14px 18px; border: 1px solid rgba(255,255,255,.15); border-radius: 12px; background: rgba(16, 14, 20, .8); color: #b3aabb; font-size: 14px; display: grid; gap: 10px; }
+.mf-lift-floors li.on { color: #f2c374; }
+.mf-lift-floors li.on::before { content: '▶ '; }
+.mf-lift-say { position: absolute; left: 50%; bottom: max(24px, 6vh); transform: translateX(-50%); display: flex; gap: 10px; align-items: center; background: #f6efe4; color: #241f2c; border-radius: 16px; padding: 10px 16px; max-width: min(92vw, 460px); box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+.mf-lift-say p { margin: 0; font-size: 15px; line-height: 1.5; }
+@media (max-width: 640px) { .mf-lift-floors { right: 10px; padding: 10px 12px; font-size: 12px; gap: 6px; } }
+
+.ore-read-back { position: fixed; inset: 0; z-index: 70; background: rgba(11, 10, 14, .72); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.ore-read { width: min(980px, 100%); max-height: calc(100vh - 32px); overflow: auto; background: #1b1620; color: #efe7dc; border: 1px solid rgba(217, 154, 63, .35); border-radius: 18px; padding: 18px 20px; outline: none; }
+.ore-read-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.ore-read-head .h2 { color: #f6efe4; margin: 0; }
+.ore-read-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 20px; }
+@media (max-width: 760px) { .ore-read-main { grid-template-columns: 1fr; } }
+.ore-read-stage { display: grid; gap: 8px; align-content: start; }
+.ore-read-pair { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
+.ore-whole { display: grid; justify-items: center; gap: 4px; margin: 0; }
+.ore-whole > img { width: 110px; height: 150px; object-fit: contain; }
+.ore-read-arrow { font-size: 18px; color: #f2c374; }
+.ore-read-name { display: flex; align-items: center; gap: 8px; margin: 4px 0 0; font-size: 20px; color: #f6efe4; }
+.ore-read-name i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.ore-read-title { color: #f2c374; margin: 0; }
+.ore-read .isl-msg.mindi { background: rgba(246, 239, 228, .07); color: #f2e8da; }
+.ore-read-rules { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 12px; }
+.ore-read-rules th { text-align: left; white-space: nowrap; padding: 5px 12px 5px 0; color: #f2c374; font-weight: 600; vertical-align: top; }
+.ore-read-rules td { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,.07); }
+.ore-read-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
+.ore-read-cell { display: grid; justify-items: center; gap: 2px; background: rgba(255,255,255,.04); border: 1px solid transparent; border-radius: 12px; padding: 8px 4px; color: inherit; font: inherit; cursor: pointer; text-align: center; }
+.ore-read-cell img { width: 40px; height: 52px; object-fit: contain; }
+.ore-read-cell span { font-size: 14px; }
+.ore-read-cell small { font-size: 11.5px; opacity: .75; line-height: 1.35; }
+.ore-read-cell.on { border-color: #d99a3f; background: rgba(217, 154, 63, .12); }
+.ore-read .muted { color: #b3aabb; }
+.ore-read .isl-msg.mindi { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 14px; }
+.ore-read .isl-msg.mindi p { margin: 0; background: none; padding: 0; box-shadow: none; color: #f2e8da; }
+.mf-ore .mf-hitline { font-size: 15px; padding: 5px 12px; z-index: 6; }
+.mf-ore .mf-swing { width: 64px; right: -54px; top: -40px; z-index: 6; }
+@media (max-width: 640px) {
+  .ore-read-pair { flex-wrap: nowrap; gap: 8px; }
+  .ore-read .ore-whole > img { width: 72px; height: 110px; }
+  .ore-read .ore-split { width: 110px !important; height: 110px !important; }
+}

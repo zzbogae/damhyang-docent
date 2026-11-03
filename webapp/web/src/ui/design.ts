@@ -24,6 +24,7 @@ import fluorite from '../assets/design/mineral_fluorite.webp';
 // v2(11/03): 관측소 내부(Mine Hall Concept A), 첫 화면 안개 관측소, 나의 공간 섬 3종(안개 걷힘 · 들어간 뒤). 드라이브 03_에셋_디자인 · 나의공간 예시영상 4안
 import obsHall from '../assets/design/obs_hall.webp';
 import fogMain from '../assets/design/fog_main.webp';
+import liftPlatform from '../assets/design/lift_platform.webp';
 import seaReveal from '../assets/design/island_sea_reveal.webp';
 import seaInside from '../assets/design/island_sea_inside.webp';
 import mountainReveal from '../assets/design/island_mountain_reveal.webp';
@@ -32,7 +33,7 @@ import jungleReveal from '../assets/design/island_jungle_reveal.webp';
 import jungleInside from '../assets/design/island_jungle_inside.webp';
 import type { Mineral } from './minerals';
 
-export const ART = { introFog, introPoster, logoLight, logoDark, mindiCharacter, pickaxe, obsHall, fogMain };
+export const ART = { introFog, introPoster, logoLight, logoDark, mindiCharacter, pickaxe, obsHall, fogMain, /** P5 MINDY'S LIFT: 장면플로우 참조 AP_undg_img_concept_001 윗부분(민디가 선 리프트 바닥) */ liftPlatform };
 
 /** 나의 공간 섬 그림 3종. 장소 선택을 가장 가까운 예시 그림에 잇는다(예시 그림이 더 생기면 여기만 늘린다) */
 export type IslandArt = 'sea' | 'mountain' | 'jungle';

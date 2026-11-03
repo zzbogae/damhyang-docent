@@ -19,7 +19,10 @@ for (const vp of [{ name: 'desktop', width: 1360, height: 900 }, { name: 'phone'
     await shot('1_hub');
     await page.getByRole('button', { name: '다음에' }).click();
     await page.getByRole('button', { name: /지층으로 내려가기/ }).click();
-    await page.waitForTimeout(1700);
+    // 민디의 리프트(P5): 민디가 리프트에 서서 내려가며 대본집 5-1 → 5-3 을 말한다
+    await expect(page.locator('.mf-lift-say')).toContainText('한 층이 한 해');
+    await expect(page.locator('.mf-lift-say')).toContainText('년입니다', { timeout: 5000 });
+    await expect(page.locator('.mf-elevator')).toHaveCount(0, { timeout: 5000 });
     await shot('2_field');
     const tick = page.locator('.mf-tick:not(.has-ore)').nth(5);
     await tick.evaluate((el) => el.scrollIntoView({ block: 'center' })); await tick.click();
@@ -27,6 +30,17 @@ for (const vp of [{ name: 'desktop', width: 1360, height: 900 }, { name: 'phone'
     for (let i = 0; i < 3; i++) await rock.click();
     const card = page.getByRole('dialog', { name: '기록 조각' });
     await expect(card).toBeVisible(); await page.waitForTimeout(500); await shot('3_card');
+    // 깨진 광석: 쪼갠 단면의 결 + 민디 설명(대본집 7-3) + 「광석 읽는 법」 창(9종)
+    await expect(card.locator('.ore-split.open')).toBeVisible();
+    await expect(card.locator('.mf-card-bands li')).toHaveCount(4);
+    await expect(card.locator('.mf-card-say')).toContainText('안쪽 줄무늬가 결이에요');
+    await card.getByRole('button', { name: '광석 읽는 법 ›' }).click();
+    const guide = page.getByRole('dialog', { name: '광석 읽는 법' });
+    await expect(guide.getByRole('option')).toHaveCount(9);
+    await guide.getByRole('option', { name: /호박/ }).click();
+    await expect(guide.locator('.ore-read-title')).toHaveText('걸음 · 평소보다 많음');
+    await guide.getByRole('button', { name: '광석 읽는 법 닫기' }).click();
+    await expect(guide).toHaveCount(0);
     await card.getByRole('button', { name: '상세 페이지에서 이어보기 →' }).click();
     await expect(page.locator('.team-detail')).toBeVisible(); await shot('4_detail');
     await page.getByRole('button', { name: '← 지층으로' }).click();
