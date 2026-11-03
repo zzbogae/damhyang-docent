@@ -1,0 +1,82 @@
+/* P11 나의 공간 만들기 (10/23 버튼배치 P11): 왼쪽 60% 미리보기 고정 + 오른쪽 선택 패널(단계 표시 → 단계 내용 → 하단 「이전 / 다음」).
+   P12 나의 공간: 고른 환경 그림을 크게, 상단 가운데 「내려다보기」. 잠김은 자물쇠 + 「광석 N/3」 진행 막대(기한·카운트다운 없음). */
+.space-make {
+  display: grid; grid-template-columns: minmax(0, 3fr) minmax(320px, 2fr); gap: 0;
+  height: calc(100% - 4px); min-height: 520px; padding: 0 20px 20px; color: var(--mined-ink);
+}
+.space-preview { position: relative; border-radius: var(--mined-r-md) 0 0 var(--mined-r-md); overflow: hidden; min-height: 0; }
+.space-preview .space-scene.big { position: absolute; inset: 0; aspect-ratio: auto; border-radius: 0; border: 0; height: 100%; }
+.space-scene.big .space-bg { object-fit: cover; }
+.space-scene .space-bg { object-fit: cover; }
+.space-preview-tag {
+  position: absolute; left: 14px; top: 14px; padding: 4px 12px; border-radius: 999px;
+  background: rgba(20, 16, 24, .6); color: var(--mined-ink); font-size: 13px; border: 1px dashed rgba(255, 236, 214, .4);
+}
+.space-preview .space-fog { position: absolute; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(ellipse at center, rgba(235, 230, 240, .92), rgba(200, 196, 210, .96)); }
+.space-preview.lifting .space-fog { animation: space-fog 1.4s var(--mined-ease-out) both; }
+@keyframes space-fog { 0% { opacity: .95; } 100% { opacity: 0; } }
+
+.space-panel {
+  display: grid; grid-template-rows: auto minmax(0, 1fr) auto; min-height: 0;
+  background: rgba(27, 22, 32, .92); border: 1px solid var(--mined-line-strong); border-left: 0;
+  border-radius: 0 var(--mined-r-md) var(--mined-r-md) 0; padding: 18px 20px;
+}
+.space-steps { list-style: none; margin: 0 0 14px; padding: 6px; display: flex; flex-wrap: wrap; gap: 4px; border-radius: 10px; border: 1px solid var(--mined-line-strong); }
+.space-steps button { background: none; border: 0; padding: 4px 8px; border-radius: 6px; color: var(--mined-ink-mute); font: 13px/1.2 var(--font); cursor: pointer; }
+.space-steps button.on { color: #2a1d0b; background: var(--mined-amber); font-weight: 600; }
+.space-steps button.done { color: var(--mined-ink); }
+.space-steps button:disabled { cursor: default; }
+.space-body { overflow: auto; min-height: 0; display: grid; align-content: start; gap: 12px; padding-right: 4px; }
+.space-q { margin: 0; font-size: 14px; color: var(--mined-ink-soft); }
+.space-envs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.space-env {
+  position: relative; height: 72px; padding: 0; border-radius: 10px; overflow: hidden; cursor: pointer;
+  border: 1px solid var(--mined-line-strong); background: var(--mined-panel); color: #fff; font: 600 14px/1 var(--font);
+}
+.space-env img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .55; }
+.space-env span { position: absolute; left: 10px; bottom: 8px; text-shadow: 0 1px 4px rgba(0, 0, 0, .8); }
+.space-env.on { border-color: var(--mined-amber); box-shadow: 0 0 0 2px var(--mined-amber); }
+.space-env.on img { opacity: .9; }
+.space-bubble { font-size: 14px; line-height: 1.6; color: var(--mined-ink-soft); }
+.space-bubble p { margin: 0; }
+.space-words-pick, .space-word-tools { display: flex; flex-wrap: wrap; gap: 8px; }
+.space-word {
+  min-width: 96px; height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--mined-line-strong);
+  background: var(--mined-btn-bg); color: var(--mined-ink); font: 14px/1 var(--font); cursor: pointer;
+}
+.space-word[aria-pressed='true'] { background: var(--mined-amber); border-color: var(--mined-amber); color: #2a1d0b; }
+.space-word:disabled { opacity: .45; cursor: default; }
+.space-nav { display: flex; justify-content: space-between; gap: 8px; padding-top: 14px; border-top: 1px solid var(--mined-line); margin-top: 10px; }
+
+/* P12 */
+.space-scene.big .space-words { top: 16%; }
+.space-view { position: relative; display: grid; gap: 14px; padding: 0 20px 24px; color: var(--mined-ink); }
+.space-view .space-scene.big { aspect-ratio: 16 / 9; max-height: calc(100vh - 220px); width: 100%; }
+.space-view-mode { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 3; display: flex; border-radius: 999px; overflow: hidden; border: 1px solid var(--mined-line-strong); background: rgba(20, 16, 24, .6); }
+.space-view-mode span { padding: 6px 14px; font-size: 13px; }
+.space-view-mode span.on { background: var(--mined-amber); color: #2a1d0b; }
+.space-view-foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
+.space-view-foot .chip.on { border-color: var(--mined-amber); }
+
+/* 잠김 */
+.space-lock { display: grid; place-items: center; min-height: 60vh; padding: 20px; }
+.space-lock-card { width: min(420px, 100%); text-align: center; padding: 28px; border-radius: var(--mined-r-md); border: 1px solid var(--mined-line-strong); background: rgba(27, 22, 32, .88); color: var(--mined-ink); display: grid; gap: 10px; justify-items: center; }
+.space-lock-card h2 { margin: 0; font-size: 22px; }
+.space-lock-card p { margin: 0; }
+.space-lock-icon { font-size: 30px; }
+.space-lock-bar { width: 100%; height: 10px; border-radius: 6px; background: var(--mined-line); overflow: hidden; }
+.space-lock-bar i { display: block; height: 100%; background: var(--mined-amber); }
+.space-lock-count { font-weight: 600; }
+
+@media (max-width: 860px) {
+  .space-make { grid-template-columns: minmax(0, 1fr); grid-template-rows: 38vh auto; height: auto; padding: 0 12px 16px; }
+  .space-preview { border-radius: var(--mined-r-md) var(--mined-r-md) 0 0; }
+  .space-panel { border-left: 1px solid var(--mined-line-strong); border-top: 0; border-radius: 0 0 var(--mined-r-md) var(--mined-r-md); }
+  .space-nav { position: sticky; bottom: 0; background: rgba(27, 22, 32, .96); }
+  .space-envs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .space-view { padding: 0 12px 20px; }
+}
+@media (max-width: 860px) {
+  .space-scene.big .space-words { top: 30%; }
+  .space-view-mode { top: 8px; }
+}

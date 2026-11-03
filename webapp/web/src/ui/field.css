@@ -1,0 +1,32 @@
+/* P6 연도 지층 (10/23 버튼배치 확정): 연도 목록을 오른쪽으로(P5 층 표시기와 같은 자리), 광석 위 말풍선 「○월 ○주 · 캐기」,
+   광석 없는 주는 「이 주 고르기」 점선 말풍선. 위쪽 64px 은 공통 TopBar 자리. */
+.minefield { min-height: 560px; }
+.minefield.minefield { --mf-x0: 12%; --mf-xw: 66%; }
+.mf-scanner { top: 76px; }
+.mf-picker { top: calc(76px + 58px); }
+.mf-called { top: calc(76px + 58px + 84px); }
+.mf-years { left: auto; right: 3%; top: 26%; bottom: auto; max-height: calc(100% - 26% - 290px); align-items: flex-end; padding: 0 0 0 8px; }
+.mf-yr { flex-direction: row; text-align: right; padding: 2px 0 2px 8px; }
+.mf-years::-webkit-scrollbar { display: none; }
+.mf-years { scrollbar-width: none; }
+
+/* 광석: 자리는 감싸개가, 광석 버튼은 그 안 가운데 */
+.mf-ore-wrap { position: absolute; transform: translate(-50%, -50%); z-index: 4; display: flex; flex-direction: column; align-items: center; }
+.mf-ore-wrap .mf-ore { position: relative; transform: none; }
+.mf-ore-wrap .mf-ore:hover, .mf-ore-wrap .mf-ore:focus-visible { transform: scale(1.12); }
+.mf-ore-wrap.open { z-index: 9; }
+.mf-tip { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(4px); white-space: nowrap;
+  padding: 6px 12px; border-radius: 8px; border: 0; background: var(--mined-amber); color: #1b1620; font: 600 13px/1.2 var(--font);
+  cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s var(--mined-ease-out); box-shadow: 0 6px 16px rgba(0, 0, 0, .45); }
+.mf-tip::after { content: ''; position: absolute; left: 50%; top: 100%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: var(--mined-amber); }
+.mf-tip.pick { background: rgba(16, 14, 20, .88); color: var(--mined-ink); border: 1.5px dashed rgba(243, 233, 220, .7); }
+.mf-tip.pick::after { border-top-color: rgba(243, 233, 220, .7); }
+.mf-ore-wrap.open .mf-tip { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 760px) {
+  .minefield.minefield { --mf-x0: 7%; --mf-xw: 62%; }
+  .mf-years { right: 2.5%; top: 30%; max-height: calc(100% - 30% - 200px); gap: 8px; }
+  .mf-picker { top: calc(70px + 48px); }
+  .mf-tip { font-size: 12px; padding: 5px 9px; }
+}
+@media (prefers-reduced-motion: reduce) { .mf-tip { transition: none; } }
