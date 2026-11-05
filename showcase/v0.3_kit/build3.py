@@ -61,12 +61,13 @@ def still(png, d, music, mstart, out, fi=0.8, fo=0.6):
 
 
 # ───────────────────────── 3 이야기 (Kling 클립 + 말풍선 + 목소리)
+SKIP = {'K10': 0.7}  # 클립 앞에서 건너뛸 초
 STORY = [  # 클립, 길이, [(말풍선, 시작, 끝, 목소리)]
     ('K01', 7.0, [('b01', 1.0, 6.4, 'C01_1')]),
     ('K02', 8.0, [('b02a', 0.6, 2.8, 'C02_1'), ('b02b', 3.2, 7.6, 'C02_2')]),
     ('K03', 7.0, [('b03', 0.8, 6.6, 'C03_1')]),
     ('K06', 6.0, [('b06', 0.9, 5.6, 'C06_1')]),
-    ('K10', 6.0, [('b10', 2.9, 6.0, 'C10_1')]),
+    ('K10', 6.0, [('b10', 2.9, 6.0, 'C10_1')]),  # 시작 0.7초(날짜 글자) 건너뜀: SKIP 참고
 ]
 
 
@@ -97,7 +98,8 @@ def story(out):
     pi = 0
     for i, (k, d, bs) in enumerate(STORY):
         _a, z = src_input(k, d)
-        fc += f'[{i}:v]trim=0:{d},setpts=PTS-STARTPTS,{fit()},{z}format=yuv420p[c{i}];'
+        ss = SKIP.get(k, 0) if not z else 0
+        fc += f'[{i}:v]trim={ss}:{ss + d},setpts=PTS-STARTPTS,{fit()},{z}format=yuv420p[c{i}];'
         last = f'c{i}'
         for j, (b, t0, t1, _v) in enumerate(bs):
             fc += ov(base + pi, t0, t1) + f'[o{i}{j}];[{last}][o{i}{j}]overlay=0:0:shortest=1[c{i}_{j}];'
