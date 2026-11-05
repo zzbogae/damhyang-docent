@@ -61,6 +61,7 @@ def still(png, d, music, mstart, out, fi=0.8, fo=0.6):
 
 
 # ───────────────────────── 3 이야기 (Kling 클립 + 말풍선 + 목소리)
+VEO_LOGO = 'delogo=x=1236:y=686:w=38:h=24,'  # Flow(Veo) 클립 'Veo' 글자 지우기 (1280x720 기준)
 SKIP = {'K10': 0.7}  # 클립 앞에서 건너뛸 초
 STORY = [  # 클립, 길이, [(말풍선, 시작, 끝, 목소리)]
     ('K01', 7.0, [('b01', 1.0, 6.4, 'C01_1')]),
@@ -99,7 +100,7 @@ def story(out):
     for i, (k, d, bs) in enumerate(STORY):
         _a, z = src_input(k, d)
         ss = SKIP.get(k, 0) if not z else 0
-        fc += f'[{i}:v]trim={ss}:{ss + d},setpts=PTS-STARTPTS,{fit()},{z}format=yuv420p[c{i}];'
+        fc += f'[{i}:v]{"" if z else VEO_LOGO}trim={ss}:{ss + d},setpts=PTS-STARTPTS,{fit()},{z}format=yuv420p[c{i}];'
         last = f'c{i}'
         for j, (b, t0, t1, _v) in enumerate(bs):
             fc += ov(base + pi, t0, t1) + f'[o{i}{j}];[{last}][o{i}{j}]overlay=0:0:shortest=1[c{i}_{j}];'
@@ -231,7 +232,7 @@ def ending(out, music, mstart):
                  '-loop', '1', '-t', d3, '-i', 'cards/out_end2.png', '-i', f'{A}/voice/line_B_C12_1.mp3',
                  '-ss', mstart, '-i', music]
     tot = d1 + d2 + d3 - 1.6
-    fc = (f'[0:v]trim=0:{d1},setpts=PTS-STARTPTS,{fit()},{z}eq=brightness=-0.06:saturation=0.9,format=yuv420p[k];'
+    fc = (f'[0:v]{VEO_LOGO if k else ""}trim=0:{d1},setpts=PTS-STARTPTS,{fit()},{z}eq=brightness=-0.06:saturation=0.9,format=yuv420p[k];'
           + ov(1, 0.6, d1 - 0.2) + f'[b];[k][b]overlay=0:0:shortest=1,trim=0:{d1},setpts=PTS-STARTPTS[e0];'
           f'[2:v]{fit()}[e1];[3:v]{fit()},zoompan=z=\'1+0.015*on/{d3 * FPS}\':d=1:s={W}x{H}:fps={FPS}[e2];'
           f'[e0][e1]xfade=transition=fade:duration=0.8:offset={d1 - 0.8}[f1];'
