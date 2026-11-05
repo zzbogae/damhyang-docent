@@ -231,7 +231,7 @@ def ending(out, music, mstart):
                  '-loop', '1', '-t', d3, '-i', 'cards/out_end2.png', '-i', f'{A}/voice/line_B_C12_1.mp3',
                  '-ss', mstart, '-i', music]
     tot = d1 + d2 + d3 - 1.6
-    fc = (f'[0:v]trim=0:{d1},setpts=PTS-STARTPTS,{fit()},{z}format=yuv420p[k];'
+    fc = (f'[0:v]trim=0:{d1},setpts=PTS-STARTPTS,{fit()},{z}eq=brightness=-0.06:saturation=0.9,format=yuv420p[k];'
           + ov(1, 0.6, d1 - 0.2) + f'[b];[k][b]overlay=0:0:shortest=1,trim=0:{d1},setpts=PTS-STARTPTS[e0];'
           f'[2:v]{fit()}[e1];[3:v]{fit()},zoompan=z=\'1+0.015*on/{d3 * FPS}\':d=1:s={W}x{H}:fps={FPS}[e2];'
           f'[e0][e1]xfade=transition=fade:duration=0.8:offset={d1 - 0.8}[f1];'
