@@ -935,6 +935,19 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 .intro-island-btn { background: rgba(242, 170, 85, .28); }
 .intro-island-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; letter-spacing: .1em; }
 .intro-island-note { flex-basis: 100%; text-align: center; font-size: 13px; color: rgba(38, 50, 59, .75); }
+/* 첫 홈 「섬 둘러보기」(11/04 보별 요청): 버튼을 누르면 나의 공간 예시 영상이 화면 가득 바로 이어서 재생된다 */
+.intro-tour-btn { background: rgba(255, 255, 255, .18); }
+.space-tour { position: absolute; inset: 0; z-index: 20; background: #0d0f12; opacity: 0; visibility: hidden; transition: opacity .5s ease, visibility 0s linear .5s; }
+.space-tour.on { opacity: 1; visibility: visible; transition: opacity .5s ease; }
+.space-tour-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.space-tour-close { position: absolute; top: 18px; right: 20px; appearance: none; cursor: pointer; font-family: var(--font); font-size: 14px; letter-spacing: .05em; color: #fff;
+  padding: 9px 18px; border-radius: 999px; background: rgba(13, 15, 18, .38); border: 1px solid rgba(255, 255, 255, .45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.space-tour-close:hover { background: rgba(13, 15, 18, .55); }
+.space-tour-tabs { position: absolute; left: 50%; bottom: 5.5%; transform: translateX(-50%); display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 92vw; }
+.space-tour-tabs button { appearance: none; cursor: pointer; font-family: var(--font); font-size: 14px; letter-spacing: .06em; color: rgba(255, 255, 255, .85); padding: 8px 16px; border-radius: 999px;
+  background: rgba(13, 15, 18, .32); border: 1px solid rgba(255, 255, 255, .35); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: background .2s, color .2s; }
+.space-tour-tabs button.on { color: #26323b; background: rgba(242, 195, 116, .92); border-color: rgba(242, 195, 116, 1); }
+.space-tour-close:focus-visible, .space-tour-tabs button:focus-visible { outline: 2px solid var(--mined-amber, #F2AA55); outline-offset: 2px; }
 
 /* v2(11/03) 섬 영상 넷 고르기 */
 .isl-reveal video, .isl-inside video.isl-room { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
