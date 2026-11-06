@@ -13,6 +13,9 @@
 /* 광석: 자리는 감싸개가, 광석 버튼은 그 안 가운데 */
 .mf-ore-wrap { position: absolute; transform: translate(-50%, -50%); z-index: 4; display: flex; flex-direction: column; align-items: center; }
 .mf-ore-wrap .mf-ore { position: relative; transform: none; }
+/* 11/06: 등장 애니메이션(mf-in)이 translate(-50%,-50%)를 계속 붙들고 있어 광석이 제자리보다 반 칸 위·왼쪽에 떠 있었다. 감싼 광석은 크기만 키운다 */
+.mf-ore-wrap .mf-ore { animation-name: mf-in-wrap; }
+@keyframes mf-in-wrap { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: scale(1); } }
 .mf-ore-wrap .mf-ore:hover, .mf-ore-wrap .mf-ore:focus-visible { transform: scale(1.12); }
 .mf-ore-wrap.open { z-index: 9; }
 .mf-tip { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(4px); white-space: nowrap;
