@@ -43,7 +43,7 @@ export function Lift({ onBack, onDescend }: { onBack: () => void; onDescend: (ye
       if (!w.candidate || !min || !(min in MINERAL_IMG)) continue;
       const y = Number(w.week.split('-W')[0]);
       const a = m.get(y) ?? [];
-      if (a.length < 6) a.push(MINERAL_IMG[min]);
+      if (a.length < 6) a.push(ART.stoneBasic); // 11/06: 캐기 전 광석은 검은 돌(원 디자인)
       m.set(y, a);
     }
     return m;

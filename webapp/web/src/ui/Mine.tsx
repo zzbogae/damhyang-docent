@@ -4,13 +4,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../state/store';
 import { playCue } from '../mindi/sound';
-import { ART, MINERAL_IMG, stratumFor } from './design';
+import { ART, stratumFor } from './design';
 import { oreMineral, SPACE_NEED, useCollected } from '../ore/collection';
 import { loadSpaces } from './Space';
 import { CRACK_C1, CRACK_C2, monthWeek } from './MineField';
 import type { Mineral } from './minerals';
 import type { WeekRecord } from '../types';
-import { OreSplit, bandColor, bandWord, bandsOf } from './OreSplit';
+import { GeodeCore, bandColor, bandWord, bandsOf } from './OreSplit';
 import { openOreRead } from './OreReadGuide';
 import { MindiMark } from './Icons';
 import { mindiSay, sfx } from '../mindi/soundKit';
@@ -39,7 +39,6 @@ export function Mine({ w, onCarry, onView, onMore, onSpace }: { w: WeekRecord; o
   const [leaving, setLeaving] = useState<'up' | 'view'>();
   const done = hits >= need;
   const m = oreMineral(w) as Mineral | null;
-  const core = w.candidate && m && m in MINERAL_IMG ? MINERAL_IMG[m] : ART.stoneCut;
   const year = Number(w.week.split('-W')[0]);
   const nextRef = useRef<HTMLButtonElement>(null);
   const hit = () => {
@@ -77,7 +76,8 @@ export function Mine({ w, onCarry, onView, onMore, onSpace }: { w: WeekRecord; o
       <button type="button" className={`mine-ore ${stage}`} key={shake} onClick={hit} disabled={done}
         aria-label={done ? `${monthWeek(w)} 광석을 캤습니다` : `${monthWeek(w)} 광석 캐기 (${hits}/${need})`}>
         {/* 11/03 보별: 데이터 광석이든 직접 고른 주(회색 돌)든 깨진 안쪽에 결 띠를 그린다. 오른쪽 범례와 같은 색 */}
-        {done && <span className="mine-core split"><OreSplit img={core} bands={bands} size={220} label={`${monthWeek(w)} 광석의 쪼갠 단면`} /></span>}
+        {/* 11/06 보별: 단희 원 디자인대로 검은 돌이 깨지면 정동 안쪽에서 결 색이 나온다 */}
+        {done && <span className="mine-core geode-wrap"><GeodeCore bands={bands} label={`${monthWeek(w)} 광석의 쪼갠 단면`} /></span>}
         <img className="mine-shell" src={ART.stoneBasic} alt="" />
         <svg className="mine-crack" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path className="c1" d={CRACK_C1} /><path className="c2" d={CRACK_C2} /></svg>
         <img className="mine-frag" src={ART.stoneFragment} alt="" aria-hidden="true" />

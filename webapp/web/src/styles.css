@@ -1048,3 +1048,15 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 .isl-yours figure { margin: 0; flex: none; text-align: center; }
 .isl-yours img { display: block; width: 92px; height: 92px; border-radius: 6px; }
 .isl-yours figcaption { margin-top: 4px; color: var(--mined-ink-soft); }
+
+/* 11/06 보별: 단희 원 디자인 — 검은 돌을 깨면 정동 안쪽에서 결 색이 나온다(GeodeCore) */
+.geode { position: relative; margin: 0; aspect-ratio: 342 / 581; }
+.geode > * { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.geode-shell { object-fit: contain; }
+.geode-tone, .geode-light { -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+.geode-tone { mix-blend-mode: color; }
+.geode-light { mix-blend-mode: soft-light; opacity: .75; }
+.geode-spark { inset: auto; left: 52%; top: 40%; width: 16%; height: 10%; border-radius: 50%; mix-blend-mode: screen; opacity: .85; animation: geode-spark 2.6s ease-in-out infinite alternate; }
+@keyframes geode-spark { from { opacity: .45; transform: scale(.85); } to { opacity: .95; transform: scale(1.1); } }
+@media (prefers-reduced-motion: reduce) { .geode-spark { animation: none; } }
+.ore-read-geode { height: 150px; }

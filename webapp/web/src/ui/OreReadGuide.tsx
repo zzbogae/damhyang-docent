@@ -2,10 +2,10 @@
 // 근거: 광물 9종(팀 9/23 확정 · 축 × 방향 8종 + 여러 축 형석), 결 색 범례 인계 v1 §2-4 「광석 읽는 법」 카드, 대본집 v1.1 6-2·7-3·8-2.
 // 원칙: 「좋은 광석, 나쁜 광석은 없어요.」 많았다·적었다만 쓰고 판정어는 쓰지 않는다. 완성률·개수 순위는 보여 주지 않는다(v6 §11).
 import { useEffect, useRef, useState } from 'react';
-import { MINERAL_IMG } from './design';
+import { ART, MINERAL_IMG } from './design';
 import { MINERALS, MINERAL_BY_AXIS_DIR, MINERAL_HEX, type Mineral } from './minerals';
 import { AXES, axisScreen, type Axis } from '../types';
-import { OreSplit, patternWord, type Band } from './OreSplit';
+import { GeodeCore, patternWord, type Band } from './OreSplit';
 import { MindiMark } from './Icons';
 
 const ABOUT: Record<Axis, { up: string; down: string }> = {
@@ -60,9 +60,9 @@ export function OreReadGuide() {
         <div className="ore-read-main">
           <div className="ore-read-stage">
             <div className="ore-read-pair">
-              <figure className="ore-whole"><img src={MINERAL_IMG[sel]} alt="" style={{ filter: `drop-shadow(0 0 14px ${MINERAL_HEX[sel]})` }} /><figcaption className="small">캐기 전</figcaption></figure>
+              <figure className="ore-whole"><img src={ART.stoneBasic} alt="" style={{ height: 150, width: 'auto', filter: `drop-shadow(0 0 14px ${MINERAL_HEX[sel]})` }} /><figcaption className="small">캐기 전</figcaption></figure>
               <div className="ore-read-arrow" aria-hidden="true">⛏ →</div>
-              <div className="ore-whole"><OreSplit img={MINERAL_IMG[sel]} bands={cur.bands} size={150} label={`${sel}을 쪼갠 단면`} /><span className="small">쪼갠 단면</span></div>
+              <div className="ore-whole"><GeodeCore bands={cur.bands} label={`${sel}을 쪼갠 단면`} className="ore-read-geode" /><span className="small">쪼갠 단면</span></div>
             </div>
             <h3 className="ore-read-name"><i style={{ background: MINERAL_HEX[sel] }} aria-hidden="true" />{sel}</h3>
             <p className="ore-read-title">{cur.title}</p>

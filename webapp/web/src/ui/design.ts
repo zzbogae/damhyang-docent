@@ -37,6 +37,7 @@ import liftWide from '../assets/design/lift_wide.webp';
 import mindiFull from '../assets/design/mindi_full.webp';
 import stoneBasic from '../assets/design/stone_basic.webp';
 import stoneCut from '../assets/design/stone_cut.webp';
+import stoneCutCavity from '../assets/design/stone_cut_cavity.webp';
 import stoneFragment from '../assets/design/stone_fragment.webp';
 import envSea from '../assets/design/env_sea.webp';
 import envMountain from '../assets/design/env_mountain.webp';
@@ -47,7 +48,7 @@ import type { Mineral } from './minerals';
 
 export const ART = {
   introFog, introPoster, logoLight, logoDark, mindiCharacter, pickaxe, obsHall, fogMain,
-  observatoryBg, liftShaft, liftWide, mindiFull, stoneBasic, stoneCut, stoneFragment,
+  observatoryBg, liftShaft, liftWide, mindiFull, stoneBasic, stoneCut, stoneCutCavity, stoneFragment,
 };
 
 /** 나의 공간 섬 그림 3종. 장소 선택을 가장 가까운 예시 그림에 잇는다(예시 그림이 더 생기면 여기만 늘린다) */

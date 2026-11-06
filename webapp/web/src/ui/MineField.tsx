@@ -65,14 +65,15 @@ function Ore({ w, i, onMine, picked = false, top, open, onOpen }: { w: WeekRecor
       <button
         className={`mf-ore${picked ? ' picked' : ''}${picked || w.evidence.cross_validated ? '' : ' thin'}`}
         data-mine-week={w.week} data-mineral={picked ? undefined : m} data-picked={picked ? 'true' : undefined}
-        style={{ width: size, animationDelay: `${i * 0.05}s` }}
+        style={{ width: Math.round(size * 0.78), animationDelay: `${i * 0.05}s` }}
         onPointerDown={(e) => { touch.current = e.pointerType === 'touch'; wasOpen.current = open; }}
         onFocus={() => onOpen(w.week)} onBlur={() => onOpen(undefined)}
         onClick={click} aria-label={`${monthWeek(w)} · ${picked ? '이 주 고르기' : '캐기'}`}
       >
         {halo && <span className="mf-halo" style={{ background: halo }} />}
         {!picked && <span className="mf-glow" style={{ background: `radial-gradient(circle, ${MINERAL_HEX[m]}88, transparent 70%)` }} />}
-        <img className="mf-core" src={MINERAL_IMG[m]} alt="" />
+        {/* 11/06 보별: 원 디자인대로 캐기 전 광석은 검은 돌. 색은 깼을 때 안쪽에서 나온다(빛만 살짝 비친다) */}
+        <img className="mf-core" src={ART.stoneBasic} alt="" />
       </button>
       <button type="button" tabIndex={-1} className={`mf-tip${picked ? ' pick' : ''}`} onClick={() => { sfx('tap'); onMine(w.week); }} aria-hidden="true">
         {picked ? '이 주 고르기' : `${monthWeek(w)}${halo ? ` · 여러 색 ${multi.length}가지` : ''} · 캐기`}

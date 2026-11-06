@@ -99,3 +99,9 @@
 /* 11/06 전시: 섬 전이면 버튼 셋(가져가기 · 바로 보기 · 한 개 더 캐기/섬 만들러 가기) */
 .mine-next:has(> :nth-child(3)) { gap: 20px; }
 .mine-count b { color: var(--mined-amber); font-weight: 700; }
+
+/* 11/06 보별: 원 디자인(StoneA_Cut) — 같은 자리에서 검은 돌이 깨지고 정동 안쪽 결 색이 드러난다 */
+.mine-core.geode-wrap { inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 0 28px rgba(255, 236, 200, .28)); }
+.mine-core.geode-wrap .geode { width: 100%; height: 100%; }
+.mine-ore.broken:has(.geode-wrap) .mine-shell { animation: mine-split-out .45s ease-out forwards; }
+@keyframes mine-split-out { to { opacity: 0; transform: scale(1.06); } }
