@@ -219,23 +219,45 @@ def demo(out):
 
 
 # ───────────────────────── 6 나의 섬 (섬 고르기 녹화에서 고른 음악방부터)
-def islands(spaces, out, each=9.5):
+def islands(spaces, out, cap=10.0, ixf=0.4, xf=0.8):
+    """spaces: [(파일, [(a,b),...], key)]. myspace.json의 구간 안에서만 자른다(구간 밖 컷이 섞이지 않게).
+    섬 하나는 최대 cap초: 구간을 차례로 쓰고, 넘치면 마지막 구간을 줄인다."""
     ins, fc = [], ''
-    for f, a, key in spaces:
-        ins += ['-ss', a, '-t', each + 0.2, '-i', f]
+    for f, *_x in spaces:
+        ins += ['-i', f]
     n = len(spaces)
     for *_x, key in spaces:
         ins += ['-loop', '1', '-i', card(f'opt_{key}')]
-    pieces = []
-    for i, (f, a, key) in enumerate(spaces):
-        fc += (f'[{i}:v]trim=0:{each},setpts=PTS-STARTPTS,{fit()}[r{i}];'
-               + ov(n + i, 0.5, min(5.5, each - 0.3), 0.4) + f'[o{i}];[r{i}][o{i}]overlay=0:0:shortest=1[t{i}];'
-               f'[{i}:a]atrim=0:{each},asetpts=PTS-STARTPTS,aresample=48000,aformat=channel_layouts=stereo,volume=0.9[n{i}];')
-    acc, aacc, t = 't0', 'n0', each
+    lens = []
+    for i, (f, cuts, key) in enumerate(spaces):
+        use, left = [], cap
+        for (ca, cb) in cuts:
+            if left <= 1.0:
+                break
+            d = min(cb - ca, left + (ixf if use else 0))
+            use.append((ca, ca + d))
+            left -= d - (ixf if len(use) > 1 else 0)
+        k = len(use)
+        fc += f'[{i}:v]split={k}' + ''.join(f'[sv{i}_{j}]' for j in range(k)) + ';'
+        fc += f'[{i}:a]asplit={k}' + ''.join(f'[sa{i}_{j}]' for j in range(k)) + ';'
+        for j, (ca, cb) in enumerate(use):
+            fc += (f'[sv{i}_{j}]trim={ca}:{cb},setpts=PTS-STARTPTS,{fit()}[cv{i}_{j}];'
+                   f'[sa{i}_{j}]atrim={ca}:{cb},asetpts=PTS-STARTPTS,aresample=48000,'
+                   f'aformat=channel_layouts=stereo,volume=0.9[ca{i}_{j}];')
+        vacc, aacc, t = f'cv{i}_0', f'ca{i}_0', use[0][1] - use[0][0]
+        for j in range(1, k):
+            fc += (f'[{vacc}][cv{i}_{j}]xfade=transition=fade:duration={ixf}:offset={t - ixf:.2f}[iv{i}_{j}];'
+                   f'[{aacc}][ca{i}_{j}]acrossfade=d={ixf}[ia{i}_{j}];')
+            vacc, aacc, t = f'iv{i}_{j}', f'ia{i}_{j}', t + (use[j][1] - use[j][0]) - ixf
+        fc += (ov(n + i, 0.5, min(5.5, t - 0.3), 0.4) + f'[o{i}];[{vacc}][o{i}]overlay=0:0:shortest=1,'
+               f'trim=0:{t:.3f},setpts=PTS-STARTPTS[t{i}];[{aacc}]atrim=0:{t:.3f}[n{i}];')
+        lens.append(t)
+        print(f'  섬 {key}: ' + ', '.join(f'{x:.1f}~{y:.1f}' for x, y in use) + f' → {t:.1f}초')
+    acc, aacc, t = 't0', 'n0', lens[0]
     for i in range(1, n):
-        fc += f'[{acc}][t{i}]xfade=transition=fade:duration=0.8:offset={t - 0.8:.2f}[w{i}];'
-        fc += f'[{aacc}][n{i}]acrossfade=d=0.8[m{i}];'
-        acc, aacc, t = f'w{i}', f'm{i}', t + each - 0.8
+        fc += f'[{acc}][t{i}]xfade=transition=fade:duration={xf}:offset={t - xf:.2f}[w{i}];'
+        fc += f'[{aacc}][n{i}]acrossfade=d={xf}[m{i}];'
+        acc, aacc, t = f'w{i}', f'm{i}', t + lens[i] - xf
     total = t
     fc += (f'[{acc}]fade=t=in:st=0:d=0.5,fade=t=out:st={total - 0.8:.2f}:d=0.8[v];'
            f'[{aacc}]afade=t=in:st=0:d=0.6,afade=t=out:st={total - 1:.2f}:d=1,atrim=0:{total}[a]')
@@ -289,8 +311,8 @@ def main():
     for key in ('music', 'sea', 'sky', 'jungle'):  # 섬 고르기에서 음악방을 골랐으니 음악방부터
         f = getattr(o, key)
         c = cut.get(key) or [max(0, dur(f) - 14), dur(f) - 0.5]
-        a = c[0][0] if isinstance(c[0], (list, tuple)) else c[0]
-        spaces.append((f, a, key))
+        cuts = [tuple(x) for x in c] if isinstance(c[0], (list, tuple)) else [tuple(c)]
+        spaces.append((f, cuts, key))
     D = {}
     still(card('title'), 5, 'seg/01_title.mp4', fi=1.0); D['01_title'] = 5
     still(card('spec'), 9, 'seg/02_spec.mp4'); D['02_spec'] = 9
