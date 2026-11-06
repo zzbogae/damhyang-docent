@@ -16,15 +16,22 @@ import { mindiSay } from '../mindi/soundKit';
 import './lift.css';
 
 // 민디 대사 정본(전체대본집 v1.1 §6-1, 조용한 결): 5-1 층 표시기, 5-2 확인 쌍, 5-3 내려가는 중
-const L51 = '여기 한 층이 한 해예요. 깊이 내려갈수록 오래된 해고요. 가 보고 싶은 해를 골라 보세요.';
+const L51 = '맨 위는 최근 12주, 한 주가 한 층이에요. 그 아래로는 한 층이 한 해고요. 가 보고 싶은 층을 골라 보세요.';
 const L52 = '아래를 누르면 내려가요. 돌아가셔도 되고요.';
 const L53 = '조금만 더 내려갈게요.';
 
 const reduced = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// 11/06 보별 결정: 맨 위 층은 「최근 12주」(한 주가 얇은 한 층), 그 아래로 한 해가 한 층. year 0 이 최근 12주 층이다
+const RECENT = 0;
+const RECENT_WEEKS = 12;
+const nameOf = (y: number) => (y === RECENT ? '최근 12주' : `${y}년`);
+
 export function Lift({ onBack, onDescend }: { onBack: () => void; onDescend: (year: number) => void }) {
   const { weeks } = useStore();
   // 위가 최근, 아래로 오래됨. 그해 기록이 남은 주 수 = 막대 길이
+  const recentSet = useMemo(() => new Set([...weeks].sort((a, b) => (a.date_start < b.date_start ? 1 : -1)).slice(0, RECENT_WEEKS).map((w) => w.week)), [weeks]);
+  const floorOf = (w: { week: string }) => (recentSet.has(w.week) ? RECENT : Number(w.week.split('-W')[0]));
   const floors = useMemo(() => {
     const m = new Map<number, number>();
     for (const w of weeks) {
@@ -32,8 +39,11 @@ export function Lift({ onBack, onDescend }: { onBack: () => void; onDescend: (ye
       const seen = Object.values(w.coverage).some((c) => c === 'observed') ? 1 : 0;
       m.set(y, (m.get(y) ?? 0) + seen);
     }
-    return [...m.entries()].sort((a, b) => b[0] - a[0]).map(([year, n]) => ({ year, n }));
-  }, [weeks]);
+    const years = [...m.entries()].sort((a, b) => b[0] - a[0]).map(([year, n]) => ({ year, n }));
+    if (!recentSet.size) return years;
+    const n = weeks.filter((w) => recentSet.has(w.week) && Object.values(w.coverage).some((c) => c === 'observed')).length;
+    return [{ year: RECENT, n }, ...years];
+  }, [weeks, recentSet]);
   const max = Math.max(1, ...floors.map((f) => f.n));
   // 그해 지층 벽에 박힌 광석(그해 광석 주의 광물 그림). 벽 양쪽에 번갈아, 한 층에 최대 6개
   const wallOres = useMemo(() => {
@@ -41,13 +51,13 @@ export function Lift({ onBack, onDescend }: { onBack: () => void; onDescend: (ye
     for (const w of weeks) {
       const min = oreMineral(w) as Mineral | null;
       if (!w.candidate || !min || !(min in MINERAL_IMG)) continue;
-      const y = Number(w.week.split('-W')[0]);
+      const y = floorOf(w);
       const a = m.get(y) ?? [];
       if (a.length < 6) a.push(ART.stoneBasic); // 11/06: 캐기 전 광석은 검은 돌(원 디자인)
       m.set(y, a);
     }
     return m;
-  }, [weeks]);
+  }, [weeks, recentSet]); // eslint-disable-line react-hooks/exhaustive-deps
   // 처음 고른 층: 기록이 남은 가장 최근 해. 다만 그해 광석이 3개보다 적으면 광석이 가장 많은 해부터(11/06 전시: 첫 층에서 캘 광석이 모자라지 않게)
   const first = (() => {
     const recent = Math.max(0, floors.findIndex((f) => f.n > 0));
@@ -104,7 +114,7 @@ export function Lift({ onBack, onDescend }: { onBack: () => void; onDescend: (ye
     }
     void kitDescend(Math.min(1, (at + 1) / Math.max(1, floors.length)), total);
     await new Promise((r) => { timers.current.push(window.setTimeout(r, total * 1000)); });
-    setSaid(`${cur.year}년입니다.`);
+    setSaid(`${nameOf(cur.year)}입니다.`);
     sfx('liftArrive');
     await new Promise((r) => { timers.current.push(window.setTimeout(r, 900)); });
     onDescend(cur.year);
@@ -117,8 +127,8 @@ export function Lift({ onBack, onDescend }: { onBack: () => void; onDescend: (ye
         <div className="lift-column" style={{ ['--d' as string]: String(depth + 1), transitionDuration: `${dur}s` }}>
           <div className="lift-surface" style={{ backgroundImage: `url(${ART.observatoryBg})` }} />
           {floors.map((f, k) => (
-            <div key={f.year} className={`lift-stratum${k === at ? ' pick' : ''}`} style={{ backgroundImage: `url(${stratumFor(f.year).src})` }}>
-              <span className="lift-year">{f.year}</span>
+            <div key={f.year} className={`lift-stratum${k === at ? ' pick' : ''}${f.year === RECENT ? ' weeks' : ''}`} style={{ backgroundImage: `url(${stratumFor(f.year === RECENT ? (floors[1]?.year ?? new Date().getFullYear()) : f.year).src})` }}>
+              <span className="lift-year">{f.year === RECENT ? '최근 12주' : f.year}</span>
               {(wallOres.get(f.year) ?? []).map((src, i) => (
                 <img key={i} className="lift-wall-ore" src={src} alt=""
                   style={{ [i % 2 ? 'right' : 'left']: `${(i % 2 ? 16 : 5) + ((i * 37) % 17)}%`, top: `${26 + ((i * 53) % 46)}%`, ['--r' as string]: `${(i * 47) % 50 - 25}deg` }} />
@@ -134,7 +144,7 @@ export function Lift({ onBack, onDescend }: { onBack: () => void; onDescend: (ye
           <img className="lift-rider" src={ART.mindiFull} alt="" />
           <div className="lift-cage-floor"><i className="lift-lamp" /></div>
         </div>
-        {going && passing !== null && floors[passing] && <div className="lift-passing" key={passing}>{floors[passing].year}</div>}
+        {going && passing !== null && floors[passing] && <div className="lift-passing" key={passing}>{floors[passing].year === RECENT ? '최근 12주' : floors[passing].year}</div>}
         <div className="lift-shade" />
       </div>
       <div className="lift-say" key={said} aria-live="polite"><MindiMark size={30} /><p>{said}</p></div>
@@ -145,8 +155,8 @@ export function Lift({ onBack, onDescend }: { onBack: () => void; onDescend: (ye
           {floors.map((f, k) => (
             <li key={f.year}>
               <button className={`lift-floor${k === at ? ' on' : ''}`} aria-current={k === at ? 'true' : undefined} disabled={going}
-                onClick={() => move(k)} aria-label={`${f.year}년 · 기록 남은 주 ${f.n}주`}>
-                <span className="lift-mark" aria-hidden="true">▶</span>{f.year}
+                onClick={() => move(k)} aria-label={`${nameOf(f.year)} · 기록 남은 주 ${f.n}주`}>
+                <span className="lift-mark" aria-hidden="true">▶</span>{f.year === RECENT ? '최근 12주' : f.year}
                 <i className="lift-bar" style={{ width: Math.max(2, Math.round((f.n / max) * 64)) }} aria-hidden="true" />
               </button>
             </li>
@@ -156,9 +166,9 @@ export function Lift({ onBack, onDescend }: { onBack: () => void; onDescend: (ye
       </div>
       <div className="lift-confirm" role="group" aria-label="내려가기 확인">
         <button className="lift-btn" onClick={() => { sfx('back'); onBack(); }} disabled={going}>돌아가기</button>
-        <button className="lift-btn primary" onClick={descend} disabled={going}>{cur.year}년으로 내려간다</button>
+        <button className="lift-btn primary" onClick={descend} disabled={going}>{cur.year === RECENT ? '최근 12주로' : `${cur.year}년으로`} 내려간다</button>
       </div>
-      <p className="sr-only" role="status">{going ? `${cur.year}년으로 내려가는 중입니다` : `${cur.year}년을 골랐습니다`}</p>
+      <p className="sr-only" role="status">{going ? `${nameOf(cur.year)}(으)로 내려가는 중입니다` : `${nameOf(cur.year)}을(를) 골랐습니다`}</p>
     </section>
   );
 }
