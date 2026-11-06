@@ -48,7 +48,15 @@ export function Lift({ onBack, onDescend }: { onBack: () => void; onDescend: (ye
     }
     return m;
   }, [weeks]);
-  const first = Math.max(0, floors.findIndex((f) => f.n > 0));
+  // 처음 고른 층: 기록이 남은 가장 최근 해. 다만 그해 광석이 3개보다 적으면 광석이 가장 많은 해부터(11/06 전시: 첫 층에서 캘 광석이 모자라지 않게)
+  const first = (() => {
+    const recent = Math.max(0, floors.findIndex((f) => f.n > 0));
+    const ores = (k: number) => wallOres.get(floors[k]?.year)?.length ?? 0;
+    if (ores(recent) >= 3) return recent;
+    let best = recent;
+    floors.forEach((_, k) => { if (ores(k) > ores(best)) best = k; });
+    return best;
+  })();
   const [at, setAt] = useState(first);
   const [going, setGoing] = useState(false);
   const [said, setSaid] = useState(L51);

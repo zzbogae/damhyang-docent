@@ -11,7 +11,7 @@ import { useStore } from '../state/store';
 import { rangeLabel } from '../mindi/templates';
 import { fieldDepth, sfx } from '../mindi/soundKit';
 import { MINERAL_IMG, ART, stratumFor } from './design';
-import { MINERAL_HEX, type Mineral } from './minerals';
+import { MINERAL_BY_AXIS_DIR, MINERAL_HEX, type Mineral } from './minerals';
 import { oreMineral } from '../ore/collection';
 import type { WeekRecord } from '../types';
 import './field.css';
@@ -50,6 +50,9 @@ function Ore({ w, i, onMine, picked = false, top, open, onOpen }: { w: WeekRecor
   const m = (oreMineral(w) ?? '형석') as Mineral;
   const y = top ?? 30 + (ROW[m] ?? 1.5) * 13;
   const size = picked ? 44 : 40 + Math.min(3, w.evidence.independent ?? 1) * 8;
+  // 11/06 전시(멘토: 여러 색 = 지표 3개 이상): 세 지표 이상이 함께 움직인 광석은 그 지표 색들로 도는 빛을 두른다
+  const multi = picked ? [] : [...new Map(w.badges.filter((b) => b.axis).map((b) => [b.axis!, MINERAL_HEX[MINERAL_BY_AXIS_DIR[b.axis!][b.direction === 'down' ? 'down' : 'up']]])).values()];
+  const halo = multi.length >= 3 ? `conic-gradient(${[...multi, multi[0]].join(', ')})` : undefined;
   // 마우스는 올리면 말풍선이 이미 보이므로 한 번에 캐러 간다. 손가락은 첫 탭에 말풍선, 두 번째(또는 말풍선)에 캐러 간다
   const click = () => {
     if (touch.current && !wasOpen.current) { onOpen(w.week); return; }
@@ -57,7 +60,7 @@ function Ore({ w, i, onMine, picked = false, top, open, onOpen }: { w: WeekRecor
     onMine(w.week);
   };
   return (
-    <div className={`mf-ore-wrap${open ? ' open' : ''}`} style={{ left: xAt(weekFrac(w)), top: `${y}%` }}
+    <div className={`mf-ore-wrap${open ? ' open' : ''}${halo ? ' multi' : ''}`} style={{ left: xAt(weekFrac(w)), top: `${y}%` }}
       onMouseEnter={() => onOpen(w.week)} onMouseLeave={() => onOpen(undefined)}>
       <button
         className={`mf-ore${picked ? ' picked' : ''}${picked || w.evidence.cross_validated ? '' : ' thin'}`}
@@ -67,11 +70,12 @@ function Ore({ w, i, onMine, picked = false, top, open, onOpen }: { w: WeekRecor
         onFocus={() => onOpen(w.week)} onBlur={() => onOpen(undefined)}
         onClick={click} aria-label={`${monthWeek(w)} · ${picked ? '이 주 고르기' : '캐기'}`}
       >
+        {halo && <span className="mf-halo" style={{ background: halo }} />}
         {!picked && <span className="mf-glow" style={{ background: `radial-gradient(circle, ${MINERAL_HEX[m]}88, transparent 70%)` }} />}
         <img className="mf-core" src={MINERAL_IMG[m]} alt="" />
       </button>
       <button type="button" tabIndex={-1} className={`mf-tip${picked ? ' pick' : ''}`} onClick={() => { sfx('tap'); onMine(w.week); }} aria-hidden="true">
-        {picked ? '이 주 고르기' : `${monthWeek(w)} · 캐기`}
+        {picked ? '이 주 고르기' : `${monthWeek(w)}${halo ? ` · 여러 색 ${multi.length}가지` : ''} · 캐기`}
       </button>
     </div>
   );

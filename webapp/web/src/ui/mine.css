@@ -95,3 +95,7 @@
   .mine-mindi-body { height: 150px; } .mine-mindi-pick { left: 56px; bottom: 70px; width: 66px; } .mine-spark { left: 112px; bottom: 64px; }
 }
 @media (prefers-reduced-motion: reduce) { .mine-mindi-pick[data-swing], .mine-spark { animation: none; } }
+
+/* 11/06 전시: 섬 전이면 버튼 셋(가져가기 · 바로 보기 · 한 개 더 캐기/섬 만들러 가기) */
+.mine-next:has(> :nth-child(3)) { gap: 20px; }
+.mine-count b { color: var(--mined-amber); font-weight: 700; }

@@ -1027,3 +1027,24 @@ html { scrollbar-color: var(--mined-slate) transparent; }
   .ore-read .ore-whole > img { width: 72px; height: 110px; }
   .ore-read .ore-split { width: 110px !important; height: 110px !important; }
 }
+
+/* 11/06 전시: 고른 시간·시대·날씨를 섬 위에 입힌다(안개가 걷힐 때부터) */
+.isl-mood-in { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 3s ease .8s; }
+.isl-visit-full.clearing .isl-mood-in, .isl-visit-full.revealed .isl-mood-in { opacity: 1; }
+.isl-glow { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; }
+.isl-grain { position: absolute; inset: -20%; pointer-events: none; opacity: .16; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: isl-grain 1s steps(4) infinite; }
+@keyframes isl-grain { 0% { transform: translate(0, 0); } 25% { transform: translate(-3%, 2%); } 50% { transform: translate(2%, -3%); } 75% { transform: translate(-2%, -1%); } }
+@media (prefers-reduced-motion: reduce) { .isl-grain { animation: none; } .isl-mood-in { transition: none; } }
+
+/* 11/06 전시 점검: 나의 공간은 레일이 접힌 몰입 화면이라 글이 화면 왼쪽 끝에 붙었다 → 가운데 폭과 여백 */
+.space-page { max-width: 1120px; margin: 0 auto; padding: 0 28px 80px; box-sizing: border-box; }
+@media (max-width: 640px) { .space-page { padding: 0 16px 64px; } }
+/* 11/06 전시: 섬 안 「당신의 기록이라면」 + QR */
+.isl-yours { display: flex; gap: 14px; align-items: center; padding: 12px 14px; border-radius: 10px; background: rgba(243, 233, 220, .08); border: 1px solid rgba(243, 233, 220, .22); }
+.isl-yours p { margin: 0; }
+.isl-yours p + p { margin-top: 6px; }
+.isl-yours figure { margin: 0; flex: none; text-align: center; }
+.isl-yours img { display: block; width: 92px; height: 92px; border-radius: 6px; }
+.isl-yours figcaption { margin-top: 4px; color: var(--mined-ink-soft); }

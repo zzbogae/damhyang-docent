@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../state/store';
 import { playCue } from '../mindi/sound';
 import { ART, MINERAL_IMG, stratumFor } from './design';
-import { oreMineral } from '../ore/collection';
+import { oreMineral, SPACE_NEED, useCollected } from '../ore/collection';
+import { loadSpaces } from './Space';
 import { CRACK_C1, CRACK_C2, monthWeek } from './MineField';
 import type { Mineral } from './minerals';
 import type { WeekRecord } from '../types';
@@ -23,8 +24,15 @@ const LINE_NEXT = '바로 열어 봐도 되고, 관측소로 가져가셔도 돼
 
 const reduced = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function Mine({ w, onCarry, onView }: { w: WeekRecord; onCarry: () => void; onView: () => void }) {
+/**
+ * 11/06 전시: 섬을 아직 짓지 않았으면 캔 뒤 큰 버튼이 다음 걸음을 이끈다.
+ * 광석이 3개가 안 되면 「한 개 더 캐기」(지층으로 바로), 3개가 되면 「나의 섬 만들러 가기」. 섬이 있으면 예전처럼 「여기서 바로 보기」가 크다.
+ */
+export function Mine({ w, onCarry, onView, onMore, onSpace }: { w: WeekRecord; onCarry: () => void; onView: () => void; onMore?: () => void; onSpace?: () => void }) {
   const { settings } = useStore();
+  const collected = useCollected();
+  const [guide] = useState(() => loadSpaces().length === 0 && !!onMore && !!onSpace);
+  const after = Math.min(SPACE_NEED, collected.length + (collected.some((c) => c.week === w.week) ? 0 : 1));
   const need = reduced() ? 1 : 3;
   const [hits, setHits] = useState(0);
   const [shake, setShake] = useState(0);
@@ -51,6 +59,8 @@ export function Mine({ w, onCarry, onView }: { w: WeekRecord; onCarry: () => voi
     setTimeout(onCarry, 700);
   };
   const view = () => { sfx('confirm'); setLeaving('view'); setTimeout(onView, reduced() ? 0 : 180); };
+  const more = () => { sfx('keep'); setLeaving('up'); setTimeout(() => onMore?.(), reduced() ? 0 : 500); };
+  const toSpace = () => { sfx('confirm'); setLeaving('up'); setTimeout(() => onSpace?.(), reduced() ? 0 : 500); };
   const stage = done ? 'broken' : hits === 2 ? 'crack-2' : hits === 1 ? 'crack-1' : 'intact';
   const bands = bandsOf(w, m ?? '형석');
   const say = done ? null : hits === 0 ? LINE_START : HIT_LINES[Math.min(hits, need) - 1];
@@ -79,7 +89,9 @@ export function Mine({ w, onCarry, onView }: { w: WeekRecord; onCarry: () => voi
           <ul className="mine-bands" aria-label="안쪽 결 · 네 지표">
             {bands.map((b) => <li key={b.axis}><i style={{ background: bandColor(b) }} aria-hidden="true" />{bandWord(b)}</li>)}
           </ul>
-          <p className="mine-open-next">{LINE_NEXT}</p>
+          {guide
+            ? <p className="mine-open-next mine-count"><b>광석 {after}/{SPACE_NEED}</b> · {after >= SPACE_NEED ? '안개 옆에 나의 섬을 놓을 수 있어요.' : `${SPACE_NEED - after}개 더 캐면 나의 섬을 지을 수 있어요.`}</p>
+            : <p className="mine-open-next">{LINE_NEXT}</p>}
           <button className="mine-read" onClick={() => openOreRead(m ?? undefined)}>광석 읽는 법 ›</button>
         </aside>
       )}
@@ -87,7 +99,12 @@ export function Mine({ w, onCarry, onView }: { w: WeekRecord; onCarry: () => voi
       {done && (
         <div className="mine-next" role="group" aria-label="캔 뒤">
           <button className="mine-btn" onClick={carry} disabled={!!leaving}>관측소로 가져가기</button>
-          <button className="mine-btn primary" ref={nextRef} onClick={view} disabled={!!leaving}>여기서 바로 보기</button>
+          {guide ? <>
+            <button className="mine-btn" onClick={view} disabled={!!leaving}>여기서 바로 보기</button>
+            {after >= SPACE_NEED
+              ? <button className="mine-btn primary" ref={nextRef} onClick={toSpace} disabled={!!leaving}>나의 섬 만들러 가기</button>
+              : <button className="mine-btn primary" ref={nextRef} onClick={more} disabled={!!leaving}>한 개 더 캐기 ({after}/{SPACE_NEED})</button>}
+          </> : <button className="mine-btn primary" ref={nextRef} onClick={view} disabled={!!leaving}>여기서 바로 보기</button>}
         </div>
       )}
       <p className="sr-only" role="status">{done ? `${monthWeek(w)} 광석을 캤습니다. 관측소로 가져가거나 여기서 바로 볼 수 있습니다.` : ''}</p>

@@ -157,7 +157,7 @@ export function Space({ onField }: { onField: () => void }) {
 
   if (collected.length < SPACE_NEED) {
     return (
-      <section className="stack space-fog" aria-labelledby="space-title">
+      <section className="stack space-page space-fog" aria-labelledby="space-title">
         <h2 id="space-title" className="h2">나의 공간</h2>
         <p>아직 안개가 짙습니다. 광석이 {SPACE_NEED}개 모이면 안개가 걷힙니다. 지금 {collected.length}개를 캤습니다.</p>
         <p className="small muted">데이터가 표시한 광석과 직접 고른 광석을 함께 셉니다.</p>
@@ -189,7 +189,7 @@ export function Space({ onField }: { onField: () => void }) {
   };
 
   return (
-    <section className="stack" aria-labelledby="space-title">
+    <section className="stack space-page" aria-labelledby="space-title">
       <h2 id="space-title" className="h2">나의 공간</h2>
       {visit && <IslandVisit row={visit} byKey={byKey} onExit={() => setVisit(null)} />}
       {built && (

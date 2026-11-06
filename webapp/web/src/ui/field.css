@@ -30,3 +30,11 @@
   .mf-tip { font-size: 12px; padding: 5px 9px; }
 }
 @media (prefers-reduced-motion: reduce) { .mf-tip { transition: none; } }
+
+/* 11/06 전시: 지표 셋 이상이 함께 움직인 광석(여러 색)은 그 색들로 천천히 도는 빛 */
+.mf-halo { position: absolute; inset: -55%; border-radius: 50%; pointer-events: none; opacity: .75; filter: blur(14px);
+  -webkit-mask: radial-gradient(circle, transparent 32%, #000 52%, transparent 72%); mask: radial-gradient(circle, transparent 32%, #000 52%, transparent 72%);
+  animation: mf-halo-spin 6s linear infinite; }
+.mf-ore-wrap.multi .mf-ore { filter: drop-shadow(0 0 10px rgba(255, 236, 200, .35)); }
+@keyframes mf-halo-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .mf-halo { animation: none; } }
