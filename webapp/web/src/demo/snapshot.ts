@@ -20,7 +20,31 @@ export async function loadDemoSnapshot(): Promise<MinedResult> {
       if (rows?.length) await (t as unknown as { bulkPut(r: unknown[]): Promise<unknown> }).bulkPut(rows);
     }
   });
+  await loadDemoPhotos();
   const res = (await db.kv.get('result'))?.value as MinedResult | undefined;
   if (!res) throw new Error('시연용 샘플에 판정 결과가 없습니다');
   return res;
+}
+
+/**
+ * 11/06 전시: 합성 인물의 예시 사진. demo/photos/index.json = [{ id, file, w, h }] (id 는 photos 표의 사진 id).
+ * 생성 이미지라 얼굴·글자 거르기는 미리 통과로 적어 두고, 미리보기(thumbs)에 바로 넣는다. 파일이 없으면 조용히 건너뛴다.
+ */
+async function loadDemoPhotos() {
+  try {
+    const base = import.meta.env.BASE_URL + 'demo/photos/';
+    const r = await fetch(base + 'index.json');
+    if (!r.ok) return;
+    const list = (await r.json()) as { id: string; file: string; w: number; h: number }[];
+    const rows = await Promise.all(list.map(async (x) => {
+      const b = await fetch(base + x.file).then((q) => (q.ok ? q.blob() : undefined)).catch(() => undefined);
+      return b ? { id: x.id, blob: b, w: x.w, h: x.h, blurred: false } : undefined;
+    }));
+    const ok = rows.filter((x): x is NonNullable<typeof x> => !!x);
+    const checkedAt = new Date().toISOString();
+    await db.transaction('rw', [db.thumbs, db.photos], async () => {
+      await db.thumbs.bulkPut(ok);
+      for (const t of ok) await db.photos.update(t.id, { filter: { status: 'ok', reasons: [], faces: 0, checkedAt } });
+    });
+  } catch { /* 예시 사진이 없어도 시연은 그대로 */ }
 }
