@@ -87,13 +87,14 @@ def k10_crack(path, skip, d):
     except Exception:
         return 2.4
     n = len(raw) // (64 * 36)
-    best, bt = -1, 2.4
-    for k in range(1, n):
-        a, b = raw[(k - 1) * 2304:k * 2304], raw[k * 2304:(k + 1) * 2304]
-        s = sum(abs(x - y) for x, y in zip(a, b))
-        if s > best:
-            best, bt = s, k / 30
-    print(f'  K10 깨짐 시각 {bt:.2f}s')
+    diffs = [sum(abs(x - y) for x, y in zip(raw[(k - 1) * 2304:k * 2304], raw[k * 2304:(k + 1) * 2304]))
+             for k in range(1, n)]
+    if not diffs:
+        return 2.4
+    top = max(diffs)
+    # 가장 크게 바뀌는 순간이 아니라, 갈라지기 시작하는 순간(최대 변화의 35%를 처음 넘는 프레임)
+    bt = next(k + 1 for k, v in enumerate(diffs) if v >= 0.35 * top) / 30
+    print(f'  K10 깨짐 시각 {bt:.2f}s (최대 변화 {(diffs.index(top) + 1) / 30:.2f}s)')
     return bt
 
 
@@ -350,7 +351,14 @@ def main():
     segs = ['01_title', '02_spec', '03_story', '04_bridge', '05_demo', '06_islands', '07_end', '08_credit', '09_black']
     open('seg/list.txt', 'w').write('\n'.join(f"file '{s}.mp4'" for s in segs))
     run(['-f', 'concat', '-safe', '0', '-i', 'seg/list.txt', '-c', 'copy', 'seg/joined.mp4'])
-    run(['-i', 'seg/joined.mp4', '-c:v', 'copy', '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11'] + AENC
+    # 최종 음량: 2패스 loudnorm (1패스는 -14.8 LUFS로 목표보다 컸음)
+    r = subprocess.run(['ffmpeg', '-hide_banner', '-i', 'seg/joined.mp4', '-af',
+                        'loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json', '-f', 'null', '-'],
+                       capture_output=True, text=True)
+    m = json.loads(r.stderr[r.stderr.rindex('{'):r.stderr.rindex('}') + 1])
+    ln = (f"loudnorm=I=-16:TP=-1.5:LRA=11:measured_I={m['input_i']}:measured_TP={m['input_tp']}:"
+          f"measured_LRA={m['input_lra']}:measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true")
+    run(['-i', 'seg/joined.mp4', '-c:v', 'copy', '-af', ln + ',aresample=48000'] + AENC
         + ['-movflags', '+faststart', o.out])
     for s in segs:
         print(f'{s:12s} {dur(f"seg/{s}.mp4"):6.2f}')
