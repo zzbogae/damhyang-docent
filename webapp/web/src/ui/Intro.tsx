@@ -3,11 +3,13 @@
 // 3) 입장 카드(11/03 보별 결정 「입장 카드만」): 「내 기록으로 시작」 / 「샘플로 둘러보기」 같은 크기 두 장 + 만 14세 이상 확인.
 //    계정은 만들지 않는다(기록은 이 브라우저 밖으로 나가지 않는다). 샘플을 고르면 가져오기 화면에서 가짜 샘플을 바로 연다.
 // 대사 중 「화분에 심어두세요」·「한 번 더 물어봅니다」는 이 앱에 없는 기능이라(이름 붙이기 / 9/12 회의로 다시 묻기 없앰) 맞게 바꿨다.
-import { useEffect, useState } from 'react';
+// 첫 화면 「섬 둘러보기」(11/04 보별 요청)는 섬이 없어도 누를 수 있고, 나의 공간 예시 영상을 바로 이어서 튼다(SpaceTour.tsx).
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ART } from './design';
-import { mindiSay, sceneOverlay, sfx } from '../mindi/soundKit';
+import { mindiSay, sceneOverlay, setSoundOn, sfx, soundOn } from '../mindi/soundKit';
 import { loadSpaces } from './Space';
 import { requestVisitLatest } from './SpaceButton';
+import { SpaceTour, playTour } from './SpaceTour';
 
 const TUTORIAL: { eyebrow: string; line: string[] }[] = [
   { eyebrow: '민디', line: ['안녕하세요, 저는 민디예요.', '당신의 기록에서 광물을 캡니다.'] },
@@ -30,6 +32,21 @@ export function Intro({ onDone }: { onDone: () => void }) {
   const [age, setAge] = useState(false);
   const [island] = useState(() => loadSpaces().slice(-1)[0]);
   const goIsland = () => { if (!island) return; requestVisitLatest(); dispatchEvent(new Event(GO_ISLAND_EVENT)); onDone(); };
+  // 섬 둘러보기: 영상 소리와 겹치지 않게 민디 소리를 잠시 끄고, 닫으면 켜져 있던 그대로 되돌린다
+  const tourVideo = useRef<HTMLVideoElement>(null);
+  const [tour, setTour] = useState(false);
+  const [tourIdx, setTourIdx] = useState(0);
+  const soundWasOn = useRef(false);
+  const openTour = () => {
+    soundWasOn.current = soundOn();
+    if (soundWasOn.current) setSoundOn(false);
+    setTourIdx(0); playTour(tourVideo.current, 0); setTour(true);
+  };
+  const closeTour = useCallback(() => {
+    tourVideo.current?.pause();
+    setTour(false);
+    if (soundWasOn.current) setSoundOn(true);
+  }, []);
   const [logo, setLogo] = useState(false);
   const [btn, setBtn] = useState(false);
   const [step, setStep] = useState(0);
@@ -65,12 +82,16 @@ export function Intro({ onDone }: { onDone: () => void }) {
           <button className="intro-enter-btn" onClick={() => { sfx('door'); setStage(1); }} tabIndex={stage === 0 ? 0 : -1}>
             <span className="dot" />입장하기
           </button>
+          <button className="intro-enter-btn intro-tour-btn" onClick={openTour} tabIndex={stage === 0 && !tour ? 0 : -1}>
+            섬 둘러보기
+          </button>
           <button className="intro-enter-btn intro-island-btn" onClick={goIsland} disabled={!island} tabIndex={stage === 0 ? 0 : -1}
             title={island ? `${island.name}으로` : '광석 셋으로 섬을 지으면 열립니다'}>
             섬으로 들어가기
           </button>
           {!island && <span className="intro-island-note">광석 셋으로 섬을 지으면 열립니다</span>}
         </div>
+        <SpaceTour videoRef={tourVideo} open={tour} index={tourIdx} onIndex={setTourIdx} onClose={closeTour} />
       </section>
       <section className={`intro-screen intro-mindi${stage === 1 ? ' on' : ''}`} aria-hidden={stage !== 1}>
         <div className="intro-glow" />

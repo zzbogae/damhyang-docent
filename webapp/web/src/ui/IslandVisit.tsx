@@ -11,36 +11,76 @@ import { oreMineral } from '../ore/collection';
 import { MINERAL_HEX, type Mineral } from './minerals';
 import { dateLabel } from '../mindi/templates';
 import type { WeekRecord } from '../types';
+import { DEMO_SNAPSHOT } from '../demo/snapshot';
+import qrDemo from '../assets/qr-demo.svg';
+
+// 11/06 전시: 시연판(가짜 샘플)·전시 모드에서는 섬 안 마지막에 「당신의 기록이라면」 안내와 시연판 주소 QR 을 둔다
+const SHOWCASE = DEMO_SNAPSHOT || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('kiosk'));
 
 export interface VisitRow { id: string; name: string; ores: string[]; words: string[]; opts?: IslandOpts; clip?: string }
 
 const TINT: Record<string, string> = {
-  새벽: 'rgba(90, 120, 190, .28)', 아침: 'rgba(255, 220, 170, .14)', 점심: 'rgba(255, 255, 255, 0)',
-  해질녘: 'rgba(240, 140, 70, .26)', 밤: 'rgba(14, 18, 48, .55)',
+  새벽: 'rgba(100, 130, 205, .36)', 아침: 'rgba(255, 220, 170, .16)', 점심: 'rgba(255, 255, 255, 0)',
+  해질녘: 'rgba(238, 128, 58, .40)', 밤: 'rgba(14, 18, 60, .66)',
 };
+// 11/06 전시: 고른 시간에 빛도 더한다(해질녘 노을, 밤 달빛) — 곱하기 색만으로는 화면에서 잘 안 보였다
+const GLOW: Record<string, string> = {
+  해질녘: 'radial-gradient(ellipse 90% 60% at 70% 30%, rgba(255, 170, 90, .45), rgba(255, 120, 60, 0) 70%)',
+  밤: 'radial-gradient(circle at 80% 14%, rgba(200, 215, 255, .35), rgba(200, 215, 255, 0) 30%)',
+  새벽: 'linear-gradient(180deg, rgba(190, 205, 240, .25), rgba(190, 205, 240, 0) 60%)',
+};
+/** 고른 시대 → 영상 색(필름 느낌). 「시대 없음」·「지금」은 그대로 */
+export const ERA_FILTER: Record<string, string> = {
+  '1970년대': 'sepia(.5) saturate(.75) contrast(1.06)', '1980년대': 'sepia(.3) saturate(1.15) contrast(1.04)',
+  '1990년대': 'sepia(.18) saturate(.88) contrast(.96) brightness(1.03)', '2000년대': 'saturate(.92) contrast(1.02)',
+  '먼 미래': 'hue-rotate(-18deg) saturate(1.25) contrast(1.05)',
+};
+const OLD_ERA = /19[0-9]0년대/;
+
+/** 섬 위에 고른 것을 입힌다: 시간 색·빛, 시대 필름 결, 날씨·계절 입자 */
+export function IslandMood({ o, inside = true }: { o: IslandOpts; inside?: boolean }) {
+  return (
+    <>
+      {inside && o.time && TINT[o.time] && <div className="isl-tint" style={{ background: TINT[o.time] }} aria-hidden="true" />}
+      {inside && o.time && GLOW[o.time] && <div className="isl-glow" style={{ background: GLOW[o.time] }} aria-hidden="true" />}
+      {o.era && OLD_ERA.test(o.era) && <div className="isl-grain" aria-hidden="true" />}
+      <Weather kinds={[...o.weather, ...(o.time === '새벽' ? ['안개'] : [])]} />
+    </>
+  );
+}
 
 /** 비·눈 입자(캔버스). 고른 날씨에만 반응한다 */
 function Weather({ kinds }: { kinds: string[] }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const rain = kinds.some((k) => /비|장마|소나기/.test(k));
   const snow = kinds.some((k) => /눈|겨울/.test(k));
+  // 11/06 전시: 봄은 꽃잎, 가을은 낙엽이 천천히 날린다(비·눈이 함께면 비·눈이 먼저)
+  const petal = !rain && !snow && kinds.some((k) => /봄|벚/.test(k));
+  const leaf = !rain && !snow && !petal && kinds.some((k) => /가을|낙엽/.test(k));
+  const drift = petal || leaf;
   useEffect(() => {
     const c = ref.current;
-    if (!c || (!rain && !snow)) return;
+    if (!c || (!rain && !snow && !drift)) return;
     if (typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const ctx = c.getContext('2d');
     if (!ctx) return;
     let raf = 0;
     const fit = () => { c.width = c.clientWidth; c.height = c.clientHeight; };
     fit(); addEventListener('resize', fit);
-    const N = rain ? 160 : 110;
+    const N = rain ? 220 : drift ? 46 : 120;
     const ps = Array.from({ length: N }, () => ({ x: Math.random(), y: Math.random(), s: 0.4 + Math.random() * 0.8, d: Math.random() * Math.PI * 2 }));
     const loop = () => {
       ctx.clearRect(0, 0, c.width, c.height);
       for (const p of ps) {
-        if (rain) {
-          p.y += 0.018 * p.s; p.x += 0.002;
-          ctx.strokeStyle = 'rgba(210, 225, 240, .45)'; ctx.lineWidth = 1;
+        if (drift) {
+          p.y += 0.0016 * p.s; p.d += 0.025; p.x += Math.sin(p.d) * 0.0014 + 0.0004;
+          const r = (petal ? 3 : 5) + p.s * (petal ? 2.5 : 4);
+          ctx.save(); ctx.translate(p.x * c.width, p.y * c.height); ctx.rotate(p.d);
+          ctx.fillStyle = petal ? 'rgba(255, 196, 214, .9)' : `rgba(${200 + Math.round(p.s * 40)}, ${110 + Math.round(p.s * 40)}, 40, .9)`;
+          ctx.beginPath(); ctx.ellipse(0, 0, r, r * 0.55, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        } else if (rain) {
+          p.y += 0.02 * p.s; p.x += 0.002;
+          ctx.strokeStyle = 'rgba(215, 228, 242, .62)'; ctx.lineWidth = 1.4;
           ctx.beginPath(); ctx.moveTo(p.x * c.width, p.y * c.height); ctx.lineTo(p.x * c.width - 3, p.y * c.height - 16 * p.s); ctx.stroke();
         } else {
           p.y += 0.0022 * p.s; p.d += 0.02; p.x += Math.sin(p.d) * 0.0006;
@@ -53,14 +93,14 @@ function Weather({ kinds }: { kinds: string[] }) {
     };
     loop();
     return () => { cancelAnimationFrame(raf); removeEventListener('resize', fit); };
-  }, [rain, snow]);
+  }, [rain, snow, petal, leaf]);
   const fog = kinds.some((k) => /안개|흐림/.test(k));
   const sun = kinds.some((k) => /햇살|여름|맑/.test(k));
   return (
     <>
       {sun && <div className="isl-sun" aria-hidden="true" />}
       {fog && <div className="isl-mist" aria-hidden="true" />}
-      {(rain || snow) && <canvas ref={ref} className="isl-weather" aria-hidden="true" />}
+      {(rain || snow || drift) && <canvas ref={ref} className="isl-weather" aria-hidden="true" />}
     </>
   );
 }
@@ -92,8 +132,9 @@ export function IslandVisit({ row, byKey, onExit }: { row: VisitRow; byKey: Map<
         <div className="isl-reveal">
           <img className="isl-from" src={ART.introPoster} alt="" />
           {clip
-            ? <video className="isl-to" src={clip.src} poster={clip.poster} muted loop playsInline autoPlay={!still} aria-label={`안개가 걷힌 자리에 ${clip.label}이 보입니다`} />
+            ? <video className="isl-to" src={clip.src} poster={clip.poster} muted loop playsInline autoPlay={!still} style={{ filter: (o.era && ERA_FILTER[o.era]) || undefined }} aria-label={`안개가 걷힌 자리에 ${clip.label}이 보입니다`} />
             : <img className="isl-to" src={art.reveal} alt={`안개가 걷힌 자리에 ${art.label}이 보입니다`} />}
+          {phase !== 'fog' && <div className="isl-mood-in"><IslandMood o={o} /></div>}
           <div className="isl-fog f1" aria-hidden="true" /><div className="isl-fog f2" aria-hidden="true" />
           <p className="isl-cap">{phase === 'fog' ? '안개가 걷히고 있어요' : phase === 'clearing' ? '' : row.name}</p>
           {phase === 'revealed' && (
@@ -108,10 +149,9 @@ export function IslandVisit({ row, byKey, onExit }: { row: VisitRow; byKey: Map<
       {inside && (
         <div className="isl-inside">
           {clip && view === 'inside'
-            ? <video className="isl-room" src={clip.src} poster={clip.poster} muted loop playsInline autoPlay={!still} aria-label={`${row.name} 안`} />
+            ? <video className="isl-room" src={clip.src} poster={clip.poster} muted loop playsInline autoPlay={!still} style={{ filter: (o.era && ERA_FILTER[o.era]) || undefined }} aria-label={`${row.name} 안`} />
             : <img className="isl-room" src={view === 'inside' ? art.inside : art.reveal} alt={view === 'inside' ? `${row.name} 안` : `${row.name}을 내려다본 모습`} />}
-          {view === 'inside' && o.time && <div className="isl-tint" style={{ background: TINT[o.time] ?? 'transparent' }} aria-hidden="true" />}
-          <Weather kinds={[...o.weather, ...(o.time === '새벽' ? ['안개'] : [])]} />
+          <IslandMood o={o} inside={view === 'inside'} />
           <header className="isl-hud">
             <button className="btn quiet" onClick={onExit}>‹ 관측소로</button>
             <div className="label-row" role="tablist" aria-label="보는 방법">
@@ -135,10 +175,20 @@ export function IslandVisit({ row, byKey, onExit }: { row: VisitRow; byKey: Map<
                 );
               })}
             </ul>
-            <div className="label-row">
-              {['화분', '앨범', '메모', '창문'].map((t) => <button key={t} className="chip" disabled title="광석이 더 모이면 기억을 둘 자리가 생겨요">{t}</button>)}
-            </div>
-            <p className="small muted">광석이 더 모이면 꾸밀 자리가 생겨요. 민디는 관측소에 남아 있습니다.</p>
+            {SHOWCASE ? (
+              <div className="isl-yours">
+                <div>
+                  <p><b>이 섬은 가상 인물의 기록 2년치로 지었어요.</b></p>
+                  <p className="small">당신의 카톡·걸음·메모로 하면, 당신이 지나온 주들이 광석이 되고 섬이 됩니다. 기록은 당신의 기기 밖으로 나가지 않습니다.</p>
+                </div>
+                <figure><img src={qrDemo} alt="Mine D 시연판 주소 QR 코드" /><figcaption className="small">폰으로 다시 해 보기</figcaption></figure>
+              </div>
+            ) : <>
+              <div className="label-row">
+                {['화분', '앨범', '메모', '창문'].map((t) => <button key={t} className="chip" disabled title="광석이 더 모이면 기억을 둘 자리가 생겨요">{t}</button>)}
+              </div>
+              <p className="small muted">광석이 더 모이면 꾸밀 자리가 생겨요. 민디는 관측소에 남아 있습니다.</p>
+            </>}
           </section>
         </div>
       )}

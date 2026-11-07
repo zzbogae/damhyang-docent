@@ -18,6 +18,8 @@ import { VoiceChip } from './VoiceChip';
 import type { Axis, WeekRecord } from '../types';
 
 const EXAMPLES = ['이 주에 무엇이 달랐어?', '이 주와 닮은 주는 언제야?', '잠을 못 잔 주는 언제였어?'];
+// 11/06 전시: 챗봇이 없어도 대화가 끊기지 않게, 답 뒤에도 이어 물을 말을 세 개 보여 준다(모두 기기 안 규칙으로 답하는 질문)
+const FOLLOW = ['지난 1년 중 가장 달랐던 주는?', '많이 걸은 주는 언제였어?', '글을 많이 쓴 주는 언제야?', ...EXAMPLES];
 
 /** voiceChip: 말투 칩을 이 머리에 둘지(민디와 이야기 화면은 위쪽 줄에 따로 둔다)
  *  chat: 민디와 이야기(P9) 배치 — 대화가 위로 쌓이고 「함께 보는 기록」 칩(chip)과 입력창이 아래에 붙는다
@@ -262,7 +264,16 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
                 </div>
               )}
             </div>
-          ) : busy ? (
+          ) : null}
+          {a && !busy && (
+            <p className="small muted chat-follow">
+              이어서:{' '}
+              {FOLLOW.filter((ex) => ex !== asked && !log.some((x) => x.q === ex)).slice(0, 3).map((ex, i) => (
+                <span key={ex}>{i > 0 && ' · '}<button type="button" className="linkish" onClick={() => send(ex)}>{ex}</button></span>
+              ))}
+            </p>
+          )}
+          {a ? null : busy ? (
             <div className="chat-pair chat-wait" role="status" aria-live="polite">
               <div className="bubble">
                 <MindiMark size={30} />

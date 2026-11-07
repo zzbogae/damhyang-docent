@@ -239,7 +239,9 @@ function Shell() {
       : panel === 'mine' && mining && byKey.get(mining) ? (
         <Mine w={byKey.get(mining)!}
           onCarry={() => { collect(byKey.get(mining)!); setMining(undefined); toHub(); }}
-          onView={() => { const k = mining; collect(byKey.get(k)!); setMining(undefined); select(k); }} />
+          onView={() => { const k = mining; collect(byKey.get(k)!); setMining(undefined); select(k); }}
+          onMore={() => { collect(byKey.get(mining)!); setDescent((d) => ({ n: d.n + 1, year: yearOf(mining) })); setMining(undefined); setPanel('field'); }}
+          onSpace={() => { collect(byKey.get(mining)!); setMining(undefined); setSpaceKey((k) => k + 1); setPanel('space'); }} />
       )
       : panel === 'week' && w ? (
         <WeekDetail w={w} key={w.week} team

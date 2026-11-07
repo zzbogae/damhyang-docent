@@ -6,7 +6,8 @@
 //  - 평소 범위 안의 지표는 회갈색 얇은 띠. 판정어(부족·저하·과다)는 쓰지 않는다.
 import { useId } from 'react';
 import { AXES, axisScreen, type Axis, type WeekRecord } from '../types';
-import { MINERAL_BY_AXIS_DIR, MINERAL_HEX, type Mineral } from './minerals';
+import { MINERAL_BY_AXIS_DIR, type Mineral } from './minerals';
+import { ART } from './design';
 
 export interface Band { axis: Axis; dir: 'up' | 'down' | 'usual' | 'none'; weight: number }
 
@@ -40,8 +41,51 @@ export function bandsOf(w: WeekRecord, mineral?: Mineral | null): Band[] {
   return base.sort((x, y) => y.weight - x.weight);
 }
 
+/** 결 색 범례(튜토리얼 설명란디자인·결색범례 인계 v1 §3): 색 = 지표, 밝은 톤 = 평소보다 많음, 짙은 톤 = 적음, 회갈 = 평소 범위 */
+export const AXIS_HEX: Record<Axis, string> = { rest: '#4A6FD1', move: '#E8894A', lang: '#9B6BD6', talk: '#3FB3A8' };
+function mix(hex: string, to: number, t: number): string {
+  const n = parseInt(hex.slice(1), 16);
+  const c = [n >> 16, (n >> 8) & 255, n & 255].map((v) => Math.round(v + (to - v) * t));
+  return `#${c.map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+}
 export function bandColor(b: Band): string {
-  return b.dir === 'up' || b.dir === 'down' ? MINERAL_HEX[MINERAL_BY_AXIS_DIR[b.axis][b.dir]] : STONE;
+  if (b.dir === 'up') return mix(AXIS_HEX[b.axis], 255, 0.22);
+  if (b.dir === 'down') return mix(AXIS_HEX[b.axis], 0, 0.32);
+  return STONE;
+}
+
+/**
+ * 11/06 보별: 단희 원 디자인(MIND Stone Insection Concept · StoneA_Cut)대로, 검은 돌을 깨면 안쪽 정동(빈 속)에서 색이 나온다.
+ * 정동 결의 밝기·질감은 원 그림 그대로 두고, 색만 그 주의 결 띠(범례 색)로 바꿔 동심 고리로 칠한다(바깥 = 가장 두꺼운 띠).
+ * 고리 너비 = 띠 두께(비율). 가운데 빛점 = 그 주에서 가장 크게 움직인 지표의 색.
+ */
+export function GeodeCore({ bands, label, className = '' }: { bands: Band[]; label: string; className?: string }) {
+  const shown = bands.filter((b) => b.dir !== 'none');
+  const total = shown.reduce((sum, b) => sum + b.weight, 0) || 1;
+  // 바깥(100%)에서 안쪽(0%)으로: 두꺼운 띠부터 바깥에. 두 바퀴 돌려 마노 결처럼 겹친다
+  const stops: string[] = [];
+  const reps = 2;
+  let at = 100;
+  for (let r = 0; r < reps; r++) {
+    for (const b of shown) {
+      const w = (b.weight / total) * (100 / reps);
+      const c = bandColor(b);
+      const lo = Math.max(0, at - w);
+      stops.push(`${c} ${at.toFixed(1)}%`, `${c} ${(lo + Math.min(1.6, w * 0.2)).toFixed(1)}%`, `rgba(255,248,236,.9) ${(lo + 0.5).toFixed(1)}%`, `${c} ${lo.toFixed(1)}%`);
+      at = lo;
+    }
+  }
+  const rings = `radial-gradient(ellipse 50% 56% at 60% 48%, ${stops.reverse().join(', ')})`;
+  const lead = shown.find((b) => b.dir === 'up' || b.dir === 'down');
+  const spark = lead ? bandColor(lead) : STONE;
+  return (
+    <figure className={`geode ${className}`} aria-label={label}>
+      <img className="geode-shell" src={ART.stoneCut} alt="" />
+      <div className="geode-tone" style={{ background: rings, WebkitMaskImage: `url(${ART.stoneCutCavity})`, maskImage: `url(${ART.stoneCutCavity})` }} aria-hidden="true" />
+      <div className="geode-light" style={{ background: rings, WebkitMaskImage: `url(${ART.stoneCutCavity})`, maskImage: `url(${ART.stoneCutCavity})` }} aria-hidden="true" />
+      <i className="geode-spark" style={{ background: `radial-gradient(circle, #fff 0, ${spark} 30%, transparent 70%)` }} aria-hidden="true" />
+    </figure>
+  );
 }
 
 export function bandWord(b: Band): string {
