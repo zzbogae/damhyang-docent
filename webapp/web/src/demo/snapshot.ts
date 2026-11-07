@@ -28,7 +28,8 @@ export async function loadDemoSnapshot(): Promise<MinedResult> {
 
 /**
  * 11/06 전시: 합성 인물의 예시 사진. demo/photos/index.json = [{ id, file, w, h }] (id 는 photos 표의 사진 id).
- * 생성 이미지라 얼굴·글자 거르기는 미리 통과로 적어 두고, 미리보기(thumbs)에 바로 넣는다. 파일이 없으면 조용히 건너뛴다.
+ * 사람이 없는 풍경·음식 사진만 골라 줄이고 촬영 위치·정보를 지운 것이라, 얼굴·글자 거르기는 미리 통과로 적어 두고
+ * 미리보기(thumbs)에 바로 넣는다. 파일이 없으면 조용히 건너뛴다.
  */
 async function loadDemoPhotos() {
   try {
