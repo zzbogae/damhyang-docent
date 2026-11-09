@@ -396,6 +396,8 @@ def main():
         two_min = o.cut == 'sub'  # 서브·심포지엄의 「풀 영상」 자리는 2분 내외: 섬 고르기를 빠르게, 섬마다 8초
         dm = [(x[:3] + (2.0,) + x[4:]) if two_min and 'island' in x[0] else x for x in DEMO]
         demo('seg/05_demo.mp4', dm); segs.append('05_demo')
+        if two_min:  # 8초 상한에서도 하늘산은 구름바다 와이드로 끝나게
+            spaces = [(f, [(4.4, 8.4), (30.5, 34.5)] if k == 'sky' else c, k) for f, c, k in spaces]
         islands(spaces, 'seg/06_islands.mp4', cap=8.0 if two_min else 12.0); segs.append('06_islands')
         ending('seg/07_end.mp4'); segs.append('07_end')
     if post:
