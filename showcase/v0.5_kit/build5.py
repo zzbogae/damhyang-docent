@@ -394,7 +394,7 @@ def main():
         dm_ = [x[:5] + ([(rc(c), *r) for c, *r in x[5]],) + x[6:] for x in DEMO_S]
         story('seg/03_story.mp4', st_); segs.append('03_story')
         demo('seg/05_demo.mp4', dm_); segs.append('05_demo')
-        two = [x for x in spaces if x[2] in ('sea', 'sky')]
+        two = [(f, [(4.4, 9.9)] if k == 'sky' else c, k) for f, c, k in spaces if k in ('sea', 'sky')]  # 하늘산 원본 9.5초 컷 뒤 짧은 숏 빼기
         islands(two, 'seg/06_islands.mp4', cap=6.0); segs.append('06_islands')
         ending('seg/07_end.mp4', short=True); segs.append('07_end')
     else:
