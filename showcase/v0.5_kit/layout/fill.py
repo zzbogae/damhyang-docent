@@ -83,14 +83,15 @@ for n in (7, 17):
 for n in (8, 18):
     sh = tech_box(S(n), TECH_L) if n == 8 else tech_box(S(n), TECH_XL); sh.top = sh.top - Inches(0.6)
     if n == 18:  # 긴 판은 글자를 0.82배로 줄이고 조금 더 올림(바닥 HERIZON 줄과 겹치지 않게)
-        sh.top = sh.top - Inches(0.9)
+        sh.top = sh.top - Inches(1.4)
         from pptx.util import Pt
         szs = [int(x) for x in sh._element.xpath('.//a:defRPr/@sz | .//a:rPr/@sz')]
         base = max(szs) if szs else 5400
         for pp in sh.text_frame.paragraphs:
-            for r in pp.runs: r.font.size = Pt(base / 100 * 0.82)
+            for r in pp.runs: r.font.size = Pt(base / 100 * 0.78)
     h = find(S(n), '구현 기술'); h.top = h.top - Inches(0.6)
     t = find(S(n), 'MineD: Your'); t.top = t.top - Inches(0.4)
+    if n == 18: h.top = h.top - Inches(1.2); t.top = t.top - Inches(0.6)
 
 # 9 콘텐츠 개발
 s9 = S(9); kill(s9, '여기엔 캐릭터 개발, 이미지 사운드 생성, 스토리 개발 등\n')

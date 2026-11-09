@@ -177,7 +177,7 @@ DEMO = [
       ('ore_crack', 22.88, 1.0), ('glint', 23.66, 1.0)]),
     ('rec/chat.mp4', 13.8, 23.35, 1.0, (1.12, 1.30, 1300, 420), [('w3', 0.3, 9.5)],  # 13.70 컷 뒤부터  # 녹화 길이 23.43초
      [('tap', 13.13, 1.0), ('memory_note', 14.2, 1.3), ('panel_open', 21.19, 1.8)]),
-    ('rec/island.mp4', 4.0, 33.6, 1.6, (1.18, 1.30, 1250, 560), [('w4', 0.5, 20.2)],
+    ('rec/island.mp4', 4.0, 33.2, 1.6, (1.18, 1.30, 1250, 560), [('w4', 0.5, 20.2)],
      [('tap', 8.13, 0.9), ('tap', 10.75, 0.9), ('tap', 12.57, 0.9), ('tap', 17.8, 0.9), ('tap', 20.45, 0.9),
       ('tap', 23.09, 0.9), ('tap', 25.76, 0.9), ('keep', 29.28, 1.0), ('space_open', 31.8, 1.2)]),
 ]
@@ -195,7 +195,7 @@ DEMO_S = [
       ('ore_crack', 22.88, 1.0), ('glint', 23.66, 1.0)]),
     ('rec/chat.mp4', 16.5, 23.35, 1.0, (1.12, 1.30, 1300, 420), [('mw3', 0.3, 6.85)],
      [('panel_open', 21.19, 1.8)]),
-    ('rec/island.mp4', 6.0, 33.6, 2.8, (1.18, 1.30, 1250, 560), [('mw4', 0.3, 10.9)],
+    ('rec/island.mp4', 6.0, 33.2, 2.8, (1.18, 1.30, 1250, 560), [('mw4', 0.3, 10.9)],
      [('tap', 8.13, 0.9), ('tap', 10.75, 0.9), ('tap', 12.57, 0.9), ('tap', 17.8, 0.9), ('tap', 20.45, 0.9),
       ('tap', 23.09, 0.9), ('tap', 25.76, 0.9), ('keep', 29.28, 1.0), ('space_open', 31.8, 1.2)]),
 ]
@@ -408,7 +408,8 @@ def main():
         dm = [(x[:3] + (2.0,) + x[4:]) if two_min and 'island' in x[0] else x for x in DEMO]
         demo('seg/05_demo.mp4', dm); segs.append('05_demo')
         if two_min:  # 10초 상한에서도 하늘산은 구름바다 와이드로 끝나게
-            spaces = [(f, [(4.4, 9.4), (30.5, 35.5)] if k == 'sky' else c, k) for f, c, k in spaces]
+            spaces = [(f, [(4.4, 9.4), (30.5, 35.5)] if k == 'sky' else [(4.1, 10.0), (30.3, 33.8)] if k == 'music' else c, k)
+                      for f, c, k in spaces]  # 음악방도 창밖 풍경 엔딩(30.3~33.8)까지
         islands(spaces, 'seg/06_islands.mp4', cap=9.5 if two_min else 12.0, min_piece=3.5 if two_min else 3.0); segs.append('06_islands')
         ending('seg/07_end.mp4'); segs.append('07_end')
     if post:
