@@ -111,7 +111,7 @@ STORY = [  # (파일, 시작, 길이, Flow 여부, 확대(z0,z1,cx,cy) 또는 No
 XF = 0.6
 
 
-def story(out):
+def story(out, STORY=STORY):
     ins, fc = [], ''
     for f, ss, d, *_x in STORY:
         ins += ['-ss', ss, '-t', d + 0.2, '-i', f]
@@ -146,7 +146,8 @@ def story(out):
     w = starts[1]
     for k in range(8):  # 홈페이지 걸어 나오기(4.2초로 늦춤) 발소리
         mx.sfx('step1', w + 0.75 + k * 0.48, 1.0 + 2.2 * k / 7)
-    mx.sfx('shuffle', starts[2] + 0.3, 2.0).sfx('card', starts[2] + 0.5, 1.6)
+    if len(STORY) > 2:
+        mx.sfx('shuffle', starts[2] + 0.3, 2.0).sfx('card', starts[2] + 0.5, 1.6)
     ins += mx.ins
     fc += mx.fc
     fc += (f'[{amb}:a]atrim=0:{total},aresample=48000,aformat=channel_layouts=stereo,volume=0.5,'
@@ -182,8 +183,25 @@ DEMO = [
 ]
 DXF = 0.4
 
+# ───────────────────────── 1분 축약판(메인 디스플레이)용 구간
+STORY_S = [
+    (f'{K3}/gen/K01.mp4', 0.0, 4.5, True, None, [('sub01', 0.6, 4.3, 'C01_1')]),
+    ('rec/walk.mp4', 0.5, 7.5, False, (1.0, 1.08, 1000, 600), [('sub02', 3.9, 7.3, 'C02_2')]),
+]
+DEMO_S = [
+    ('rec/mine3.mp4', 9.4, 14.3, 1.0, (1.0, 1.08, 960, 480), [('w1', 0.3, 4.9)], []),
+    ('rec/mine3.mp4', 14.2, 25.0, 1.0, (1.0, 1.08, 1100, 640), [('pip1', 0.8, 10.8), ('w2', 0.8, 10.8)],
+     [('tap', 14.46, 1.2), ('pick', 18.09, 1.1), ('pick', 20.45, 1.1), ('pick', 22.81, 1.1),
+      ('ore_crack', 22.88, 1.0), ('glint', 23.66, 1.0)]),
+    ('rec/chat.mp4', 16.5, 23.35, 1.0, (1.12, 1.30, 1300, 420), [('w3', 0.3, 6.85)],
+     [('panel_open', 21.19, 1.8)]),
+    ('rec/island.mp4', 6.0, 36.6, 2.8, (1.18, 1.30, 1250, 560), [('w4', 0.3, 10.9)],
+     [('tap', 8.13, 0.9), ('tap', 10.75, 0.9), ('tap', 12.57, 0.9), ('tap', 17.8, 0.9), ('tap', 20.45, 0.9),
+      ('tap', 23.09, 0.9), ('tap', 25.76, 0.9), ('keep', 29.28, 1.0), ('space_open', 31.8, 1.2)]),
+]
 
-def demo(out):
+
+def demo(out, DEMO=DEMO):
     ins, fc, segs = [], '', []
     for f, a, b, sp, z, cs, _fx in DEMO:
         assert b <= dur(f) - 0.03, f'{f}: 끝 {b}초가 녹화 길이 {dur(f):.2f}초를 넘음'
@@ -271,7 +289,9 @@ def islands(spaces, out, cap=12.0, ixf=0.4, xf=0.8):
 
 
 # ───────────────────────── 7 여운 · 오늘의 한마디
-def ending(out):
+def ending(out, short=False):
+    if short:  # 오늘의 한마디 → 마지막 질문만
+        return ending_short(out)
     d1, d2, d3 = 6.0, 3.8, 5.5
     tot = d1 + d2 + d3 - 1.6
     mx = Mix(4).voice('C12_1', 1.1).sfx('name_save', d1 + d2 - 1.2, 0.7)
@@ -287,6 +307,29 @@ def ending(out):
         f'[f2]fade=t=in:st=0:d=0.6,fade=t=out:st={tot - 0.8:.2f}:d=0.8[v];' + mx.fc + mx.out(tot),
         '-map', '[v]', '-map', '[a]', '-t', f'{tot:.3f}'] + VENC + AENC + [out])
     return tot
+
+
+def ending_short(out):
+    d1, d3 = 6.0, 3.5
+    tot = d1 + d3 - 0.8
+    mx = Mix(3).voice('C12_1', 1.1).sfx('name_save', d1 - 1.0, 0.7)
+    mx.fc = mx.fc.replace(f'volume={VOICE},', 'volume=1.0,', 1)
+    run(['-i', f'{K4}/comp/S9_end.mp4', '-loop', '1', '-i', card('b12'), '-loop', '1', '-t', d3, '-i', card('end2')]
+        + mx.ins + ['-filter_complex',
+        f'[0:v]trim=0:{d1},setpts=PTS-STARTPTS,{fit()},format=yuv420p[k];'
+        + ov(1, 0.9, d1 - 0.3) + f'[b];[k][b]overlay=0:0:shortest=1,trim=0:{d1},setpts=PTS-STARTPTS[e0];'
+        f'[2:v]{fit()},zoompan=z=\'1+0.015*on/{d3 * FPS}\':d=1:s={W}x{H}:fps={FPS}[e2];'
+        f'[e0][e2]xfade=transition=fade:duration=0.8:offset={d1 - 0.8}[f2];'
+        f'[f2]fade=t=in:st=0:d=0.6,fade=t=out:st={tot - 0.8:.2f}:d=0.8[v];' + mx.fc + mx.out(tot),
+        '-map', '[v]', '-map', '[a]', '-t', f'{tot:.3f}'] + VENC + AENC + [out])
+    return tot
+
+
+def page(png, d, out):
+    """공식 레이아웃 장(PNG) 한 장을 d초 정지 화면으로."""
+    run(['-loop', '1', '-t', d, '-i', png] + silent_ins(d) + ['-filter_complex',
+        f'[0:v]{fit()},fade=t=in:st=0:d=0.5,fade=t=out:st={d - 0.5:.2f}:d=0.5[v];[1:a]anull[a]',
+        '-map', '[v]', '-map', '[a]', '-t', d] + VENC + AENC + [out])
 
 
 def credit(out, d=7.0):
@@ -309,6 +352,11 @@ def main():
     for k in ('sea', 'sky', 'jungle', 'music'):
         ap.add_argument('--' + k, required=True)
     ap.add_argument('--out', default='MineD_쇼케이스_v0.5.mp4')
+    ap.add_argument('--cut', choices=['full', 'sub', 'main'], default='full',
+                    help='full=출품 영상(제목·기술·본편·크레딧) / sub=서브·심포지엄(레이아웃 장+본편 2분+크레딧 장) / main=메인(레이아웃 장+1분 축약)')
+    ap.add_argument('--pre', default='', help='본편 앞에 붙일 레이아웃 장 PNG들(쉼표로)')
+    ap.add_argument('--post', default='', help='본편 뒤에 붙일 레이아웃 장 PNG들(쉼표로)')
+    ap.add_argument('--page-sec', type=float, default=6.0, help='레이아웃 장 한 장의 길이(초)')
     o = ap.parse_args()
     mj = next((p for p in ['myspace.json', f'{K3}/myspace.json'] if os.path.exists(p)), None)
     cut = json.load(open(mj)) if mj else {}
@@ -319,18 +367,44 @@ def main():
         cuts = [tuple(x) for x in c] if isinstance(c[0], (list, tuple)) else [tuple(c)]
         cuts = ISLAND_CUTS.get(key, cuts)
         spaces.append((f, cuts, key))
-    D = {}
-    still(card('title'), 5, 'seg/01_title.mp4', fi=1.0); D['01_title'] = 5
-    still(card('spec'), 9, 'seg/02_spec.mp4'); D['02_spec'] = 9
-    D['03_story'] = story('seg/03_story.mp4')
-    bridge('seg/04_bridge.mp4'); D['04_bridge'] = 3.2
-    D['05_demo'] = demo('seg/05_demo.mp4')
-    D['06_islands'] = islands(spaces, 'seg/06_islands.mp4')
-    D['07_end'] = ending('seg/07_end.mp4')
-    credit('seg/08_credit.mp4'); D['08_credit'] = 7.0
+    pre = [x for x in o.pre.split(',') if x]
+    post = [x for x in o.post.split(',') if x]
+    segs = []
+
+    def pages(lst, tag):
+        for i, png in enumerate(lst):
+            name = f'{tag}{i + 1}'
+            page(png, o.page_sec, f'seg/{name}.mp4')
+            segs.append(name)
+
+    if pre:
+        pages(pre, '00_pre')
+    elif o.cut != 'main':
+        still(card('title'), 5, 'seg/01_title.mp4', fi=1.0); segs.append('01_title')
+        still(card('spec'), 9, 'seg/02_spec.mp4'); segs.append('02_spec')
+    else:
+        still(card('title'), 4, 'seg/01_title.mp4', fi=1.0); segs.append('01_title')
+    if o.cut == 'main':  # 1분 축약
+        story('seg/03_story.mp4', STORY_S); segs.append('03_story')
+        demo('seg/05_demo.mp4', DEMO_S); segs.append('05_demo')
+        two = [x for x in spaces if x[2] in ('sea', 'sky')]
+        islands(two, 'seg/06_islands.mp4', cap=4.5); segs.append('06_islands')
+        ending('seg/07_end.mp4', short=True); segs.append('07_end')
+    else:
+        story('seg/03_story.mp4'); segs.append('03_story')
+        bridge('seg/04_bridge.mp4'); segs.append('04_bridge')
+        two_min = o.cut == 'sub'  # 서브·심포지엄의 「풀 영상」 자리는 2분 내외: 섬 고르기를 빠르게, 섬마다 8초
+        dm = [(x[:3] + (2.0,) + x[4:]) if two_min and 'island' in x[0] else x for x in DEMO]
+        demo('seg/05_demo.mp4', dm); segs.append('05_demo')
+        islands(spaces, 'seg/06_islands.mp4', cap=8.0 if two_min else 12.0); segs.append('06_islands')
+        ending('seg/07_end.mp4'); segs.append('07_end')
+    if post:
+        pages(post, '08_post')
+    elif o.cut != 'main':
+        credit('seg/08_credit.mp4'); segs.append('08_credit')
     run(['-f', 'lavfi', '-t', 1, '-i', f'color=c=black:s={W}x{H}:r={FPS}'] + silent_ins(1)
         + ['-map', '0:v', '-map', '1:a', '-t', 1] + VENC + AENC + ['seg/09_black.mp4'])
-    segs = ['01_title', '02_spec', '03_story', '04_bridge', '05_demo', '06_islands', '07_end', '08_credit', '09_black']
+    segs.append('09_black')
     open('seg/list.txt', 'w').write('\n'.join(f"file '{s}.mp4'" for s in segs))
     run(['-f', 'concat', '-safe', '0', '-i', 'seg/list.txt', '-c', 'copy', 'seg/joined.mp4'])
     # 음악 한 줄: mus_home을 두 번 이어(3초 겹침) 전체 길이에 깔고, 구간마다 음량만 바꿈
@@ -344,6 +418,8 @@ def main():
              (st['05_demo'][0], st['05_demo'][1], 0.34),
              (st['06_islands'][0], st['06_islands'][1], 0.14),  # 섬 영상은 제 소리가 있으니 낮게
              (st['07_end'][0] + 0.8, st['07_end'][0] + 5.5, 0.26)]  # 오늘의 한마디
+    if 'main' == o.cut:
+        ducks[2] = (st['06_islands'][0], st['06_islands'][1], 0.22)
     vol = env_expr(0.46, ducks)
     run(['-i', 'seg/joined.mp4', '-i', f'{A}/mus_home.mp3', '-i', f'{A}/mus_home.mp3', '-filter_complex',
          f'[1:a][2:a]acrossfade=d=3,aresample=48000,atrim=0:{T},'

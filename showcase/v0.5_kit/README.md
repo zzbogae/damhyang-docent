@@ -19,3 +19,15 @@ python3 build5.py --sea <바다> --sky <하늘산> --jungle <정글> --music <�
 - `../v0.3_kit/gen/K01.mp4`, `../v0.3_kit/assets`, `../v0.3_kit/myspace.json`, `../v0.4_kit/comp`, `../v0.4_kit/sfx` 를 함께 씁니다.
 - `rec/*.mp4` 는 시연판(합성 샘플)을 4K로 녹화한 화면입니다. 실제 개인 기록은 없습니다.
 - `FAST=1` 이면 960×540 시험판. 최종 음량 -16 LUFS, 트루 피크 -1.5 dB.
+
+## 제출 묶음 3편 (11/10 공식 레이아웃)
+`layout/pages/slide-NN.png` = 공식 「영상콘텐츠 레이아웃」에 글·스크린샷을 채운 4K 장(`layout/render.sh 원본.pptx layout/img 출력폴더`로 다시 만듦).
+```
+P=layout/pages
+# 1 메인 디스플레이: 제목·소개 장 + 1분 축약
+python3 build5.py --cut main --pre $P/slide-02.png,$P/slide-03.png --page-sec 6 --sea … --sky … --jungle … --music … --out MineD_메인디스플레이.mp4
+# 2 서브 디스플레이: 제목·시나리오·구현기술·콘텐츠개발·기술개발 → 풀 영상 2분 → 크레딧
+python3 build5.py --cut sub --pre $P/slide-06.png,$P/slide-07.png,$P/slide-08.png,$P/slide-09.png,$P/slide-10.png --post $P/slide-12.png --page-sec 7 … --out MineD_서브디스플레이.mp4
+# 3 심포지엄: 제목·시나리오·구현기술 → 풀 영상 2분 → 크레딧
+python3 build5.py --cut sub --pre $P/slide-16.png,$P/slide-17.png,$P/slide-18.png --post $P/slide-20.png --page-sec 7 … --out MineD_심포지엄.mp4
+```
