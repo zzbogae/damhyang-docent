@@ -6,6 +6,7 @@
 // 첫 화면 「섬 둘러보기」(11/04 보별 요청)는 섬이 없어도 누를 수 있고, 나의 공간 예시 영상을 바로 이어서 튼다(SpaceTour.tsx).
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ART } from './design';
+import { DEMO_SNAPSHOT } from '../demo/snapshot';
 import { mindiSay, sceneOverlay, setSoundOn, sfx, soundOn } from '../mindi/soundKit';
 import { loadSpaces } from './Space';
 import { requestVisitLatest } from './SpaceButton';
@@ -115,7 +116,7 @@ export function Intro({ onDone }: { onDone: () => void }) {
         </label>
         <div className="entry-cards">
           <button className="entry-card" disabled={!age} onClick={() => enter(false)} tabIndex={stage === 2 ? 0 : -1}>
-            <b>내 기록으로 시작</b><span>내보내기 파일과 사진 폴더를 이 기기 안에서 읽습니다</span>
+            <b>내 기록으로 시작</b><span>{DEMO_SNAPSHOT ? '전시 시연판에서는 가져오는 방법만 안내합니다' : '내보내기 파일과 사진 폴더를 이 기기 안에서 읽습니다'}</span>
           </button>
           <button className="entry-card" disabled={!age} onClick={() => enter(true)} tabIndex={stage === 2 ? 0 : -1}>
             <b>샘플로 둘러보기</b><span>가상 인물의 가짜 기록 2년치로 먼저 봅니다</span>

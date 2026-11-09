@@ -4,6 +4,7 @@ import { useStore } from '../state/store';
 import { importAndJudge, importV6File, runFixture, runSample } from '../pipeline';
 import { IconFile, IconFolder } from './Icons';
 import { CHANNEL_LABEL, type Channel } from '../types';
+import { DEMO_SNAPSHOT } from '../demo/snapshot';
 
 const GUIDE: { title: string; steps: string[] }[] = [
   { title: '구글 기록(유튜브·메모·캘린더·사진)', steps: [
@@ -114,6 +115,25 @@ export function ImportPanel({ onDone, onEval }: { onDone?: () => void; onEval?: 
   }
 
   const stage = (s: string) => setProgress({ ...(progress ?? {}), stage: s });
+
+  // 11/09 전시: 시연판에는 판정 엔진(Pyodide)을 넣지 않아 내 기록 가져오기가 끝까지 가지 못한다.
+  // 막히는 버튼 대신 「샘플로 둘러보기」 하나와, 실제 앱에서 무엇을 가져오는지만 보여 준다.
+  if (DEMO_SNAPSHOT) {
+    return (
+      <div className="importer" id="import-start">
+        <h1>시연판은 샘플로 둘러봅니다</h1>
+        <p className="promise-big">전시용 시연판에서는 내 기록을 가져오지 않습니다. 가상 인물의 2년치 가짜 기록으로 Mine D 전체 흐름을 똑같이 볼 수 있어요.</p>
+        <div className="drop">
+          <p>실제 앱에서는 구글 기록, 건강 앱, 카카오톡, 인스타그램, AI 대화 내보내기 파일과 사진 폴더를 이 기기 안에서만 읽습니다. 어디에도 보내지 않습니다.</p>
+          <div className="row">
+            <button className="btn primary" disabled={busy} onClick={() => run(() => runSample((p) => setProgress(p)))}>{busy ? '불러오는 중' : '샘플로 둘러보기'}</button>
+          </div>
+          {busy && progress && <p className="small muted" aria-live="polite">{progress.stage}</p>}
+          {error && <p className="err" role="alert">불러오지 못했습니다: {error}</p>}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
