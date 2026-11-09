@@ -13,6 +13,9 @@
 /* 광석: 자리는 감싸개가, 광석 버튼은 그 안 가운데 */
 .mf-ore-wrap { position: absolute; transform: translate(-50%, -50%); z-index: 4; display: flex; flex-direction: column; align-items: center; }
 .mf-ore-wrap .mf-ore { position: relative; transform: none; }
+/* 11/06: 등장 애니메이션(mf-in)이 translate(-50%,-50%)를 계속 붙들고 있어 광석이 제자리보다 반 칸 위·왼쪽에 떠 있었다. 감싼 광석은 크기만 키운다 */
+.mf-ore-wrap .mf-ore { animation-name: mf-in-wrap; }
+@keyframes mf-in-wrap { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: scale(1); } }
 .mf-ore-wrap .mf-ore:hover, .mf-ore-wrap .mf-ore:focus-visible { transform: scale(1.12); }
 .mf-ore-wrap.open { z-index: 9; }
 .mf-tip { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(4px); white-space: nowrap;
@@ -30,3 +33,28 @@
   .mf-tip { font-size: 12px; padding: 5px 9px; }
 }
 @media (prefers-reduced-motion: reduce) { .mf-tip { transition: none; } }
+
+/* 11/06 전시: 지표 셋 이상이 함께 움직인 광석(여러 색)은 그 색들로 천천히 도는 빛 */
+.mf-halo { position: absolute; inset: -55%; border-radius: 50%; pointer-events: none; opacity: .75; filter: blur(14px);
+  -webkit-mask: radial-gradient(circle, transparent 32%, #000 52%, transparent 72%); mask: radial-gradient(circle, transparent 32%, #000 52%, transparent 72%);
+  animation: mf-halo-spin 6s linear infinite; }
+.mf-ore-wrap.multi .mf-ore { filter: drop-shadow(0 0 10px rgba(255, 236, 200, .35)); }
+@keyframes mf-halo-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .mf-halo { animation: none; } }
+
+/* 11/06 보별 결정: 맨 위 「최근 12주」 = 한 주가 한 얇은 층, 아래로는 한 해가 한 층 */
+.mf-layer.mf-weeks { height: auto; padding: 44px 0 34px; }
+.mf-weeks-title, .mf-weeks-foot { position: absolute; left: 16%; z-index: 4; font-size: 13px; letter-spacing: .1em; color: rgba(238, 233, 226, .62); font-family: var(--mined-mono); pointer-events: none; }
+.mf-weeks-title { top: 14px; }
+.mf-weeks-foot { bottom: 8px; color: rgba(238, 233, 226, .4); }
+.mf-wk { position: relative; height: 64px; border-top: 1px solid rgba(0, 0, 0, .55); box-shadow: inset 0 1px 0 rgba(255, 244, 228, .07); }
+.mf-wk-band { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; pointer-events: none; filter: brightness(.92) saturate(.9); }
+.mf-wk:nth-child(odd) .mf-wk-band { filter: brightness(.8) saturate(.85); }
+.mf-wk-pick { position: absolute; inset: 0; z-index: 2; width: 100%; border: 0; padding: 0; background: transparent; cursor: pointer; text-align: left; }
+.mf-wk-pick:hover, .mf-wk-pick:focus-visible, .mf-wk.on .mf-wk-pick { background: rgba(242, 195, 116, .1); outline: none; box-shadow: inset 3px 0 0 #f2c374; }
+.mf-wk-label { position: absolute; left: 3%; top: 50%; transform: translateY(-50%); font-size: 12.5px; color: rgba(238, 233, 226, .78); font-family: var(--mined-mono); text-shadow: 0 1px 2px #000; }
+.mf-wk.has-ore .mf-wk-label { color: #f2c374; }
+.mf-wk .mf-ore-wrap { z-index: 4; }
+.mf-wk .mf-ore-wrap.open { z-index: 9; }
+.mf-year.weeks { font-size: clamp(26px, 4vw, 44px); }
+@media (max-width: 720px) { .mf-wk { height: 54px; } .mf-wk-label { font-size: 11px; } }

@@ -201,6 +201,21 @@ PERSONAS["long"].update(sns_post_rate=0.14, sns_dm_rate=0.9, sns_threads=["김�
 PERSONAS["short"]["channels"]["sns"] = [(D(2024, 9, 2), D(2026, 8, 30))]
 PERSONAS["short"]["channels"]["ai"] = [(D(2025, 1, 6), D(2026, 8, 30))]
 PERSONAS["short"].update(sns_post_rate=0.3, sns_dm_rate=1.6, sns_threads=["윤하람", "오세진"], ai_app="claude", ai_rate=(0.8, 1.6))
+
+# 11/06 전시: 같은 인물(서지안)·같은 씨앗으로 2026-11-08 까지 이어 쓴다. 2026-08-30 까지의 기록은 short 와 한 글자도 다르지 않다
+# (사건 배치·특수 메모 날짜 뽑기는 원래 끝날 base_end 기준, 늘어난 날은 그 뒤에 이어서 뽑는다).
+# 늘어난 9~11월에는 이 인물의 흐름을 이어 가는 사건 셋을 손으로 둔다: 추석 귀향(9/24~28), 바쁜 3주(9/28~10/18),
+# 이어진 지친 3주(10/19~11/8). 광석은 판정 엔진이 이 기록에서 스스로 찾는다(손으로 박지 않는다).
+_EXT_END = D(2026, 11, 8)
+PERSONAS["short_ext"] = dict(
+    PERSONAS["short"],
+    end=_EXT_END,
+    base_end=D(2026, 8, 30),
+    export_utc=dt.datetime(2026, 11, 9, 1, 15, 0, tzinfo=UTC),
+    channels={k: [(a, _EXT_END if b == D(2026, 8, 30) else b) for a, b in v] for k, v in PERSONAS["short"]["channels"].items()},
+    extra_events=[("trip", D(2026, 9, 24), D(2026, 9, 28)), ("busy", D(2026, 9, 28), D(2026, 10, 18)),
+                  ("hard", D(2026, 10, 19), D(2026, 11, 8))],
+)
 EFFECTS["hard"].update(ai_rate=1.8, ai_night=0.35, sns_post_rate=0.5, sns_dm_rate=0.6, sns_night=0.3)
 EFFECTS["trip"].update(sns_post_rate=3.0, sns_dm_rate=1.3, ai_rate=0.4)
 EFFECTS["busy"].update(ai_rate=1.4)
@@ -223,6 +238,7 @@ def in_ranges(d: dt.date, ranges) -> bool:
 class Persona:
     def __init__(self, key: str):
         self.key = key
+        self.fkey = key.removesuffix("_ext")  # 파일 안 이름은 원래 인물 그대로(short_ext → short)
         self.cfg = PERSONAS[key]
         c = self.cfg
         self.rng = random.Random(c["seed"])
@@ -252,7 +268,7 @@ class Persona:
         for kind, n in c["n_events"].items():
             items += [kind] * n
         self.rng.shuffle(items)
-        lo, hi = c["events_from"], self.end - dt.timedelta(days=60)
+        lo, hi = c["events_from"], c.get("base_end", self.end) - dt.timedelta(days=60)
         total_days = (hi - lo).days
         for i, kind in enumerate(items):
             for _try in range(400):
@@ -268,6 +284,9 @@ class Persona:
                 self.events.append(dict(id=f"{self.key}-{kind}-{i:02d}", type=kind, start=s.isoformat(), end=e.isoformat(),
                                         persistent=False, effects=EFFECT_INDICATORS[kind]))
                 break
+        for j, (kind, s, e) in enumerate(c.get("extra_events", [])):
+            self.events.append(dict(id=f"{self.key}-{kind}-ext{j}", type=kind, start=s.isoformat(), end=e.isoformat(),
+                                    persistent=False, effects=EFFECT_INDICATORS[kind]))
         self.events.sort(key=lambda x: x["start"])
         for ls in c["level_shifts"]:
             eff_ind = {}
@@ -318,14 +337,20 @@ class Persona:
         yt_start = ch["yt"][0][0] if "yt" in ch else None
         secrets = list(T.FAKE_SECRETS)
         crisis = list(T.CRISIS_NOTES)
-        memo_days = [d for d in drange(self.start, self.end) if in_ranges(d, ch.get("memo", []))]
-        # 가짜 자격증명·위기 메모를 넣을 날(힘든 주에 위기 메모)
+        memo_days = [d for d in drange(self.start, c.get("base_end", self.end)) if in_ranges(d, ch.get("memo", []))]
+        # 가짜 자격증명·위기 메모를 넣을 날(힘든 주에 위기 메모). 이어 쓴 인물도 원래 기간에서만 뽑아 앞 기록을 그대로 둔다
         secret_days = set(self.rng.sample(memo_days, min(len(secrets), len(memo_days)))) if memo_days else set()
         hard_days = [d for d in memo_days if self.hard_on(d)]
         crisis_days = set(self.rng.sample(hard_days, min(len(crisis), len(hard_days)))) if hard_days else set()
         room_last: dict[str, dt.datetime] = {}
+        # 이어 쓴 인물: 원래 끝날 다음 날부터는 따로 씨앗을 쓴 난수로 뽑고, 끝나면 원래 난수 상태로 되돌린다(뒤 단계도 short 와 같게)
+        base_end = c.get("base_end")
+        saved = None
 
         for d in drange(self.start, self.end):
+            if base_end and d > base_end and saved is None:
+                saved = (self.rng.getstate(), self.np.bit_generator.state)
+                self.rng, self.np = random.Random(c["seed"] + 13), np.random.default_rng(c["seed"] + 13)
             eff = self.day_effects(d)
             doy = d.timetuple().tm_yday
             wkend = d.weekday() >= 5
@@ -417,6 +442,9 @@ class Persona:
                     self._kakao_burst(room, members, t0, eff["kakao_delay"], p_first)
                     room_last[room] = self.kakao[room][-1]["dt"]
 
+        if saved is not None:
+            self.rng, self.np = random.Random(), np.random.default_rng()
+            self.rng.setstate(saved[0]); self.np.bit_generator.state = saved[1]
         # 반복 일정·취소·재정의 없는 반복 등 캘린더 특수 항목
         self._add_recurring()
         # 구글 포토 사진(Takeout, long 만)
@@ -457,7 +485,7 @@ class Persona:
                         t += dt.timedelta(seconds=rx.randint(20, 240))
             if ai_start and in_ranges(d, ai):
                 a, b = c["ai_rate"]
-                span = (ai[-1][1] - ai_start).days or 1
+                span = (min(ai[-1][1], c.get("base_end", ai[-1][1])) - ai_start).days or 1  # 이어 쓴 기간은 같은 기울기로 계속
                 lam = (a + (b - a) * (d - ai_start).days / span) * eff["ai_rate"]
                 p_night = eff["ai_night"] if eff["ai_night"] != 1.0 else 0.06
                 for _ in range(int(nx.poisson(lam))):
@@ -598,9 +626,14 @@ class Persona:
             p["source"] = "folder"
             p["exif"] = p["kind"] == "camera"
             p["name_date"] = False
-        cams = [p for p in self.photos if p["kind"] == "camera"]
+        base_end = self.cfg.get("base_end", self.end)
+        cams = [p for p in self.photos if p["kind"] == "camera" and p["dt"].date() <= base_end]
         # 3% 는 EXIF 없이 이름에 날짜가 있는 JPEG(메신저에서 저장한 사진 등)
         for p in self.rng.sample(cams, int(len(cams) * 0.03)):
+            p["exif"] = False
+            p["name_date"] = True
+        ext = [p for p in self.photos if p["kind"] == "camera" and p["dt"].date() > base_end]
+        for p in random.Random(self.cfg["seed"] + 11).sample(ext, int(len(ext) * 0.03)):
             p["exif"] = False
             p["name_date"] = True
         if n_g:
@@ -786,7 +819,7 @@ class Persona:
                 for x in e.get("exdate", []):
                     L.append(f"EXDATE;TZID=Asia/Seoul:{x:%Y%m%dT%H%M%S}")
             L.append(f"DTSTAMP:{self.export_utc:%Y%m%dT%H%M%S}Z")
-            L.append(f"UID:{self.key}-{calname}-{i}@google.com")
+            L.append(f"UID:{self.fkey}-{calname}-{i}@google.com")
             L.append(f"SUMMARY:{e['title']}")
             L.append("STATUS:CANCELLED" if e["cancelled"] else "STATUS:CONFIRMED")
             L.append("TRANSP:OPAQUE")
@@ -936,7 +969,7 @@ class Persona:
 
     def _write_samsung_health(self):
         stamp = f"{self.export_local:%Y%m%d%H%M%S}"
-        folder = self.exp / f"samsunghealth_{self.key}_{stamp}"
+        folder = self.exp / f"samsunghealth_{self.fkey}_{stamp}"
         folder.mkdir()
         cols = ["create_sh_ver", "step_count", "binning_data", "active_time", "recommendation", "run_step_count",
                 "update_time", "source_package_name", "create_time", "source_info", "speed", "distance", "calorie",
@@ -1031,7 +1064,7 @@ class Persona:
             return
         mg = lambda x: x.encode("utf-8").decode("latin-1")
         ts = lambda t: int(local_to_utc(t).timestamp())
-        user = f"doyun_{self.key}"
+        user = f"doyun_{self.fkey}"
         root = "your_instagram_activity/"
         posts = [p for p in self.ig_posts if p["kind"] == "post"]
         stories = [p for p in self.ig_posts if p["kind"] == "story"]

@@ -935,6 +935,19 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 .intro-island-btn { background: rgba(242, 170, 85, .28); }
 .intro-island-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; letter-spacing: .1em; }
 .intro-island-note { flex-basis: 100%; text-align: center; font-size: 13px; color: rgba(38, 50, 59, .75); }
+/* 첫 홈 「섬 둘러보기」(11/04 보별 요청): 버튼을 누르면 나의 공간 예시 영상이 화면 가득 바로 이어서 재생된다 */
+.intro-tour-btn { background: rgba(255, 255, 255, .18); }
+.space-tour { position: absolute; inset: 0; z-index: 20; background: #0d0f12; opacity: 0; visibility: hidden; transition: opacity .5s ease, visibility 0s linear .5s; }
+.space-tour.on { opacity: 1; visibility: visible; transition: opacity .5s ease; }
+.space-tour-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.space-tour-close { position: absolute; top: 18px; right: 20px; appearance: none; cursor: pointer; font-family: var(--font); font-size: 14px; letter-spacing: .05em; color: #fff;
+  padding: 9px 18px; border-radius: 999px; background: rgba(13, 15, 18, .38); border: 1px solid rgba(255, 255, 255, .45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.space-tour-close:hover { background: rgba(13, 15, 18, .55); }
+.space-tour-tabs { position: absolute; left: 50%; bottom: 5.5%; transform: translateX(-50%); display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 92vw; }
+.space-tour-tabs button { appearance: none; cursor: pointer; font-family: var(--font); font-size: 14px; letter-spacing: .06em; color: rgba(255, 255, 255, .85); padding: 8px 16px; border-radius: 999px;
+  background: rgba(13, 15, 18, .32); border: 1px solid rgba(255, 255, 255, .35); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: background .2s, color .2s; }
+.space-tour-tabs button.on { color: #26323b; background: rgba(242, 195, 116, .92); border-color: rgba(242, 195, 116, 1); }
+.space-tour-close:focus-visible, .space-tour-tabs button:focus-visible { outline: 2px solid var(--mined-amber, #F2AA55); outline-offset: 2px; }
 
 /* v2(11/03) 섬 영상 넷 고르기 */
 .isl-reveal video, .isl-inside video.isl-room { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -1027,3 +1040,36 @@ html { scrollbar-color: var(--mined-slate) transparent; }
   .ore-read .ore-whole > img { width: 72px; height: 110px; }
   .ore-read .ore-split { width: 110px !important; height: 110px !important; }
 }
+
+/* 11/06 전시: 고른 시간·시대·날씨를 섬 위에 입힌다(안개가 걷힐 때부터) */
+.isl-mood-in { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 3s ease .8s; }
+.isl-visit-full.clearing .isl-mood-in, .isl-visit-full.revealed .isl-mood-in { opacity: 1; }
+.isl-glow { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; }
+.isl-grain { position: absolute; inset: -20%; pointer-events: none; opacity: .16; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: isl-grain 1s steps(4) infinite; }
+@keyframes isl-grain { 0% { transform: translate(0, 0); } 25% { transform: translate(-3%, 2%); } 50% { transform: translate(2%, -3%); } 75% { transform: translate(-2%, -1%); } }
+@media (prefers-reduced-motion: reduce) { .isl-grain { animation: none; } .isl-mood-in { transition: none; } }
+
+/* 11/06 전시 점검: 나의 공간은 레일이 접힌 몰입 화면이라 글이 화면 왼쪽 끝에 붙었다 → 가운데 폭과 여백 */
+.space-page { max-width: 1120px; margin: 0 auto; padding: 0 28px 80px; box-sizing: border-box; }
+@media (max-width: 640px) { .space-page { padding: 0 16px 64px; } }
+/* 11/06 전시: 섬 안 「당신의 기록이라면」 + QR */
+.isl-yours { display: flex; gap: 14px; align-items: center; padding: 12px 14px; border-radius: 10px; background: rgba(243, 233, 220, .08); border: 1px solid rgba(243, 233, 220, .22); }
+.isl-yours p { margin: 0; }
+.isl-yours p + p { margin-top: 6px; }
+.isl-yours figure { margin: 0; flex: none; text-align: center; }
+.isl-yours img { display: block; width: 92px; height: 92px; border-radius: 6px; }
+.isl-yours figcaption { margin-top: 4px; color: var(--mined-ink-soft); }
+
+/* 11/06 보별: 단희 원 디자인 — 검은 돌을 깨면 정동 안쪽에서 결 색이 나온다(GeodeCore) */
+.geode { position: relative; margin: 0; aspect-ratio: 342 / 581; }
+.geode > * { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.geode-shell { object-fit: contain; }
+.geode-tone, .geode-light { -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+.geode-tone { mix-blend-mode: color; }
+.geode-light { mix-blend-mode: soft-light; opacity: .75; }
+.geode-spark { inset: auto; left: 52%; top: 40%; width: 16%; height: 10%; border-radius: 50%; mix-blend-mode: screen; opacity: .85; animation: geode-spark 2.6s ease-in-out infinite alternate; }
+@keyframes geode-spark { from { opacity: .45; transform: scale(.85); } to { opacity: .95; transform: scale(1.1); } }
+@media (prefers-reduced-motion: reduce) { .geode-spark { animation: none; } }
+.ore-read-geode { height: 150px; }

@@ -91,3 +91,8 @@
 .lift-say p { margin: 0; font-size: 15px; line-height: 1.5; }
 @keyframes lift-say-in { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translate(-50%, 0); } }
 @media (max-width: 720px) { .lift-say { top: 64px; max-width: calc(100% - 24px); } .lift-say p { font-size: 14px; } }
+
+/* 11/06: 맨 위 「최근 12주」 층은 한 주가 한 줄인 얇은 결로 보인다 */
+.lift-stratum.weeks { position: relative; }
+.lift-stratum.weeks::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(180deg, rgba(0,0,0,.5) 0 1px, transparent 1px calc(100% / 12)); }

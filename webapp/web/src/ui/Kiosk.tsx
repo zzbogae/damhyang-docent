@@ -1,5 +1,5 @@
 // 전시용 키오스크 모드(?kiosk 또는 ?kiosk=초): 가짜 샘플을 저절로 불러오고, 아무도 만지지 않은 채 정해진 시간이 지나면
-// 관람객이 남긴 것(이름·편지·기록 더하기·연 주)을 모두 지우고 처음 화면으로 돌아간다. 기본 90초.
+// 관람객이 남긴 것(이름·편지·기록 더하기·연 주·캔 광석·지은 섬)을 모두 지우고 첫 홈(안개)으로 돌아간다. 기본 90초.
 import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../state/store';
 
@@ -9,12 +9,16 @@ export function useKiosk(enabled: boolean, idleSec: number, onReset: () => void)
   const { phase, setPhase, reload, select, relockAll } = useStore();
   const [resetting, setResetting] = useState(false);
   const started = useRef(false);
-  const run = async () => {
+  // fresh: 쉬는 시간 뒤 초기화(처음 샘플을 넣을 때는 새로 고치지 않는다)
+  const run = async (fresh = false) => {
     setResetting(true);
     setPhase('working');
     const [{ wipeAll }, { runSample }] = await Promise.all([import('../db'), import('../pipeline')]);
     await wipeAll();
     await runSample(() => undefined);
+    // 11/06 전시: 앞 관람객이 캔 광석·지은 섬·붙인 이름·대화 안내가 다음 관람객에게 남지 않게 지우고,
+    // 첫 홈(안개 · 로고 · 입장하기)부터 다시 보이도록 페이지를 새로 연다. 소리·말투 설정은 남긴다.
+    if (fresh) { clearVisitor(); location.reload(); return; }
     select(undefined);
     relockAll();
     onReset();
@@ -31,12 +35,25 @@ export function useKiosk(enabled: boolean, idleSec: number, onReset: () => void)
   useEffect(() => {
     if (!enabled) return;
     let t = window.setTimeout(tick, idleSec * 1000);
-    function tick() { if (!resetting) run().catch(() => setResetting(false)); }
+    function tick() {
+      // 이미 첫 홈(안개)에 있으면 다시 열 까닭이 없다: 시간만 다시 잰다
+      if (document.querySelector('.intro .intro-entry.on')) { poke(); return; }
+      if (!resetting) run(true).catch(() => setResetting(false));
+    }
     const poke = () => { window.clearTimeout(t); t = window.setTimeout(tick, idleSec * 1000); };
     for (const e of EVENTS) window.addEventListener(e, poke, { passive: true });
     return () => { window.clearTimeout(t); for (const e of EVENTS) window.removeEventListener(e, poke); };
   }, [enabled, idleSec, resetting]);
   return resetting;
+}
+
+/** 관람객 한 사람이 남긴 것(광석 모음·섬·이름·첫 대화 안내·입장 기록). 소리(mined.sound.on · mined.music.v1)·말투(mined.voice.v1)는 전시 설정이라 남긴다 */
+const KEEP = new Set(['mined.music.v1', 'mined.voice.v1', 'mined.sound.on']);
+export function clearVisitor() {
+  try {
+    for (const k of Object.keys(localStorage)) if (k.startsWith('mined') && !KEEP.has(k)) localStorage.removeItem(k);
+    sessionStorage.clear();
+  } catch { /* 저장소를 못 쓰면 지울 것도 없다 */ }
 }
 
 export function KioskOverlay() {
