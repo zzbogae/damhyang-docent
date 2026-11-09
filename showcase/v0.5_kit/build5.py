@@ -359,6 +359,7 @@ def main():
     ap.add_argument('--pre', default='', help='본편 앞에 붙일 레이아웃 장 PNG들(쉼표로)')
     ap.add_argument('--post', default='', help='본편 뒤에 붙일 레이아웃 장 PNG들(쉼표로)')
     ap.add_argument('--page-sec', type=float, default=6.0, help='레이아웃 장 한 장의 길이(초)')
+    ap.add_argument('--copy', choices=['a', 'b'], default='a', help='메인 자막 묶음: a=m0·mw1~4, b=m0b·mw1b~4b(노션 스레드 5줄안)')
     o = ap.parse_args()
     mj = next((p for p in ['myspace.json', f'{K3}/myspace.json'] if os.path.exists(p)), None)
     cut = json.load(open(mj)) if mj else {}
@@ -387,8 +388,12 @@ def main():
     else:
         still(card('title'), 4, 'seg/01_title.mp4', fi=1.0); segs.append('01_title')
     if o.cut == 'main':  # 1분 축약
-        story('seg/03_story.mp4', STORY_S); segs.append('03_story')
-        demo('seg/05_demo.mp4', DEMO_S); segs.append('05_demo')
+        sfx_ = 'b' if o.copy == 'b' else ''
+        rc = lambda c: c + sfx_ if c == 'm0' or c.startswith('mw') else c
+        st_ = [x[:5] + ([(rc(c), *r) for c, *r in x[5]],) for x in STORY_S]
+        dm_ = [x[:5] + ([(rc(c), *r) for c, *r in x[5]],) + x[6:] for x in DEMO_S]
+        story('seg/03_story.mp4', st_); segs.append('03_story')
+        demo('seg/05_demo.mp4', dm_); segs.append('05_demo')
         two = [x for x in spaces if x[2] in ('sea', 'sky')]
         islands(two, 'seg/06_islands.mp4', cap=6.0); segs.append('06_islands')
         ending('seg/07_end.mp4', short=True); segs.append('07_end')
