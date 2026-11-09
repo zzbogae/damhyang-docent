@@ -157,9 +157,13 @@ if THEME == 'dark':
             for r in runs_of(sh): r.font.color.rgb = RGBColor.from_string(c)
 
 # 크레딧 12·20 (HERIZON × SCL): 11/09 보별 결정 = 팀원 개인 이름은 넣지 않음, 협업 = 이원재 교수 연구실 이서연
+NAMES = ['김보경  기획·연출', '유단희  아트 디렉션', '황하빈  UI 디자인', '이승현  기획 참여', '장세희  기획 참여']  # 11/09 보별: 이름 넣고, 승현·세희는 기획 참여
+CREDIT = os.environ.get('CREDIT', 'team')  # team=HERIZON만(현재 확정) / names=이름·역할(보별 검토 중)
 for n in (12, 20):
-    kill(S(n), '이서연')
+    if CREDIT == 'names': set_text(find(S(n), '이서연'), NAMES)
+    else: kill(S(n), '이서연')
     set_text(find(S(n), '이원재'), ['이원재 교수 연구실', '이서연'])
-for n in (13, 21):  # 팀 단독 장(쓰지 않음): 이름 칸 비움
-    kill(S(n), '이서연')
+for n in (13, 21):  # 팀 단독 장(쓰지 않음)
+    if CREDIT == 'names': set_text(find(S(n), '이서연'), NAMES)
+    else: kill(S(n), '이서연')
 p.save(OUT)
