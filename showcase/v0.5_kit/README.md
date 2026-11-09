@@ -25,9 +25,9 @@ python3 build5.py --sea <바다> --sky <하늘산> --jungle <정글> --music <�
 ```
 P=layout/pages
 # 1 메인 디스플레이: 제목·소개 장 + 1분 축약
-python3 build5.py --cut main --pre $P/slide-02.png,$P/slide-03.png --page-sec 6 --sea … --sky … --jungle … --music … --out MineD메인.mp4
+python3 build5.py --cut main --pre $P/slide-02.png,$P/slide-03.png --page-sec 5,10 --copy b --sea … --sky … --jungle … --music … --out MineD메인.mp4
 # 2 서브 디스플레이: 제목·시나리오·구현기술·콘텐츠개발·기술개발 → 풀 영상 2분 → 크레딧
-python3 build5.py --cut sub --pre $P/slide-06.png,$P/slide-07.png,$P/slide-08.png,$P/slide-09.png,$P/slide-10.png --post $P/slide-12.png --page-sec 7 … --out MineD서브.mp4
+python3 build5.py --cut sub --pre $P/slide-06.png,$P/slide-07.png,$P/slide-08.png,$P/slide-09.png,$P/slide-10.png --post $P/slide-12.png --page-sec 5,10,12,13,12,6 … --out MineD서브.mp4
 # 3 심포지엄: 제목·시나리오·구현기술 → 풀 영상 2분 → 크레딧
-python3 build5.py --cut sub --pre $P/slide-16.png,$P/slide-17.png,$P/slide-18.png --post $P/slide-20.png --page-sec 7 … --out MineD심포지엄.mp4
+python3 build5.py --cut sub --pre $P/slide-16.png,$P/slide-17.png,$P/slide-18.png --post $P/slide-20.png --page-sec 5,10,12,6 … --out MineD심포지엄.mp4
 ```

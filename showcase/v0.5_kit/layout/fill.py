@@ -63,49 +63,41 @@ def pic(slide, path, x, y, w, h):
     pc.crop_left = pc.crop_right = cl[0]; pc.crop_top = pc.crop_bottom = cl[1]
     return pc
 
-SCEN_S = '이미 쌓인 나의 기록(사진·메모·건강·메신저·일정)을 시간의 ‘지층’으로 쌓아, 직접 캐 보며 지난 시간을 다시 만나는 웹 체험이다. 평소와 크게 달랐던 주는 ‘광석’이 되고, 캐서 깨면 그 주의 결 색이 드러난다.'
-SCEN_L = ('이미 쌓인 나의 기록(사진·메모·건강·메신저·일정)을 시간의 ‘지층’으로 쌓아, 직접 캐 보며 지난 시간을 다시 만나는 웹 체험이다. '
-          '최근 12주는 한 주가 한 층, 그 아래는 해마다 한 층으로 쌓인다. 평소와 크게 달랐던 주는 검은 ‘광석’으로 박히고, 캐서 깨면 그 주의 결 색이 드러난다. '
-          '관측소에서 만나는 캐릭터 ‘민디’와 대화하며 고른 말로 나만의 섬을 짓는다. 앱은 해석하거나 진단하지 않고 기록의 사실만 보여 주며, 원문은 기기 밖으로 나가지 않는다. '
-          '세계를 여는 영상과 민디의 목소리는 생성형 AI로 만들었다.')
-TECH_S = '개인 기록을 ‘한 주 = 한 층’이라는 시간 단위로 다시 정의했다. 기록을 브라우저 안에서만 읽어 수면·걸음·언어·소통 네 축을 그 사람의 평소 범위와 비교하고, 달랐던 축을 광석의 결 색으로 바꾼다.'
-TECH_L = ('MineD는 개인 기록을 ‘한 주 = 한 층’이라는 시간 단위로 다시 정의한 기록 시각화 웹 앱이다. 기록을 브라우저 안에서만 읽어 '
-          '수면·걸음·언어·소통 네 축을 그 사람의 평소 범위와 비교하고, 평소를 벗어난 주는 광석으로, 벗어난 축은 결 색으로 바꾼다. 원문은 기기 밖으로 나가지 않는다. '
-          'KAIST 문화기술대학원 Social Computing Lab은 자기 기록 안에서 근거를 찾아 답하는 개인 기록 챗봇을 개발해 민디와의 대화에 연계하도록 설계했다.')
+SCEN_S = '흩어진 나의 기록을 지층으로 쌓고, 평소와 달랐던 주를 광석으로 캐내는 웹 체험.'
+SCEN_L = '앞으로만 달려온 나에게 잠시 쉬어 갈 곳. 흩어진 기록이 한 주에 한 층씩 쌓이고, 평소와 달랐던 주는 광석이 된다. 민디와 나눈 말로 나만의 섬을 짓는다.'
+TECH_S = '한 주를 한 층으로. 기록은 기기 안에서만 읽고, 달랐던 축을 결 색으로 보여 준다.'
+TECH_L = '기록을 ‘한 주 = 한 층’으로 다시 정의했다. 수면·걸음·언어·소통 네 축을 나의 평소와 비교해, 달랐던 주는 광석으로, 달랐던 축은 결 색으로 바꾼다. 원문은 기기 밖으로 나가지 않는다.'
 AITOOL = 'Claude, ChatGPT, Google Flow(Veo 3.1), Seedance 2.0, GPT 이미지, Kling, Gemini, Suno, Kokoro, MediaPipe, CLIP'
 
 def tech_box(slide, body):
     sh = find(slide, '이 부분에는')
-    set_text(sh, [body, [(True, 'AI Tool '), (False, AITOOL)]])
+    set_text(sh, [body, [(True, 'AI Tool '), (False, AITOOL)]]); return sh
 
 # 메인 3 · 서브 7·8 · 심포지엄 17·18
 set_text(find(S(3), '이미 쌓인'), [SCEN_S]); tech_box(S(3), TECH_S)
 for n in (7, 17):
     set_text(find(S(n), '이미 쌓인'), [SCEN_L])
 for n in (8, 18):
-    tech_box(S(n), TECH_L)
-    sh = find(S(n), 'MineD는'); sh.top = sh.top - Inches(1.6)
-    h = find(S(n), '구현 기술'); h.top = h.top - Inches(1.4)
-    t = find(S(n), 'MineD: Your'); t.top = t.top - Inches(1.0)
+    sh = tech_box(S(n), TECH_L); sh.top = sh.top - Inches(0.6)
+    h = find(S(n), '구현 기술'); h.top = h.top - Inches(0.6)
+    t = find(S(n), 'MineD: Your'); t.top = t.top - Inches(0.4)
 
 # 9 콘텐츠 개발
 s9 = S(9); kill(s9, '여기엔 캐릭터 개발, 이미지 사운드 생성, 스토리 개발 등\n')
 DARK = '3A3530'
-set_text(find(s9, '캐릭터 개발 및 생성'), ['캐릭터 개발 및 생성'])
-set_text(find(s9, '3차원 장면'), ['세계·나의 섬 영상과 사운드'])
-set_text(find(s9, '시나리오 개발'), ['시나리오 개발'])
+set_text(find(s9, '캐릭터 개발 및 생성'), ['캐릭터'])
+set_text(find(s9, '3차원 장면'), ['세계와 소리'])
+set_text(find(s9, '시나리오 개발'), ['시나리오'])
 bodies = [sh for sh in s9.shapes if sh.has_text_frame and sh.text_frame.text.startswith('여기엔 캐릭터')]
 bodies.sort(key=lambda sh: (sh.left, sh.top))
 b1, b2, b3a, b3b = bodies  # x순: 3.3 / 19.5 / 36.0(19.3) / 43.5
 if b3a.left > b3b.left: b3a, b3b = b3b, b3a
-set_text(b1, ['기록을 지키는 관측소지기 ‘민디’. 이미지 생성으로 기준 시트를 만들어 모든 장면에서 같은 모습을 지켰다.',
-              '말투 4종 대사집과, TTS에 음높이 변환을 더한 외계어 목소리를 입혔다.'], DARK)
-set_text(b2, ['안개 관측소와 나의 섬 4곳(바다·하늘산·정글·음악방)을 Google Flow(Veo 3.1)와 Seedance 2.0으로 생성했다. 날씨·계절·시대를 바꾼 변주도 함께 만들었다.',
-              '효과음 21종과 바탕 소리는 앱 사운드 엔진으로 직접 만들었다.'], DARK)
+set_text(b1, ['관측소지기 민디. 기준 시트로 모든 장면의 모습을 맞췄다.'], DARK)
+set_text(b2, ['관측소와 섬 4곳은 AI 영상으로 짓고, 효과음 21종은 직접 만들었다.'], DARK)
 # b3a: 36.0,19.3 넓은 글 / b3b: 43.5,9.6 좁은 글
 nar, wide = (b3b, b3a) if b3b.width < b3a.width else (b3a, b3b)
-set_text(nar, ['“묻힌 것은 사라진 것이 아니다.”', '기록을 지층으로, 다시 만나는 순간을 광석으로 옮겼다.'], DARK)
-set_text(wide, ['관측소 → 지층 → 광석 → 민디와 이야기 → 나의 섬으로 이어지는 체험 흐름을 설계했다. 첫 방문 튜토리얼, 결 색 범례, 광석 이름 짓기까지 한 줄의 이야기로 묶었다.'], DARK)
+set_text(nar, ['“묻힌 것은 사라진 것이 아니다.”'], DARK)
+set_text(wide, ['관측소에서 섬까지 이어지는 하나의 이야기.'], DARK)
 I = lambda f: f'{IMG}/{f}'
 pic(s9, I('mindi_sq.png'), 3.4, 9.9, 7.3, 7.3)
 pic(s9, I('mindi_character_box.png'), 11.1, 9.9, 6.5, 3.0)
@@ -122,14 +114,47 @@ set_text(find(s10, '시스템 구조'), ['시스템 구조'])
 set_text(find(s10, 'OOOO'), [' '])  # 11/09 운영: 연구실 칸은 연구실이 작성 중, 비워 둠
 tmpl = b1  # 9번 본문 상자 서식 복제
 for k, (img, lines) in enumerate([
-    ('ore.png', ['최근 12주는 한 주 한 층, 그 아래는 해마다 한 층. 네 축이 평소 범위를 벗어난 주를 광석으로 판정하고, 벗어난 축의 수만큼 결 색 고리를 겹친다.', '광석 판정과 지층 그리기는 모두 브라우저 안에서 이루어진다.']),
-    ('diag.png', ['기록 가져오기부터 나의 섬까지 모든 처리를 기기 안에서 한다. 원문은 서버나 외부 모델로 보내지 않는다.', '생성형 AI는 세계 영상·이미지·목소리 제작에만 썼다.']),
-]):
+    ('ore.png', ['한 주는 한 층. 평소를 벗어난 주는 광석이 되고, 벗어난 축은 결 색 고리로 남는다.']),
+    ('diag.png', ['모든 처리는 기기 안에서. 생성형 AI는 영상·이미지·목소리 제작에만 썼다.'])]):
     x = 2.5 + k * 16.35
     pic(s10, I(img), x + 0.6, 9.9, 14.5, 8.0)
     el = copy.deepcopy(tmpl._element); s10.shapes._spTree.append(el)
     sh = s10.shapes[-1]; sh.left, sh.top, sh.width, sh.height = Inches(x + 0.6), Inches(18.3), Inches(14.5), Inches(6.0)
     set_text(sh, lines, DARK)
+
+# 9·10 테마 (11/09 보별: 흰 양식이 의무가 아니면 우리 어두운 포맷이 낫다). THEME=white 로 흰 양식 유지
+import os
+from pptx.enum.shapes import MSO_SHAPE_TYPE
+THEME = os.environ.get('THEME', 'dark')
+def runs_of(sh):
+    for pp in sh.text_frame.paragraphs:
+        for r in pp.runs: yield r
+def placeholder03(slide, color):
+    el = copy.deepcopy(tmpl._element); slide.shapes._spTree.append(el)
+    sh = slide.shapes[-1]; sh.left, sh.top, sh.width, sh.height = Inches(36.0), Inches(15.2), Inches(14.3), Inches(2.0)
+    set_text(sh, ['연구실 작성 예정'], color)
+    from pptx.enum.text import PP_ALIGN
+    for pp in sh.text_frame.paragraphs: pp.alignment = PP_ALIGN.CENTER
+placeholder03(s10, '6B645C' if THEME == 'dark' else 'B0B0B0')
+if THEME == 'dark':
+    BG, BODY, HEAD, ACC, SUB, LINE = '15120F', 'D9D2C8', 'F2ECE4', 'F0A24A', '8C857C', '4A443D'
+    for slide in (s9, s10):
+        slide.background.fill.solid(); slide.background.fill.fore_color.rgb = RGBColor.from_string(BG)
+        for sh in slide.shapes:
+            if sh.shape_type == MSO_SHAPE_TYPE.AUTO_SHAPE:
+                if sh.fill.type == 1: sh.fill.fore_color.rgb = RGBColor.from_string('2A2622')
+                try:
+                    if sh.line.fill.type == 1: sh.line.color.rgb = RGBColor.from_string(LINE)
+                except Exception: pass
+            if not sh.has_text_frame or not sh.text_frame.text.strip(): continue
+            t = sh.text_frame.text.strip()
+            if t.startswith('2026 KAIST'): c = SUB
+            elif t.startswith('MineD: Your'): c = 'E8962E'
+            elif t in ('콘텐츠 개발', '기술 개발') or t in ('01', '02', '03') or t.startswith('HERIZON'): c = HEAD
+            elif t in ('캐릭터', '세계와 소리', '시나리오', '지층·광석 판정', '시스템 구조'): c = ACC
+            elif t in ('Social Computing Lab', '연구실 작성 예정'): c = '6B645C'
+            else: c = BODY
+            for r in runs_of(sh): r.font.color.rgb = RGBColor.from_string(c)
 
 # 크레딧 12·20 (HERIZON × SCL): 11/09 보별 결정 = 팀원 개인 이름은 넣지 않음, 협업 = 이원재 교수 연구실 이서연
 for n in (12, 20):

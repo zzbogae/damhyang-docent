@@ -358,7 +358,7 @@ def main():
                     help='full=출품 영상(제목·기술·본편·크레딧) / sub=서브·심포지엄(레이아웃 장+본편 2분+크레딧 장) / main=메인(레이아웃 장+1분 축약)')
     ap.add_argument('--pre', default='', help='본편 앞에 붙일 레이아웃 장 PNG들(쉼표로)')
     ap.add_argument('--post', default='', help='본편 뒤에 붙일 레이아웃 장 PNG들(쉼표로)')
-    ap.add_argument('--page-sec', type=float, default=6.0, help='레이아웃 장 한 장의 길이(초)')
+    ap.add_argument('--page-sec', default='6', help='레이아웃 장 길이(초). 하나면 모든 장, 쉼표 목록이면 --pre 장들 다음 --post 장들 순서로(모자라면 마지막 값)')
     ap.add_argument('--copy', choices=['a', 'b'], default='a', help='메인 자막 묶음: a=m0·mw1~4, b=m0b·mw1b~4b(노션 스레드 5줄안)')
     o = ap.parse_args()
     mj = next((p for p in ['myspace.json', f'{K3}/myspace.json'] if os.path.exists(p)), None)
@@ -373,11 +373,14 @@ def main():
     pre = [x for x in o.pre.split(',') if x]
     post = [x for x in o.post.split(',') if x]
     segs = []
+    secs = [float(x) for x in str(o.page_sec).split(',') if x]
+    sec_it = iter(secs)
 
     def pages(lst, tag):
         for i, png in enumerate(lst):
             name = f'{tag}{i + 1}'
-            page(png, o.page_sec, f'seg/{name}.mp4')
+            d = next(sec_it, secs[-1])
+            page(png, d, f'seg/{name}.mp4')
             segs.append(name)
 
     if pre:
@@ -394,7 +397,7 @@ def main():
         dm_ = [x[:5] + ([(rc(c), *r) for c, *r in x[5]],) + x[6:] for x in DEMO_S]
         story('seg/03_story.mp4', st_); segs.append('03_story')
         demo('seg/05_demo.mp4', dm_); segs.append('05_demo')
-        two = [(f, [(4.4, 9.9)] if k == 'sky' else c, k) for f, c, k in spaces if k in ('sea', 'sky')]  # 하늘산 원본 9.5초 컷 뒤 짧은 숏 빼기
+        two = [(f, [(4.4, 9.4)] if k == 'sky' else c, k) for f, c, k in spaces if k in ('sea', 'sky')]  # 하늘산 원본 9.52초 컷 뒤 짧은 숏 빼기
         islands(two, 'seg/06_islands.mp4', cap=6.0); segs.append('06_islands')
         ending('seg/07_end.mp4', short=True); segs.append('07_end')
     else:
