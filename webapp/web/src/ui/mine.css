@@ -44,8 +44,8 @@
 @media (max-width: 720px) {
   .mine-ore { width: min(36vw, 170px); bottom: 26%; }
   .mine-dots { bottom: calc(26% - 22px); }
-  .mine-next { gap: 12px; width: calc(100% - 24px); justify-content: center; bottom: 8%; }
-  .mine-btn { flex: 1; font-size: 14px; padding: 0 10px; }
+  .mine-next { gap: 8px; left: 12px; right: 12px; width: auto; transform: none; justify-content: center; bottom: 8%; }
+  .mine-btn { flex: 1; min-width: 0; font-size: 13px; padding: 0 8px; white-space: normal; line-height: 1.2; }
 }
 @media (prefers-reduced-motion: reduce) {
   .mine-ore *, .mine-next, .mine.leaving-up .mine-ore { animation: none !important; transition: none !important; }
