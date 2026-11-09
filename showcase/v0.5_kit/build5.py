@@ -183,19 +183,19 @@ DEMO = [
 ]
 DXF = 0.4
 
-# ───────────────────────── 1분 축약판(메인 디스플레이)용 구간
+# ───────────────────────── 1분 축약판(메인 디스플레이)용 구간 · 11/09 보별: 처음 보는 사람에게 왜 필요한지 읽히게(m0·mw 카드)
 STORY_S = [
-    (f'{K3}/gen/K01.mp4', 0.0, 4.5, True, None, [('sub01', 0.6, 4.3, 'C01_1')]),
+    (f'{K3}/gen/K01.mp4', 0.0, 4.5, True, None, [('m0', 0.5, 4.3, 'C01_1')]),
     ('rec/walk.mp4', 0.5, 7.5, False, (1.0, 1.08, 1000, 600), [('sub02', 3.9, 7.3, 'C02_2')]),
 ]
 DEMO_S = [
-    ('rec/mine3.mp4', 9.4, 14.3, 1.0, (1.0, 1.08, 960, 480), [('w1', 0.3, 4.9)], []),
-    ('rec/mine3.mp4', 14.2, 25.0, 1.0, (1.0, 1.08, 1100, 640), [('pip1', 0.8, 10.8), ('w2', 0.8, 10.8)],
+    ('rec/mine3.mp4', 9.4, 14.3, 1.0, (1.0, 1.08, 960, 480), [('mw1', 0.3, 4.9)], []),
+    ('rec/mine3.mp4', 14.2, 25.0, 1.0, (1.0, 1.08, 1100, 640), [('pip1', 0.8, 10.8), ('mw2', 0.8, 10.8)],
      [('tap', 14.46, 1.2), ('pick', 18.09, 1.1), ('pick', 20.45, 1.1), ('pick', 22.81, 1.1),
       ('ore_crack', 22.88, 1.0), ('glint', 23.66, 1.0)]),
-    ('rec/chat.mp4', 16.5, 23.35, 1.0, (1.12, 1.30, 1300, 420), [('w3', 0.3, 6.85)],
+    ('rec/chat.mp4', 16.5, 23.35, 1.0, (1.12, 1.30, 1300, 420), [('mw3', 0.3, 6.85)],
      [('panel_open', 21.19, 1.8)]),
-    ('rec/island.mp4', 6.0, 36.6, 2.8, (1.18, 1.30, 1250, 560), [('w4', 0.3, 10.9)],
+    ('rec/island.mp4', 6.0, 36.6, 2.8, (1.18, 1.30, 1250, 560), [('mw4', 0.3, 10.9)],
      [('tap', 8.13, 0.9), ('tap', 10.75, 0.9), ('tap', 12.57, 0.9), ('tap', 17.8, 0.9), ('tap', 20.45, 0.9),
       ('tap', 23.09, 0.9), ('tap', 25.76, 0.9), ('keep', 29.28, 1.0), ('space_open', 31.8, 1.2)]),
 ]
@@ -242,9 +242,10 @@ ISLAND_CUTS = {'sky': [(4.4, 12.6), (30.5, 35.5)], 'jungle': [(6.0, 11.1), (27.0
 
 
 # ───────────────────────── 6 나의 섬 (섬 고르기 녹화에서 고른 음악방부터)
-def islands(spaces, out, cap=12.0, ixf=0.4, xf=0.8):
+def islands(spaces, out, cap=12.0, ixf=0.6, xf=0.8, min_piece=3.0):
     """spaces: [(파일, [(a,b),...], key)]. myspace.json의 구간 안에서만 자른다(구간 밖 컷이 섞이지 않게).
-    섬 하나는 최대 cap초: 구간을 차례로 쓰고, 넘치면 마지막 구간을 줄인다."""
+    섬 하나는 최대 cap초: 구간을 차례로 쓰고, 넘치면 마지막 구간을 줄인다.
+    min_piece초보다 짧게 남는 조각은 넣지 않는다(11/09 보별: 중간에 너무 짧은 컷 금지)."""
     ins, fc = [], ''
     for f, *_x in spaces:
         ins += ['-i', f]
@@ -255,9 +256,9 @@ def islands(spaces, out, cap=12.0, ixf=0.4, xf=0.8):
     for i, (f, cuts, key) in enumerate(spaces):
         use, left = [], cap
         for (ca, cb) in cuts:
-            if left <= 1.0:
-                break
             d = min(cb - ca, left + (ixf if use else 0))
+            if d < min_piece:
+                break
             use.append((ca, ca + d))
             left -= d - (ixf if len(use) > 1 else 0)
         k = len(use)
@@ -266,20 +267,21 @@ def islands(spaces, out, cap=12.0, ixf=0.4, xf=0.8):
         for j, (ca, cb) in enumerate(use):
             fc += (f'[sv{i}_{j}]trim={ca}:{cb},setpts=PTS-STARTPTS,{fit()}[cv{i}_{j}];'
                    f'[sa{i}_{j}]atrim={ca}:{cb},asetpts=PTS-STARTPTS,aresample=48000,'
-                   f'aformat=channel_layouts=stereo,volume=0.9[ca{i}_{j}];')
+                   f'aformat=channel_layouts=stereo[ca{i}_{j}];')
         vacc, aacc, t = f'cv{i}_0', f'ca{i}_0', use[0][1] - use[0][0]
         for j in range(1, k):
             fc += (f'[{vacc}][cv{i}_{j}]xfade=transition=fade:duration={ixf}:offset={t - ixf:.2f}[iv{i}_{j}];'
-                   f'[{aacc}][ca{i}_{j}]acrossfade=d={ixf}[ia{i}_{j}];')
+                   f'[{aacc}][ca{i}_{j}]acrossfade=d={ixf}:c1=qsin:c2=qsin[ia{i}_{j}];')
             vacc, aacc, t = f'iv{i}_{j}', f'ia{i}_{j}', t + (use[j][1] - use[j][0]) - ixf
         fc += (ov(n + i, 0.5, min(5.5, t - 0.3), 0.4) + f'[o{i}];[{vacc}][o{i}]overlay=0:0:shortest=1,'
-               f'trim=0:{t:.3f},setpts=PTS-STARTPTS[t{i}];[{aacc}]atrim=0:{t:.3f}[n{i}];')
+               f'trim=0:{t:.3f},setpts=PTS-STARTPTS[t{i}];'
+               f'[{aacc}]atrim=0:{t:.3f},loudnorm=I=-24:LRA=6:TP=-4,aresample=48000[n{i}];')  # 섬마다 같은 크기로
         lens.append(t)
         print(f'  섬 {key}: ' + ', '.join(f'{x:.1f}~{y:.1f}' for x, y in use) + f' → {t:.1f}초')
     acc, aacc, t = 't0', 'n0', lens[0]
     for i in range(1, n):
         fc += f'[{acc}][t{i}]xfade=transition=fade:duration={xf}:offset={t - xf:.2f}[w{i}];'
-        fc += f'[{aacc}][n{i}]acrossfade=d={xf}[m{i}];'
+        fc += f'[{aacc}][n{i}]acrossfade=d={xf}:c1=qsin:c2=qsin[m{i}];'
         acc, aacc, t = f'w{i}', f'm{i}', t + lens[i] - xf
     total = t
     fc += (f'[{acc}]fade=t=in:st=0:d=0.5,fade=t=out:st={total - 0.8:.2f}:d=0.8[v];'
@@ -388,17 +390,17 @@ def main():
         story('seg/03_story.mp4', STORY_S); segs.append('03_story')
         demo('seg/05_demo.mp4', DEMO_S); segs.append('05_demo')
         two = [x for x in spaces if x[2] in ('sea', 'sky')]
-        islands(two, 'seg/06_islands.mp4', cap=4.5); segs.append('06_islands')
+        islands(two, 'seg/06_islands.mp4', cap=6.0); segs.append('06_islands')
         ending('seg/07_end.mp4', short=True); segs.append('07_end')
     else:
         story('seg/03_story.mp4'); segs.append('03_story')
         bridge('seg/04_bridge.mp4'); segs.append('04_bridge')
-        two_min = o.cut == 'sub'  # 서브·심포지엄의 「풀 영상」 자리는 2분 내외: 섬 고르기를 빠르게, 섬마다 8초
+        two_min = o.cut == 'sub'  # 서브·심포지엄 「풀 영상」: 섬 고르기를 조금 빠르게, 섬마다 10초(운영: 3분 조금 넘어도 됨)
         dm = [(x[:3] + (2.0,) + x[4:]) if two_min and 'island' in x[0] else x for x in DEMO]
         demo('seg/05_demo.mp4', dm); segs.append('05_demo')
-        if two_min:  # 8초 상한에서도 하늘산은 구름바다 와이드로 끝나게
-            spaces = [(f, [(4.4, 8.4), (30.5, 34.5)] if k == 'sky' else c, k) for f, c, k in spaces]
-        islands(spaces, 'seg/06_islands.mp4', cap=8.0 if two_min else 12.0); segs.append('06_islands')
+        if two_min:  # 10초 상한에서도 하늘산은 구름바다 와이드로 끝나게
+            spaces = [(f, [(4.4, 9.4), (30.5, 35.5)] if k == 'sky' else c, k) for f, c, k in spaces]
+        islands(spaces, 'seg/06_islands.mp4', cap=10.0 if two_min else 12.0); segs.append('06_islands')
         ending('seg/07_end.mp4'); segs.append('07_end')
     if post:
         pages(post, '08_post')
