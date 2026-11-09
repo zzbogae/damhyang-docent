@@ -27,7 +27,12 @@ P=layout/pages
 # 1 메인 디스플레이: 제목·소개 장 + 1분 축약
 python3 build5.py --cut main --pre $P/slide-02.png,$P/slide-03.png --page-sec 5,10 --copy b --sea … --sky … --jungle … --music … --out MineD메인.mp4
 # 2 서브 디스플레이: 제목·시나리오·구현기술·콘텐츠개발·기술개발 → 풀 영상 2분 → 크레딧
-python3 build5.py --cut sub --pre $P/slide-06.png,$P/slide-07.png,$P/slide-08.png,$P/slide-09.png,$P/slide-10.png --post $P/slide-12.png --page-sec 4,10,13,13,11,5 … --out MineD서브.mp4
+python3 build5.py --cut sub --pre $P/slide-06.png,$P/slide-07.png,$P/slide-08.png,$P/slide-09.png,$P/slide-10.png --post $P/slide-12.png --page-sec 4,10,13,13,12,5 … --out MineD서브.mp4
 # 3 심포지엄: 제목·시나리오·구현기술 → 풀 영상 2분 → 크레딧
-python3 build5.py --cut sub --pre $P/slide-16.png,$P/slide-17.png,$P/slide-18.png --post $P/slide-20.png --page-sec 4,10,13,5 … --out MineD심포지엄.mp4
+python3 build5.py --cut sub --pre $P/slide-16.png,$P/slide-17.png,$P/slide-18.png --post $P/slide-20.png --page-sec 4,10,18,5 … --out MineD심포지엄.mp4
 ```
+
+
+## 크레딧 고치기
+`layout/credit_names.txt`에 한 줄에 한 명씩 `이름<탭>역할`로 적고 `layout/render.sh lay.pptx img pages`를 다시 돌린다. 이름 없이 팀명만: `CREDIT=team`.
+제목 글꼴은 웹과 같은 마루 부리(MaruBuri), 본문은 Pretendard. 렌더 기기에 두 글꼴이 설치돼 있어야 한다.
