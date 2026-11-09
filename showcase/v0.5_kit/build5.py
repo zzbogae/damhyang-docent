@@ -258,7 +258,7 @@ def islands(spaces, out, cap=12.0, ixf=0.6, xf=0.8, min_piece=3.0):
         use, left = [], cap
         for (ca, cb) in cuts:
             d = min(cb - ca, left + (ixf if use else 0))
-            if d < min_piece:
+            if d < min_piece - 1e-6:  # 부동소수 오차(33.8-30.3=3.4999…)
                 break
             use.append((ca, ca + d))
             left -= d - (ixf if len(use) > 1 else 0)
@@ -441,10 +441,10 @@ def main():
          f'[0:a][m]amix=inputs=2:normalize=0,atrim=0:{T}[a]',
          '-map', '0:v', '-map', '[a]', '-c:v', 'copy'] + AENC + ['seg/mixed.mp4'])
     r = subprocess.run(['ffmpeg', '-hide_banner', '-i', 'seg/mixed.mp4', '-af',
-                        'loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json', '-f', 'null', '-'],
+                        'loudnorm=I=-16:TP=-1.6:LRA=11:print_format=json', '-f', 'null', '-'],
                        capture_output=True, text=True)
     m = json.loads(r.stderr[r.stderr.rindex('{'):r.stderr.rindex('}') + 1])
-    ln = (f"loudnorm=I=-16:TP=-1.5:LRA=11:measured_I={m['input_i']}:measured_TP={m['input_tp']}:"
+    ln = (f"loudnorm=I=-16:TP=-1.6:LRA=11:measured_I={m['input_i']}:measured_TP={m['input_tp']}:"
           f"measured_LRA={m['input_lra']}:measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true")
     run(['-i', 'seg/mixed.mp4', '-c:v', 'copy', '-af', ln + ',aresample=48000'] + AENC
         + ['-movflags', '+faststart', o.out])
