@@ -66,7 +66,7 @@ def pic(slide, path, x, y, w, h):
 SCEN_S = '흩어진 나의 기록을 지층으로 쌓고, 평소와 달랐던 주를 광석으로 캐내는 웹 체험.'
 SCEN_L = '앞으로만 달려온 나에게 잠시 쉬어 갈 곳. 흩어진 기록이 한 주에 한 층씩 쌓이고, 평소와 달랐던 주는 광석이 된다. 민디와 나눈 말로 나만의 섬을 짓는다.'
 TECH_S = '한 주를 한 층으로. 기록은 기기 안에서만 읽고, 달랐던 축을 결 색으로 보여 준다.'
-TECH_L = '기록을 ‘한 주 = 한 층’으로 다시 정의했다. 수면·걸음·언어·소통 네 축을 나의 평소와 비교해, 달랐던 주는 광석으로, 달랐던 축은 결 색으로 바꾼다. 원문은 기기 밖으로 나가지 않는다.'
+TECH_L = '기록을 ‘한 주 = 한 층’으로 다시 정의했다. 수면·걸음·언어·소통 네 축을 나의 평소와 비교해 달랐던 주는 광석, 달랐던 축은 결 색으로 보여 준다. 원문은 기기 밖으로 나가지 않는다. KAIST 문화기술대학원 Social Computing Lab은 기록 기반 개인 챗봇을 개발해, 민디와의 대화에 연계하도록 설계했다.'
 AITOOL = 'Claude, ChatGPT, Google Flow(Veo 3.1), Seedance 2.0, GPT 이미지, Kling, Gemini, Suno, Kokoro, MediaPipe, CLIP'
 
 def tech_box(slide, body):
@@ -92,12 +92,12 @@ bodies = [sh for sh in s9.shapes if sh.has_text_frame and sh.text_frame.text.sta
 bodies.sort(key=lambda sh: (sh.left, sh.top))
 b1, b2, b3a, b3b = bodies  # x순: 3.3 / 19.5 / 36.0(19.3) / 43.5
 if b3a.left > b3b.left: b3a, b3b = b3b, b3a
-set_text(b1, ['관측소지기 민디. 기준 시트로 모든 장면의 모습을 맞췄다.'], DARK)
-set_text(b2, ['관측소와 섬 4곳은 AI 영상으로 짓고, 효과음 21종은 직접 만들었다.'], DARK)
+set_text(b1, ['관측소지기 민디. 기준 시트로 모든 장면의 모습을 맞췄다.', 'AI 모델: GPT 이미지, Kling'], DARK)
+set_text(b2, ['관측소와 섬 4곳은 AI 영상으로 짓고, 효과음 21종은 직접 만들었다.', 'AI 모델: Google Flow(Veo 3.1), Seedance 2.0, Suno, Kokoro'], DARK)
 # b3a: 36.0,19.3 넓은 글 / b3b: 43.5,9.6 좁은 글
 nar, wide = (b3b, b3a) if b3b.width < b3a.width else (b3a, b3b)
 set_text(nar, ['“묻힌 것은 사라진 것이 아니다.”'], DARK)
-set_text(wide, ['관측소에서 섬까지 이어지는 하나의 이야기.'], DARK)
+set_text(wide, ['관측소에서 섬까지 이어지는 하나의 이야기.', 'AI 모델: Claude, ChatGPT'], DARK)
 I = lambda f: f'{IMG}/{f}'
 pic(s9, I('mindi_sq.png'), 3.4, 9.9, 7.3, 7.3)
 pic(s9, I('mindi_character_box.png'), 11.1, 9.9, 6.5, 3.0)
