@@ -431,8 +431,8 @@ def main():
         two_min = o.cut == 'sub'  # 서브·심포지엄 「풀 영상」: 섬 고르기를 조금 빠르게, 섬마다 10초(운영: 3분 조금 넘어도 됨)
         dm = [(x[:3] + (2.0,) + x[4:]) if two_min and 'island' in x[0] else x for x in DEMO]
         demo('seg/05_demo.mp4', dm); segs.append('05_demo')
-        if two_min:  # 11/10 보별: 섬마다 포인트 한 컷 + 온천. 한 컷은 원본 안 컷 사이 구간만
-            pt = {'sky': [(4.4, 9.4)], 'music': [(4.1, 10.0)], 'sea': [(3.4, 8.4)], 'jungle': [(6.0, 11.1)]}
+        if two_min:  # 11/10 보별: 섬마다 포인트 한 컷 + 온천. 한 컷은 원본 안 컷 사이 구간만, 음악방은 창밖 풍경 컷(공간은 풍경으로 끝난다)
+            pt = {'sky': [(4.4, 9.4)], 'music': [(30.3, 33.8)], 'sea': [(3.4, 8.4)], 'jungle': [(6.0, 11.1)]}
             spaces = [(f, pt.get(k, c[:1]), k) for f, c, k in spaces]
         islands(spaces, 'seg/06_islands.mp4', cap=6.0 if two_min else 12.0, min_piece=3.5 if two_min else 3.0); segs.append('06_islands')
         ending('seg/07_end.mp4'); segs.append('07_end')
