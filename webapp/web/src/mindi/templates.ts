@@ -2,7 +2,8 @@
 import type { WeekRecord } from '../types';
 
 export const GREETING = '이번 주의 당신과 가장 닮은 주를 찾아가볼까요?';
-export const DONT_KNOW = '이번은 저도 모릅니다.';
+/** 앞일을 닫는 한 줄. 11/10 보별: 「모릅니다」류 무능 고백 어법은 쓰지 않는다(대본집 v1.1 「등급 open」과 같은 결). */
+export const DONT_KNOW = '이번은 아직 안 지나간 자리입니다.';
 
 const LABEL: Record<string, string> = {
   steps: '걸음수', sleep: '수면 시간', quiet: '밤 기록 공백', shot_n: '화면 캡처 수', shot_night: '새벽 화면 캡처 비율', screen_time: '스크린타임', git_commits: '커밋 수', memo_n: '메모 수', memo_len: '메모 길이', memo_night: '새벽 메모 비율',
@@ -79,7 +80,7 @@ export function afterText(w: WeekRecord | undefined): string {
   return '';
 }
 
-/** 닮은 주 안내 템플릿. 마지막 문장 "이번은 저도 모릅니다"는 호출하는 쪽이 늘 붙인다. */
+/** 닮은 주 안내 템플릿. 마지막 문장 DONT_KNOW(「이번은 아직 안 지나간 자리입니다」)는 호출하는 쪽이 늘 붙인다. */
 export function similarTemplate(target: WeekRecord, sim: WeekRecord, same: string[], memoCount: number): string {
   const a = `${dateLabel(sim.date_start)}부터의 한 주가 ${target === sim ? '이 주' : '이번 주'}와 가장 닮았습니다.`;
   const b = sameDirectionText(same);

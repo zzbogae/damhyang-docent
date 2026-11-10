@@ -1,4 +1,4 @@
-// 민디 답변 템플릿: 판정값에서만 문장을 만들고, 앞일은 "이번은 저도 모릅니다"로 닫는지 본다.
+// 민디 답변 템플릿: 판정값에서만 문장을 만들고, 앞일은 DONT_KNOW(「이번은 아직 안 지나간 자리입니다」)로 닫는지 본다.
 import { describe, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
