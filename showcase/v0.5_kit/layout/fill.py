@@ -1,4 +1,4 @@
-import copy, sys
+import copy, os, sys
 from pptx import Presentation
 from pptx.util import Inches
 from pptx.dml.color import RGBColor
@@ -77,6 +77,12 @@ def tech_box(slide, body):
     set_text(sh, body + [[(True, 'AI Tool '), (False, AITOOL)]]); return sh
 
 # 메인 3 · 서브 7·8 · 심포지엄 17·18
+# 2 타이틀: 입력 글자 「MineD」 대신 단희님 최종 로고(산 M + INE + 결정 D, 흰색판)  11/10 보별
+_t2 = [sh for sh in S(2).shapes if sh.has_text_frame and sh.text_frame.text.strip() == 'MineD'][0]
+_cx, _cy = _t2.left + _t2.width // 2, _t2.top + _t2.height // 2
+_t2._element.getparent().remove(_t2._element)
+_lh = Inches(float(os.environ.get('LOGO_H', '7.2'))); _lw = int(_lh * 1452 / 739)
+S(2).shapes.add_picture(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'img', 'logo_white.png'), _cx - _lw // 2, _cy - _lh // 2 - Inches(0.85), _lw, _lh)
 set_text(find(S(3), '이미 쌓인'), [SCEN_S]); tech_box(S(3), TECH_S)
 for n in (7, 17):
     set_text(find(S(n), '이미 쌓인'), [SCEN_L])
