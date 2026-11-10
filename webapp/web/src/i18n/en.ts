@@ -58,7 +58,7 @@ export function weekSentenceEn(w: WeekRecord): string {
 }
 
 export const GREETING_EN = 'Shall we look for the week most like this one?';
-export const DONT_KNOW_EN = "This time, I don't know either.";
+export const DONT_KNOW_EN = "This one hasn't passed yet.";
 export const FEELING_EN = "Hmm, I'd probably get that wrong. But we can look at what was different that week together.";
 export const UNKNOWN_EN = "Hmm, I didn't quite catch that. Could you ask again about steps, rest, screen or records?";
 export const UNCLEAR_EN = 'Which one should I look for?';

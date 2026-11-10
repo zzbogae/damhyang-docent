@@ -32,7 +32,7 @@ describe('말투 4종(대본집 v1.1 §18)', () => {
     expect(toHaeyo('진단이 아닙니다.')).toBe('진단이 아니에요.');
     expect(toHaeyo('안개가 열립니다.')).toBe('안개가 열려요.');
     expect(toHaeyo('직접 고릅니다.')).toBe('직접 골라요.');
-    expect(toHaeyo('이번은 저도 모릅니다.')).toBe('이번은 저도 몰라요.');
+    expect(toHaeyo('이번은 아직 안 지나간 자리입니다.')).toBe('이번은 아직 안 지나간 자리예요.');
     expect(toHaeyo('기록이 됩니다.')).toBe('기록이 돼요.');
     expect(toHaeyo('이 해에 속합니다.')).toBe('이 해에 속해요.');
     expect(toHaeyo('다시 봅니다.')).toBe('다시 봐요.');
