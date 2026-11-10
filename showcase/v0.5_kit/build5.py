@@ -248,10 +248,10 @@ ISLAND_CUTS = {'sky': [(4.4, 12.6), (30.5, 35.5)], 'jungle': [(6.0, 11.1), (27.0
 ISLAND_EQ = {'sky': 'highpass=f=70,lowshelf=f=120:g=-4,',          # 66Hz 바람 드론 → 웅웅 덜기
              'jungle': 'highshelf=f=6000:g=-6,lowpass=f=9000,',     # 빗소리 고음
              'music': '', 'sea': '', 'onsen': ''}
-ISLAND_GAIN = {'music': -15.0, 'sea': -13.5, 'sky': -12.0, 'jungle': -14.5, 'onsen': -12.0}  # 약 -29~-30 LUFS
+ISLAND_GAIN = {'music': -6.0, 'sea': -13.5, 'sky': -12.0, 'jungle': -14.5, 'onsen': -12.0}  # 약 -29~-30 LUFS
 def island_af(key):
     return (f'highpass=f=60,{ISLAND_EQ.get(key, "")}volume={ISLAND_GAIN.get(key, -13.5)}dB,'
-            'acompressor=threshold=-36dB:ratio=2.5:attack=10:release=350,'   # 발소리·문소리 급등(+9~10dB) 누르기
+            'acompressor=threshold=-30dB:ratio=2.5:attack=10:release=350,'   # 발소리·문소리 급등(+9~10dB) 누르기
             'alimiter=limit=0.08:attack=3:release=250:level=disabled')
 ISL_LENS = []
 # ───────────────────────── 6 나의 섬 (섬 고르기 녹화에서 고른 음악방부터)
@@ -308,6 +308,7 @@ def islands(spaces, out, cap=12.0, ixf=0.6, xf=0.8, min_piece=3.0):
 
 
 # ───────────────────────── 7 여운 · 오늘의 한마디
+END_AF = 'afade=t=in:st=0:d=1.2,acompressor=threshold=-30dB:ratio=2.5:attack=10:release=350,alimiter=limit=0.5:attack=3:release=250:level=disabled'  # v10: 섬과 같은 압축 + 1.2초 페이드인
 def ending(out, short=False):
     if short:  # 오늘의 한마디 → 마지막 질문만
         return ending_short(out)
@@ -315,7 +316,7 @@ def ending(out, short=False):
     tot = d1 + d2 + d3 - 1.6
     mx = Mix(4).voice('C12_1', 1.1).sfx('name_save', d1 + d2 - 1.2, 0.7)
     # 오늘의 한마디는 조금 더 또렷하게
-    mx.fc = mx.fc.replace(f'volume={VOICE},', 'volume=1.0,', 1)
+    mx.fc = mx.fc.replace(f'volume={VOICE},', 'volume=0.7,', 1)  # v10: 섬→여운 급등 줄임(1.0→0.7)
     run(['-i', f'{K4}/comp/S9_end.mp4', '-loop', '1', '-i', card('b12'), '-loop', '1', '-t', d2, '-i', card('end1'),
          '-loop', '1', '-t', d3, '-i', card('end2')] + mx.ins + ['-filter_complex',
         f'[0:v]trim=0:{d1},setpts=PTS-STARTPTS,{fit()},format=yuv420p[k];'
@@ -323,7 +324,7 @@ def ending(out, short=False):
         f'[2:v]{fit()}[e1];[3:v]{fit()},zoompan=z=\'1+0.015*on/{d3 * FPS}\':d=1:s={W}x{H}:fps={FPS}[e2];'
         f'[e0][e1]xfade=transition=fade:duration=0.8:offset={d1 - 0.8}[f1];'
         f'[f1][e2]xfade=transition=fade:duration=0.8:offset={d1 + d2 - 1.6}[f2];'
-        f'[f2]fade=t=in:st=0:d=0.6,fade=t=out:st={tot - 0.8:.2f}:d=0.8[v];' + mx.fc + mx.out(tot),
+        f'[f2]fade=t=in:st=0:d=0.6,fade=t=out:st={tot - 0.8:.2f}:d=0.8[v];' + mx.fc + mx.out(tot).replace('[a]', '[a0]') + f';[a0]{END_AF}[a]',
         '-map', '[v]', '-map', '[a]', '-t', f'{tot:.3f}'] + VENC + AENC + [out])
     return tot
 
@@ -332,14 +333,14 @@ def ending_short(out):
     d1, d3 = 6.0, 3.5
     tot = d1 + d3 - 0.8
     mx = Mix(3).voice('C12_1', 1.1).sfx('name_save', d1 - 1.0, 0.7)
-    mx.fc = mx.fc.replace(f'volume={VOICE},', 'volume=1.0,', 1)
+    mx.fc = mx.fc.replace(f'volume={VOICE},', 'volume=0.7,', 1)  # v10: 섬→여운 급등 줄임(1.0→0.7)
     run(['-i', f'{K4}/comp/S9_end.mp4', '-loop', '1', '-i', card('b12'), '-loop', '1', '-t', d3, '-i', card('end2')]
         + mx.ins + ['-filter_complex',
         f'[0:v]trim=0:{d1},setpts=PTS-STARTPTS,{fit()},format=yuv420p[k];'
         + ov(1, 0.9, d1 - 0.3) + f'[b];[k][b]overlay=0:0:shortest=1,trim=0:{d1},setpts=PTS-STARTPTS[e0];'
         f'[2:v]{fit()},zoompan=z=\'1+0.015*on/{d3 * FPS}\':d=1:s={W}x{H}:fps={FPS}[e2];'
         f'[e0][e2]xfade=transition=fade:duration=0.8:offset={d1 - 0.8}[f2];'
-        f'[f2]fade=t=in:st=0:d=0.6,fade=t=out:st={tot - 0.8:.2f}:d=0.8[v];' + mx.fc + mx.out(tot),
+        f'[f2]fade=t=in:st=0:d=0.6,fade=t=out:st={tot - 0.8:.2f}:d=0.8[v];' + mx.fc + mx.out(tot).replace('[a]', '[a0]') + f';[a0]{END_AF}[a]',
         '-map', '[v]', '-map', '[a]', '-t', f'{tot:.3f}'] + VENC + AENC + [out])
     return tot
 
@@ -435,7 +436,7 @@ def main():
         story('seg/03_story.mp4', st_); segs.append('03_story')
         demo('seg/05_demo.mp4', dm_); segs.append('05_demo')
         two = [(f, [(4.4, 9.4)] if k == 'sky' else [(3.4, 8.4)] if k == 'sea' else c, k) for f, c, k in spaces if k in ('sea', 'sky', 'onsen')]  # 하늘산 원본 9.52초 컷 뒤 짧은 숏 빼기
-        islands(two, 'seg/06_islands.mp4', cap=4.6 if o.onsen else 6.0); segs.append('06_islands')
+        islands(two, 'seg/06_islands.mp4', cap=5.0 if o.onsen else 6.0); segs.append('06_islands')
         ending('seg/07_end.mp4', short=True); segs.append('07_end')
     else:
         story('seg/03_story.mp4'); segs.append('03_story')
@@ -446,7 +447,7 @@ def main():
         dm = [(x[:3] + (2.0,) + x[4:]) if two_min and 'island' in x[0] else x for x in DEMO]
         demo('seg/05_demo.mp4', dm); segs.append('05_demo')
         if two_min:  # 11/10 보별: 섬마다 포인트 한 컷 + 온천. 한 컷은 원본 안 컷 사이 구간만, 음악방은 창밖 풍경 컷(공간은 풍경으로 끝난다)
-            pt = {'sky': [(4.4, 9.4)], 'music': [(30.3, 33.8)], 'sea': [(3.4, 8.4)], 'jungle': [(6.0, 11.1)]}
+            pt = {'sky': [(4.4, 9.4)], 'music': [(30.3, 34.3)], 'sea': [(3.4, 8.4)], 'jungle': [(6.0, 11.1)]}
             spaces = [(f, pt.get(k, c[:1]), k) for f, c, k in spaces]
         islands(spaces, 'seg/06_islands.mp4', cap=6.0 if two_min else 12.0, min_piece=3.5 if two_min else 3.0); segs.append('06_islands')
         ending('seg/07_end.mp4'); segs.append('07_end')
@@ -472,7 +473,7 @@ def main():
              (st['07_end'][0] + 0.8, st['07_end'][0] + 5.5, 0.26)]  # 오늘의 한마디
     if ISL_LENS and ISL_LENS[0][0] == 'music':  # 음악방 원음에 LP 음악 → 두 음악이 겹치지 않게 배경음악을 거의 끔
         a0 = st['06_islands'][0]
-        ducks[2:3] = [(a0, a0 + ISL_LENS[0][1], 0.06), (a0 + ISL_LENS[0][1], st['07_end'][0] + 0.8, 0.30)]
+        ducks[2:3] = [(a0, a0 + ISL_LENS[0][1], 0.16), (a0 + ISL_LENS[0][1], st['07_end'][0] + 0.8, 0.30)]
     vol = env_expr(0.46, ducks, ramp=1.6)
     run(['-i', 'seg/joined.mp4', '-i', f'{A}/mus_home.mp3', '-i', f'{A}/mus_home.mp3', '-filter_complex',
          f'[1:a][2:a]acrossfade=d=3,aresample=48000,atrim=0:{T},'
