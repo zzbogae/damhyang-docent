@@ -14,7 +14,7 @@ import { clipOf, type ClipKey } from './islandClips';
 import { MINERAL_HEX, type Mineral } from './minerals';
 import { MindiMark } from './Icons';
 import { sfx } from '../mindi/soundKit';
-import { clearChatIsland, peekChatIsland } from '../mindi/lifebot';
+import { clearChatIsland, peekChatIsland, sharedWords, type SharedWord } from '../mindi/lifebot';
 import { takeNewSpaceRequest, takeVisitRequest } from './SpaceButton';
 import { AXES, axisScreen, type Axis, type WeekRecord } from '../types';
 
@@ -138,6 +138,19 @@ function Scene({ row, byKey, onVisit }: { row: SpaceRow; byKey: Map<string, Week
   );
 }
 
+/** 11/10 보별: 다른 관람객이 섬에 남긴 단어를 같이 보여 준다(챗봇 연결 시에만, 단어와 횟수뿐). */
+function SharedWords({ words }: { words: SharedWord[] }) {
+  if (!words.length) return null;
+  const max = Math.max(...words.map((w) => w.n));
+  const level = (n: number) => (max <= 1 ? 1 : n >= max * 0.66 ? 3 : n >= max * 0.33 ? 2 : 1);
+  return (
+    <div className="shared-words" role="note" aria-label="다른 사람들이 남긴 단어">
+      <p className="small muted">여기를 다녀간 사람들이 섬에 남긴 단어예요.</p>
+      <div className="label-row">{words.map((w) => <span key={w.word} className={`chip lv${level(w.n)}`}>{w.word}</span>)}</div>
+    </div>
+  );
+}
+
 export function Space({ onField }: { onField: () => void }) {
   const { byKey, labels, memosByWeek, photosByWeek } = useStore();
   const collected = useCollected();
@@ -149,6 +162,8 @@ export function Space({ onField }: { onField: () => void }) {
   const [built, setBuilt] = useState<SpaceRow | null>(null);
   const [building, setBuilding] = useState(false);
   const [visit, setVisit] = useState<SpaceRow | null>(() => (takeVisitRequest() ? spaces[spaces.length - 1] ?? null : null));
+  const [shared, setShared] = useState<SharedWord[]>([]);
+  useEffect(() => { let on = true; void sharedWords().then((w) => { if (on) setShared(w); }); return () => { on = false; }; }, []);
   useEffect(() => { if (!building) return; const t = setTimeout(() => { setBuilding(false); sfx('spaceOpen'); }, 2600); return () => clearTimeout(t); }, [building]);
   const labelsByWeek = useMemo(() => {
     const m = new Map<string, string[]>();
@@ -167,6 +182,7 @@ export function Space({ onField }: { onField: () => void }) {
         <h2 id="space-title" className="h2">나의 공간</h2>
         {visit && <IslandVisit row={visit} byKey={byKey} onExit={() => setVisit(null)} />}
         {spaces.map((r) => <Scene key={r.id} row={r} byKey={byKey} onVisit={() => setVisit(r)} />)}
+        <SharedWords words={shared} />
         <p>아직 안개가 짙습니다. 광석이 {SPACE_NEED}개 모이면 안개가 걷힙니다. 지금 {collected.length}개를 캤습니다.</p>
         <p className="small muted">데이터가 표시한 광석과 직접 고른 광석을 함께 셉니다.</p>
         <button className="btn primary" onClick={onField}>지층으로 내려가기</button>
@@ -188,7 +204,10 @@ export function Space({ onField }: { onField: () => void }) {
     const sorted = base.map((t, i) => ({ t, i, n: freq.get(t) ?? 0 })).sort((a, b) => Number(dateOnly(a.t)) - Number(dateOnly(b.t)) || b.n - a.n || a.i - b.i).map((x) => x.t);
     // 11/10: 민디와 이야기에서 「이 대화로 섬 만들기」로 받은 단어가 있으면 앞에 둔다(챗봇 연결 시에만 생긴다)
     const fromChat = chatIsland?.keywords ?? [];
-    return [...fromChat, ...sorted.filter((t) => !fromChat.includes(t))];
+    // 다른 관람객의 단어는 맨 뒤에(추천 4개 안에 들진 않고, 더하기 칸에서 고를 수 있다)
+    const others = shared.map((w) => w.word);
+    const mine = [...fromChat, ...sorted.filter((t) => !fromChat.includes(t))];
+    return [...mine, ...others.filter((t) => !mine.includes(t))];
   })();
   const chatWords = chatIsland?.keywords.length ?? 0;
   // 대화에서 온 단어로 짓는 길: 광석 고르기를 건너뛰고 바로 민디와 섬 만들기
@@ -208,6 +227,7 @@ export function Space({ onField }: { onField: () => void }) {
     <section className="stack space-page" aria-labelledby="space-title">
       <h2 id="space-title" className="h2">나의 공간</h2>
       {visit && <IslandVisit row={visit} byKey={byKey} onExit={() => setVisit(null)} />}
+      {!built && <SharedWords words={shared} />}
       {built && (
         <div className="stack isl-built" role="status">
           {building ? (

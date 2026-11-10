@@ -31,6 +31,8 @@ const SLOW_MS = 6000;
 const TIMEOUT_MS = 30000;
 const STOPPED_TEXT = '기다리기를 멈췄어요. 다른 걸 물어봐도 돼요.';
 
+const TALK_KEY = 'mined.talk.v1';
+
 export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onAsk }: { w: WeekRecord; voiceChip?: boolean; chat?: boolean; initial?: string; chip?: ReactNode; onAsk?: () => void }) {
   const { result, byKey, memosByWeek, select, settings } = useStore();
   const [q, setQ] = useState<QuestionId | null>(null);
@@ -67,13 +69,34 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
   const [log, setLog] = useState<{ q: string; a: string }[]>([]);
   // 11/10: 「이 대화로 섬 만들기」(챗봇 연결 시에만). 챗봇이 대화에서 꺼낸 단어·한 줄을 보여 주고, 나의 공간 섬 만들기의 추천 단어로 넘긴다
   const [isl, setIsl] = useState<{ st: 'idle' | 'busy' | 'done' | 'error'; data?: lifebot.ChatIsland }>({ st: 'idle' });
+  const [asked, setAsked] = useState<string | null>(null);
+  // 11/10 보별: 이야기 나누기 대화는 다른 화면에 다녀와도 남긴다. 이 탭(sessionStorage)에만 두고, 전시 초기화·탭 닫기로 사라진다
+  const restored = useRef(false);
+  useEffect(() => {
+    if (!chat || restored.current) return;
+    restored.current = true;
+    try {
+      const raw = sessionStorage.getItem(TALK_KEY);
+      if (!raw) return;
+      const v = JSON.parse(raw) as { log?: { q: string; a: string }[]; turns?: lifebot.Turn[]; isl?: lifebot.ChatIsland | null };
+      if (v.log?.length) setLog(v.log);
+      if (v.turns?.length) turns.current = v.turns;
+      const kept = lifebot.peekChatIsland();
+      if (v.isl && kept) setIsl({ st: 'done', data: kept });
+    } catch { /* 저장소를 못 읽으면 새 대화 */ }
+  }, [chat]);
+  useEffect(() => {
+    if (!chat || !restored.current) return;
+    const full = a && asked ? [...log, { q: asked, a: a.text }] : log;
+    if (!full.length) return;
+    try { sessionStorage.setItem(TALK_KEY, JSON.stringify({ log: full, turns: turns.current, isl: isl.st === 'done' ? (isl.data ?? null) : null })); } catch { /* 없음 */ }
+  }, [chat, log, a, asked, isl.st]);
   async function makeIsland() {
     sfx('tap');
     setIsl({ st: 'busy' });
     try { const r = await lifebot.island(turns.current, voice); setIsl({ st: 'done', data: lifebot.saveChatIsland(r) }); }
     catch { setIsl({ st: 'error' }); }
   }
-  const [asked, setAsked] = useState<string | null>(null);
   const [why, setWhy] = useState(false);
   const sent = useRef(false);
   useEffect(() => {

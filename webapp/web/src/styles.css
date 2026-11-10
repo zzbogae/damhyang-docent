@@ -1079,3 +1079,10 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 .door.door-once b { font-weight: 600; }
 .door-x { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border: 0; background: none; color: inherit; font: 15px/1 var(--font); cursor: pointer; opacity: .7; border-radius: 6px; }
 .door-x:hover { opacity: 1; background: rgba(255, 236, 214, .08); }
+
+/* 11/10: 나의 공간 — 다른 관람객이 섬에 남긴 단어(챗봇 연결 시) */
+.shared-words { display: grid; gap: 8px; padding: 12px 14px; border: 1px solid var(--mined-line, rgba(255,255,255,.14)); border-radius: 12px; background: rgba(255,255,255,.04); }
+.shared-words .label-row { gap: 6px; }
+.shared-words .chip { opacity: .78; }
+.shared-words .chip.lv2 { opacity: .9; font-size: 14.5px; }
+.shared-words .chip.lv3 { opacity: 1; font-size: 16px; font-weight: 600; }

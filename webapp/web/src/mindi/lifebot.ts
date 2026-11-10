@@ -40,6 +40,16 @@ export function chat(message: string, history: Turn[], voice: Voice, focus: Focu
   return post<LifebotReply>('chat', { message, history, focus, style: STYLE[voice] }, signal);
 }
 
+/** 다른 관람객이 섬에 남긴 단어(전시 모드 챗봇만). 없거나 실패하면 빈 배열 */
+export interface SharedWord { word: string; n: number }
+export async function sharedWords(): Promise<SharedWord[]> {
+  try {
+    if (!(await available())) return [];
+    const r = await post<{ words?: { word: string; n: number }[] } | null>('islands_words', {});
+    return (r?.words ?? []).map((w) => ({ word: String(w.word).trim(), n: Number(w.n) || 1 })).filter((w) => w.word).slice(0, 24);
+  } catch { return []; }
+}
+
 export function island(history: Turn[], voice: Voice) {
   return post<Island>('island', { history, style: STYLE[voice] });
 }

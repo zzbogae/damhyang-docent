@@ -9,6 +9,8 @@ const ARGS: Record<string, string[]> = {
   chat: ['message', 'history', 'focus', 'style'],
   greeting: ['style'],
   island: ['history', 'style'],
+  // 11/10 보별: 다른 관람객이 섬에 남긴 단어(키워드만, 원문·요약 없음). 전시 모드 챗봇(app_exhibit.py)에만 있다
+  islands_words: [],
   styles: [],
 };
 
