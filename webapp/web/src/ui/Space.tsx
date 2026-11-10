@@ -157,10 +157,13 @@ export function Space({ onField }: { onField: () => void }) {
   }, [labels]);
 
   if (collected.length < SPACE_NEED) {
+    // 11/10: 민디와 이야기에서 받은 단어가 있으면, 광석을 캐면 그 단어로 섬을 짓는다고 알려 준다
+    const kept = peekChatIsland()?.keywords ?? [];
     return (
       <section className="stack space-page space-fog" aria-labelledby="space-title">
         <h2 id="space-title" className="h2">나의 공간</h2>
         <p>아직 안개가 짙습니다. 광석이 {SPACE_NEED}개 모이면 안개가 걷힙니다. 지금 {collected.length}개를 캤습니다.</p>
+        {kept.length > 0 && <p className="small">이야기에서 받은 단어 「{kept.join(' · ')}」는 간직해 두었어요. 광석 {SPACE_NEED}개를 캐면 이 단어로 섬을 지을 수 있어요.</p>}
         <p className="small muted">데이터가 표시한 광석과 직접 고른 광석을 함께 셉니다.</p>
         <button className="btn primary" onClick={onField}>지층으로 내려가기</button>
       </section>
