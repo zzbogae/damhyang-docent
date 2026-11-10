@@ -43,3 +43,17 @@ export function chat(message: string, history: Turn[], voice: Voice, focus: Focu
 export function island(history: Turn[], voice: Voice) {
   return post<Island>('island', { history, style: STYLE[voice] });
 }
+
+// 11/10 보별: 서연님 챗봇의 「이 대화로 섬 만들기」(대화 → 키워드·한 줄 요약)를 웹에도 잇는다.
+// 민디와 이야기에서 받은 단어를 나의 공간 섬 만들기의 추천 단어로 넘긴다. 이 브라우저 세션에만 둔다.
+const CHAT_ISLAND_KEY = 'mined.island.fromChat.v1';
+export interface ChatIsland { keywords: string[]; summary: string; at: string }
+export function saveChatIsland(i: Island) {
+  const v: ChatIsland = { keywords: (i.keywords ?? []).map((k) => String(k).trim()).filter(Boolean).slice(0, 5), summary: i.summary ?? '', at: new Date().toISOString() };
+  try { sessionStorage.setItem(CHAT_ISLAND_KEY, JSON.stringify(v)); } catch { /* 저장소를 못 써도 진행 */ }
+  return v;
+}
+export function peekChatIsland(): ChatIsland | null {
+  try { const raw = sessionStorage.getItem(CHAT_ISLAND_KEY); return raw ? (JSON.parse(raw) as ChatIsland) : null; } catch { return null; }
+}
+export function clearChatIsland() { try { sessionStorage.removeItem(CHAT_ISLAND_KEY); } catch { /* 없음 */ } }

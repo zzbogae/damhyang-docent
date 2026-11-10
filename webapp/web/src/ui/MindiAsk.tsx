@@ -15,6 +15,7 @@ import { fixedKind, fixedLine, scriptedReply } from '../mindi/talk';
 import { smallTalk } from '../mindi/smalltalk';
 import * as lifebot from '../mindi/lifebot';
 import { MindiMark } from './Icons';
+import { GO_ISLAND_EVENT } from './Intro';
 import { VoiceChip } from './VoiceChip';
 import type { Axis, WeekRecord } from '../types';
 
@@ -64,6 +65,14 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
   useEffect(() => { if (a && settings.sound && !mindiSay(a.text)) playCue('found'); }, [a]);
   // 대화 기록(chat 배치): 새 질문을 보내기 전의 문답을 위에 남긴다
   const [log, setLog] = useState<{ q: string; a: string }[]>([]);
+  // 11/10: 「이 대화로 섬 만들기」(챗봇 연결 시에만). 챗봇이 대화에서 꺼낸 단어·한 줄을 보여 주고, 나의 공간 섬 만들기의 추천 단어로 넘긴다
+  const [isl, setIsl] = useState<{ st: 'idle' | 'busy' | 'done' | 'error'; data?: lifebot.ChatIsland }>({ st: 'idle' });
+  async function makeIsland() {
+    sfx('tap');
+    setIsl({ st: 'busy' });
+    try { const r = await lifebot.island(turns.current, voice); setIsl({ st: 'done', data: lifebot.saveChatIsland(r) }); }
+    catch { setIsl({ st: 'error' }); }
+  }
   const [asked, setAsked] = useState<string | null>(null);
   const [why, setWhy] = useState(false);
   const sent = useRef(false);
@@ -268,6 +277,28 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
               )}
             </div>
           ) : null}
+          {chat && bot && !busy && turns.current.length >= 2 && isl.st !== 'done' && (
+            <div className="chat-island">
+              <button type="button" className="chat-why" disabled={isl.st === 'busy'} onClick={() => void makeIsland()}>
+                {isl.st === 'busy' ? '대화에서 단어를 꺼내는 중…' : '이 대화로 섬 만들기'}
+              </button>
+              {isl.st === 'error' && <span className="small muted"> 지금은 꺼내지 못했어요. 잠시 뒤 다시 눌러 주세요.</span>}
+            </div>
+          )}
+          {isl.st === 'done' && isl.data && (
+            <div className="chat-pair chat-island-result" role="status">
+              <div className="bubble"><MindiMark size={30} /><div className="stack">
+                <p>이 대화에서 꺼낸 단어예요. 섬 만들기에서 빼거나 더할 수 있어요.</p>
+                <div className="label-row">{isl.data.keywords.map((k) => <span key={k} className="chip">{k}</span>)}</div>
+                {isl.data.summary && <p className="small">{isl.data.summary}</p>}
+                <p className="small muted">이 단어와 한 줄은 라이프로그 챗봇이 만들었습니다. 기록 원문은 저장하지 않아요.</p>
+                <div className="label-row">
+                  <button type="button" className="btn primary" onClick={() => { sfx('confirm'); dispatchEvent(new Event(GO_ISLAND_EVENT)); }}>나의 공간에서 이 단어로 섬 짓기</button>
+                  <button type="button" className="btn quiet" onClick={() => { lifebot.clearChatIsland(); setIsl({ st: 'idle' }); }}>그냥 두기</button>
+                </div>
+              </div></div>
+            </div>
+          )}
           {a && !busy && (
             <p className="small muted chat-follow">
               이어서:{' '}
