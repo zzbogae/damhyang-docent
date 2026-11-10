@@ -66,7 +66,7 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
   // 답이 나올 때마다 같은 소리 하나(답의 내용과 상관없이)
   useEffect(() => { if (a && settings.sound && !mindiSay(a.text)) playCue('found'); }, [a]);
   // 대화 기록(chat 배치): 새 질문을 보내기 전의 문답을 위에 남긴다
-  const [log, setLog] = useState<{ q: string; a: string }[]>([]);
+  const [log, setLog] = useState<{ q: string; a: string; bot?: boolean }[]>([]);
   // 11/10: 「이 대화로 섬 만들기」(챗봇 연결 시에만). 챗봇이 대화에서 꺼낸 단어·한 줄을 보여 주고, 나의 공간 섬 만들기의 추천 단어로 넘긴다
   const [isl, setIsl] = useState<{ st: 'idle' | 'busy' | 'done' | 'error'; data?: lifebot.ChatIsland }>({ st: 'idle' });
   const [asked, setAsked] = useState<string | null>(null);
@@ -78,7 +78,7 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
     try {
       const raw = sessionStorage.getItem(TALK_KEY);
       if (!raw) return;
-      const v = JSON.parse(raw) as { log?: { q: string; a: string }[]; turns?: lifebot.Turn[]; isl?: lifebot.ChatIsland | null };
+      const v = JSON.parse(raw) as { log?: { q: string; a: string; bot?: boolean }[]; turns?: lifebot.Turn[]; isl?: lifebot.ChatIsland | null };
       if (v.log?.length) setLog(v.log);
       if (v.turns?.length) turns.current = v.turns;
       const kept = lifebot.peekChatIsland();
@@ -87,7 +87,7 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
   }, [chat]);
   useEffect(() => {
     if (!chat || !restored.current) return;
-    const full = a && asked ? [...log, { q: asked, a: a.text }] : log;
+    const full = a && asked ? [...log, { q: asked, a: a.text, bot: a.used === 'lifebot' || undefined }] : log;
     if (!full.length) return;
     try { sessionStorage.setItem(TALK_KEY, JSON.stringify({ log: full, turns: turns.current, isl: isl.st === 'done' ? (isl.data ?? null) : null })); } catch { /* 없음 */ }
   }, [chat, log, a, asked, isl.st]);
@@ -107,7 +107,7 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
   if (!result) return null;
 
   function send(q: string) {
-    if (a && asked) setLog((l) => [...l, { q: asked, a: a.text }]);
+    if (a && asked) setLog((l) => [...l, { q: asked, a: a.text, bot: a.used === 'lifebot' || undefined }]);
     setAsked(q);
     setWhy(false);
     setErr(null);
@@ -284,6 +284,7 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
             <div key={i} className="chat-pair">
               <p className="chat-me">{x.q}</p>
               <div className="bubble"><MindiMark size={30} /><p>{x.a}</p></div>
+              {x.bot && <p className="small muted">이 답은 라이프로그 챗봇이 만들었습니다.</p>}
             </div>
           ))}
           {asked && <p className="chat-me">{asked}</p>}
