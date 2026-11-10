@@ -14,6 +14,7 @@ import { clipOf, type ClipKey } from './islandClips';
 import { MINERAL_HEX, type Mineral } from './minerals';
 import { MindiMark } from './Icons';
 import { sfx } from '../mindi/soundKit';
+import { clearChatIsland, peekChatIsland } from '../mindi/lifebot';
 import { takeNewSpaceRequest, takeVisitRequest } from './SpaceButton';
 import { AXES, axisScreen, type Axis, type WeekRecord } from '../types';
 
@@ -177,8 +178,12 @@ export function Space({ onField }: { onField: () => void }) {
     for (const w of pool) for (const t of wordChoices([w], labelsByWeek)) freq.set(t, (freq.get(t) ?? 0) + 1);
     // 「2월」처럼 달 이름만 있는 단어는 뒤로 미룬다(단어가 모자랄 때만 쓴다)
     const dateOnly = (t: string) => /^\d{1,2}월$|^\d{4}년?$/.test(t);
-    return base.map((t, i) => ({ t, i, n: freq.get(t) ?? 0 })).sort((a, b) => Number(dateOnly(a.t)) - Number(dateOnly(b.t)) || b.n - a.n || a.i - b.i).map((x) => x.t);
+    const sorted = base.map((t, i) => ({ t, i, n: freq.get(t) ?? 0 })).sort((a, b) => Number(dateOnly(a.t)) - Number(dateOnly(b.t)) || b.n - a.n || a.i - b.i).map((x) => x.t);
+    // 11/10: 민디와 이야기에서 「이 대화로 섬 만들기」로 받은 단어가 있으면 앞에 둔다(챗봇 연결 시에만 생긴다)
+    const fromChat = peekChatIsland()?.keywords ?? [];
+    return [...fromChat, ...sorted.filter((t) => !fromChat.includes(t))];
   })();
+  const chatWords = peekChatIsland()?.keywords.length ?? 0;
   const toggleOre = (k: string) => { setTalking(false); setChosen((c) => c.includes(k) ? c.filter((x) => x !== k) : c.length < SPACE_NEED ? [...c, k] : c); };
   const today = new Date();
   const defaultName = `${today.getMonth() + 1}월 ${today.getDate()}일의 섬`;
@@ -186,6 +191,7 @@ export function Space({ onField }: { onField: () => void }) {
     const row: SpaceRow = { id: `${Date.now()}`, name, kind: 'island', ores: chosen, words, at: new Date().toISOString(), opts };
     const next = [...spaces, row];
     saveSpaces(next); setSpaces(next); setBuilt(row); setBuilding(true); setTalking(false);
+    clearChatIsland();
   };
 
   return (
@@ -249,7 +255,7 @@ export function Space({ onField }: { onField: () => void }) {
             <div><button className="btn primary" onClick={() => { sfx('confirm'); setTalking(true); }}>민디와 섬 만들기 시작</button></div>
           )}
           {chosenWs.length === SPACE_NEED && talking && (
-            <IslandMake key={chosen.join()} suggestions={choices} defaultName={defaultName} onDone={build} />
+            <IslandMake key={chosen.join()} suggestions={choices} fromChat={chatWords} defaultName={defaultName} onDone={build} />
           )}
           {spaces.length > 0 && <button className="btn quiet" onClick={() => setMaking(false)}>지은 공간 보기</button>}
         </div>

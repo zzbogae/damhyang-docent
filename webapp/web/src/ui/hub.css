@@ -193,3 +193,10 @@
   .obs-extra { right: 8px; bottom: 104px; }
   .obs-extra-btn { font-size: 13px; padding: 7px 13px; }
 }
+
+/* 11/10 「이 대화로 섬 만들기」(챗봇 연결 시) */
+.chat-island { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.chat-island-result .bubble .stack { gap: 8px; }
+.chat-island-result .label-row { gap: 6px; }
+/* 밝은 말풍선 안의 단어 칩은 어두운 글자로 */
+.talk-log .chat-island-result .bubble .chip { background: rgba(28, 24, 32, .08); color: #1c1820; border: 1px solid rgba(28, 24, 32, .18); }

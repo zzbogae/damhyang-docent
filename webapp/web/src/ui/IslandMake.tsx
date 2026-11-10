@@ -56,11 +56,13 @@ export function optsLine(o: IslandOpts): string {
 interface Props {
   /** 기록에서 나온 단어 후보(위에서부터 많이 나온 순). 앞의 넷을 추천으로 보여 준다 */
   suggestions: string[];
+  /** 앞의 몇 개가 민디와 이야기에서 꺼낸 단어인지(11/10, 챗봇 연결 시) */
+  fromChat?: number;
   onDone: (o: IslandOpts, words: string[], name: string) => void;
   defaultName: string;
 }
 
-export function IslandMake({ suggestions, onDone, defaultName }: Props) {
+export function IslandMake({ suggestions, fromChat = 0, onDone, defaultName }: Props) {
   const [step, setStep] = useState(0);
   const [reached, setReached] = useState(0);
   const [ans, setAns] = useState<Record<StepKey, string[] | null>>({ time: null, weather: null, place: null, era: null, dwelling: null, music: null });
@@ -133,7 +135,11 @@ export function IslandMake({ suggestions, onDone, defaultName }: Props) {
       {step >= STEPS.length && (
         <>
           <div className="isl-msg mindi"><MindiMark size={34} /><p>
-            {rec.length ? `지난 기록에서 가장 많이 나온 단어 ${rec.length}개예요. 섬에 두고 싶지 않은 단어가 있으면 눌러서 빼 주세요.` : '기록에서 꺼낼 단어가 아직 없어요. 두고 싶은 단어를 직접 적어 주세요.'}
+            {rec.length
+              ? fromChat > 0
+                ? `방금 나눈 이야기에서 꺼낸 단어${rec.length > Math.min(fromChat, 4) ? '와 지난 기록에서 많이 나온 단어' : ''}예요. 섬에 두고 싶지 않은 단어가 있으면 눌러서 빼 주세요.`
+                : `지난 기록에서 가장 많이 나온 단어 ${rec.length}개예요. 섬에 두고 싶지 않은 단어가 있으면 눌러서 빼 주세요.`
+              : '기록에서 꺼낼 단어가 아직 없어요. 두고 싶은 단어를 직접 적어 주세요.'}
           </p></div>
           <div className="isl-choices words" role="group" aria-label="단어 고르기">
             {rec.map((w) => {
