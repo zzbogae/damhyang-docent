@@ -67,4 +67,9 @@
   .p8-stage { grid-template-columns: minmax(0, 1fr); }
   .p8-ore { min-height: 180px; }
   .p8-ore img { width: min(180px, 50%); }
+  /* 11/09 점검: 휴대폰 폭에서 카드·말풍선이 오른쪽으로 잘렸다(격자 자식의 최소 너비) */
+  .p8, .p8-stage { grid-template-columns: minmax(0, 1fr); }
+  .p8, .p8-stage, .p8-left, .p8-stage > *, .p8-bubble, .p8-card, .p8-card > *, .p8-left > * { min-width: 0; max-width: 100%; }
+  .p8 p, .p8 li, .p8 summary { overflow-wrap: anywhere; }
+  .p8 .stack, .p8 .stack > * { max-width: 100%; min-width: 0; }
 }
