@@ -1,6 +1,6 @@
 import copy, os, sys
 from pptx import Presentation
-from pptx.util import Inches
+from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from PIL import Image
 L = sys.argv[1]; IMG = sys.argv[2]; OUT = sys.argv[3]
@@ -69,12 +69,19 @@ TECH_S = '한 주를 한 층으로. 기록은 기기 안에서만 읽고, 달랐
 TECH_L = '기록을 ‘한 주 = 한 층’으로 다시 정의했다. 수면·걸음·언어·소통 네 축을 나의 평소와 비교해 달랐던 주는 광석, 달랐던 축은 결 색으로 보여 준다. 원문은 기기 밖으로 나가지 않는다. KAIST 문화기술대학원 Social Computing Lab은 기록 기반 개인 챗봇을 개발해, 민디와의 대화에 연계하도록 설계했다.'
 TECH_XL = ['기록을 ‘한 주 = 한 층’으로 다시 정의했다. 수면·걸음·언어·소통 네 축을 나의 지난 기록과 같은 척도(백분위)로 비교해, 가장 크게 벗어난 축이 광석의 겉색이 되고 세 축 이상이면 여러 색 광석이 된다. 개인 기록이라 원문은 기기 밖으로 나가지 않는다.',
            '진단하지 않기 위해, 민디와의 대화는 판정값 질문과 위기·진단 문장을 앱 규칙이 먼저 받고 나머지 말만 KAIST 문화기술대학원 Social Computing Lab의 기록 기반 개인 챗봇이 받도록 연계했다. 챗봇이 꺼져 있어도 선택지로 섬까지 완성된다.']
-AITOOL = 'Claude, ChatGPT, Google Flow(Veo 3.1), Seedance 2.0, GPT 이미지, Kling, Suno, Kokoro, MediaPipe(BlazeFace), PP-OCRv5'
+AITOOL = 'Claude, ChatGPT, GPT 이미지, Gemini(챗봇), Google Flow(Veo 3.1, Nano Banana), Seedance 2.0, Kling, Suno, Kokoro, MediaPipe(BlazeFace), PP‑OCRv5'
 
 def tech_box(slide, body):
     sh = find(slide, '이 부분에는')
     body = body if isinstance(body, list) else [body]
-    set_text(sh, body + [[(True, 'AI Tool '), (False, AITOOL)]]); return sh
+    set_text(sh, body + [[(True, 'AI Tool '), (False, AITOOL)]])
+    ps = sh.text_frame.paragraphs  # 11/10 v12: 목록이 길어져 AI Tool 줄만 조금 작게(두 줄 유지)
+    import re
+    szs = [int(x) for x in re.findall(r'sz="(\d+)"', sh._element.xml)]  # 글자 크기는 문단 기본값(defRPr/endParaRPr)에 있음
+    if szs:
+        for r in ps[-1].runs:
+            r.font.size = Pt(min(szs) / 100 * 0.88)
+    return sh
 
 # 메인 3 · 서브 7·8 · 심포지엄 17·18
 # 2·6·16 타이틀: 입력 글자 「MineD」 대신 단희님 최종 로고(산 M + INE + 결정 D, 흰색판)  11/10 보별
@@ -112,7 +119,7 @@ bodies.sort(key=lambda sh: (sh.left, sh.top))
 b1, b2, b3a, b3b = bodies  # x순: 3.3 / 19.5 / 36.0(19.3) / 43.5
 if b3a.left > b3b.left: b3a, b3b = b3b, b3a
 set_text(b1, ['관측소지기 민디. 기준 시트로 모든 장면의 모습을 맞췄다.', 'AI 모델: GPT 이미지, Kling'], DARK)
-set_text(b2, ['관측소와 섬 4곳은 AI 영상으로 짓고, 효과음 21종은 직접 만들었다.', 'AI 모델: Google Flow(Veo 3.1), Seedance 2.0, Suno, Kokoro'], DARK)
+set_text(b2, ['관측소와 섬 5곳은 AI 영상으로 짓고, 효과음 21종은 직접 만들었다.', 'AI 모델: Google Flow(Veo 3.1, Nano Banana), Seedance 2.0, Suno, Kokoro'], DARK)
 # b3a: 36.0,19.3 넓은 글 / b3b: 43.5,9.6 좁은 글
 nar, wide = (b3b, b3a) if b3b.width < b3a.width else (b3a, b3b)
 set_text(nar, ['“묻힌 것은 사라진 것이 아니다.”'], DARK)
