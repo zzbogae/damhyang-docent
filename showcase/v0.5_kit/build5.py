@@ -470,13 +470,14 @@ def main():
     ducks = [(st['03_story'][0], st['03_story'][1], 0.30),  # 이야기: 목소리·발소리 위로
              (st['05_demo'][0], st['05_demo'][1], 0.34),
              (st['06_islands'][0], st['07_end'][0] + 0.8, 0.30),  # 11/10: 섬 원음은 낮추고 음악이 쉼의 톤을 잡게(여운까지 이어서)
-             (st['07_end'][0] + 0.8, st['07_end'][0] + 5.5, 0.26)]  # 오늘의 한마디
+             (st['07_end'][0] + 0.8, st['07_end'][0] + 5.5, 0.18)]  # 오늘의 한마디(v11: 0.26→0.18, 목소리 또렷하게)
     if ISL_LENS and ISL_LENS[0][0] == 'music':  # 음악방 원음에 LP 음악 → 두 음악이 겹치지 않게 배경음악을 거의 끔
         a0 = st['06_islands'][0]
         ducks[2:3] = [(a0, a0 + ISL_LENS[0][1], 0.16), (a0 + ISL_LENS[0][1], st['07_end'][0] + 0.8, 0.30)]
-    vol = env_expr(0.46, ducks, ramp=1.6)
+    vol = env_expr(0.46, ducks, ramp=2.0)
     run(['-i', 'seg/joined.mp4', '-i', f'{A}/mus_home.mp3', '-i', f'{A}/mus_home.mp3', '-filter_complex',
          f'[1:a][2:a]acrossfade=d=3,aresample=48000,atrim=0:{T},'
+         'acompressor=threshold=-24dB:ratio=2:attack=200:release=1000,'  # v11: 곡이 커지는 프레이즈 완만하게
          f"volume='{vol}':eval=frame,afade=t=in:st=0:d=1.5,afade=t=out:st={T - 2.5:.2f}:d=2.5[m];"
          f'[0:a][m]amix=inputs=2:normalize=0,atrim=0:{T}[a]',
          '-map', '0:v', '-map', '[a]', '-c:v', 'copy'] + AENC + ['seg/mixed.mp4'])
