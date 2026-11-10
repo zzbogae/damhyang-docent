@@ -12,6 +12,7 @@ import { answerEn, axisDirEn, DONT_KNOW_EN, FEELING_EN, UNCLEAR_EN, UNKNOWN_EN }
 import { DONT_KNOW } from '../mindi/templates';
 import { applyVoice, speakAs, useVoice, type Voice } from '../mindi/voices';
 import { fixedKind, fixedLine, scriptedReply } from '../mindi/talk';
+import { smallTalk } from '../mindi/smalltalk';
 import * as lifebot from '../mindi/lifebot';
 import { MindiMark } from './Icons';
 import { VoiceChip } from './VoiceChip';
@@ -173,6 +174,8 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
     // 사용자가 먼저 꺼낸 마음·판정을 묻는 말(§11-5 · §11-6)
     const sr = scriptedReply(q, voice);
     if (sr) { setQ(null); return sayScripted(sr, q); }
+    // 챗봇이 없을 때(공개 시연판·오프라인) 일상 대화·마음은 기기 안 규칙으로 받는다(11/10). 기록을 묻는 말은 아래로
+    if (!bot) { const st = smallTalk(q, voice); if (st) { setQ(null); return sayScripted(st, q); } }
     const it = parseIntent(q);
     setQ(null);
     setChoices([]);
