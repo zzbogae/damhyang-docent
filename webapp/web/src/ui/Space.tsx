@@ -156,14 +156,18 @@ export function Space({ onField }: { onField: () => void }) {
     return m;
   }, [labels]);
 
-  if (collected.length < SPACE_NEED) {
-    // 11/10: 민디와 이야기에서 받은 단어가 있으면, 광석을 캐면 그 단어로 섬을 짓는다고 알려 준다
-    const kept = peekChatIsland()?.keywords ?? [];
+  // 11/10 보별: 민디와 이야기에서 「이 대화로 섬 만들기」로 받은 단어가 있으면, 광석 수와 상관없이 그 단어로 바로 섬을 짓는다.
+  // 광석이 3개 이상이면 마지막 세 개를 곁에 두고, 모자라면 광석 없이 단어만으로 짓는다.
+  const chatIsland = peekChatIsland();
+  const viaChat = !!chatIsland && chatIsland.keywords.length > 0;
+  // 방금 지은 섬(built)이나 지난 섬이 있으면 안개 화면이 가리지 않는다 — 대화로 지은 섬은 광석 없이도 남는다
+  if (collected.length < SPACE_NEED && !viaChat && !built) {
     return (
       <section className="stack space-page space-fog" aria-labelledby="space-title">
         <h2 id="space-title" className="h2">나의 공간</h2>
+        {visit && <IslandVisit row={visit} byKey={byKey} onExit={() => setVisit(null)} />}
+        {spaces.map((r) => <Scene key={r.id} row={r} byKey={byKey} onVisit={() => setVisit(r)} />)}
         <p>아직 안개가 짙습니다. 광석이 {SPACE_NEED}개 모이면 안개가 걷힙니다. 지금 {collected.length}개를 캤습니다.</p>
-        {kept.length > 0 && <p className="small">이야기에서 받은 단어 「{kept.join(' · ')}」는 간직해 두었어요. 광석 {SPACE_NEED}개를 캐면 이 단어로 섬을 지을 수 있어요.</p>}
         <p className="small muted">데이터가 표시한 광석과 직접 고른 광석을 함께 셉니다.</p>
         <button className="btn primary" onClick={onField}>지층으로 내려가기</button>
       </section>
@@ -183,15 +187,18 @@ export function Space({ onField }: { onField: () => void }) {
     const dateOnly = (t: string) => /^\d{1,2}월$|^\d{4}년?$/.test(t);
     const sorted = base.map((t, i) => ({ t, i, n: freq.get(t) ?? 0 })).sort((a, b) => Number(dateOnly(a.t)) - Number(dateOnly(b.t)) || b.n - a.n || a.i - b.i).map((x) => x.t);
     // 11/10: 민디와 이야기에서 「이 대화로 섬 만들기」로 받은 단어가 있으면 앞에 둔다(챗봇 연결 시에만 생긴다)
-    const fromChat = peekChatIsland()?.keywords ?? [];
+    const fromChat = chatIsland?.keywords ?? [];
     return [...fromChat, ...sorted.filter((t) => !fromChat.includes(t))];
   })();
-  const chatWords = peekChatIsland()?.keywords.length ?? 0;
+  const chatWords = chatIsland?.keywords.length ?? 0;
+  // 대화에서 온 단어로 짓는 길: 광석 고르기를 건너뛰고 바로 민디와 섬 만들기
+  const chatMake = viaChat && (making || !built);
+  const chatOres = chosenWs.length === SPACE_NEED ? chosen : [];
   const toggleOre = (k: string) => { setTalking(false); setChosen((c) => c.includes(k) ? c.filter((x) => x !== k) : c.length < SPACE_NEED ? [...c, k] : c); };
   const today = new Date();
   const defaultName = `${today.getMonth() + 1}월 ${today.getDate()}일의 섬`;
   const build = (opts: IslandOpts, words: string[], name: string) => {
-    const row: SpaceRow = { id: `${Date.now()}`, name, kind: 'island', ores: chosen, words, at: new Date().toISOString(), opts };
+    const row: SpaceRow = { id: `${Date.now()}`, name, kind: 'island', ores: viaChat ? chatOres : chosen, words, at: new Date().toISOString(), opts };
     const next = [...spaces, row];
     saveSpaces(next); setSpaces(next); setBuilt(row); setBuilding(true); setTalking(false);
     clearChatIsland();
@@ -226,7 +233,14 @@ export function Space({ onField }: { onField: () => void }) {
           )}
         </div>
       )}
-      {!built && spaces.length > 0 && !making && (
+      {!built && chatMake && (
+        <div className="stack space-make">
+          <p>이야기에서 받은 단어로 섬을 짓습니다.{chatOres.length === SPACE_NEED ? ' 마지막에 캔 광석 셋을 곁에 둘게요.' : ''}</p>
+          <IslandMake key={`chat-${chatIsland!.at}`} suggestions={choices} fromChat={chatWords} defaultName={defaultName} onDone={build} />
+          <button className="btn quiet" onClick={() => { clearChatIsland(); setMaking(false); }}>단어 두고 나가기</button>
+        </div>
+      )}
+      {!built && !chatMake && spaces.length > 0 && !making && (
         <>
           {spaces.map((r) => <Scene key={r.id} row={r} byKey={byKey} onVisit={() => setVisit(r)} />)}
           <div className="label-row">
@@ -234,7 +248,7 @@ export function Space({ onField }: { onField: () => void }) {
           </div>
         </>
       )}
-      {!built && making && (
+      {!built && !chatMake && making && (
         <div className="stack space-make">
           <p>안개가 걷혔습니다. 캔 광석 가운데 {SPACE_NEED}개를 고르세요.</p>
           <ul className="space-pool" aria-label="광석 고르기">
