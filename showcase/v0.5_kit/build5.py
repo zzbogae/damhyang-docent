@@ -329,7 +329,21 @@ def ending_short(out):
 
 
 def page(png, d, out):
-    """공식 레이아웃 장(PNG) 한 장을 d초 정지 화면으로."""
+    """공식 레이아웃 장(PNG) 한 장을 d초 정지 화면으로.
+    같은 이름_s0~s3.png가 있으면 배경 → 과정 줄 → 로고 → 부제 → 팀명 순서로 한 줄씩 뜨게(11/10 보별)."""
+    stg = [png[:-4] + f'_s{k}.png' for k in range(4)]
+    if all(os.path.exists(x) for x in stg):
+        ts = [0.10, 0.22, 0.37, 0.52]  # s1·s2·s3·완성 장이 뜨는 시각(길이 비율)
+        lay = stg[1:] + [png]
+        ins = ['-loop', '1', '-t', d, '-i', stg[0]]
+        for x in lay: ins += ['-loop', '1', '-t', d, '-i', x]
+        fc = f'[0:v]{fit()}[b0];'
+        for i, x in enumerate(lay):
+            t0 = ts[i] * float(d)
+            fc += f'[{i + 1}:v]{fit()},format=rgba,fade=t=in:st={t0:.2f}:d=0.6:alpha=1[l{i}];[b{i}][l{i}]overlay=format=auto[b{i + 1}];'
+        fc += f'[b{len(lay)}]format=yuv420p,fade=t=in:st=0:d=0.5,fade=t=out:st={float(d) - 0.5:.2f}:d=0.5[v];[{len(lay) + 1}:a]anull[a]'
+        run(ins + silent_ins(d) + ['-filter_complex', fc, '-map', '[v]', '-map', '[a]', '-t', d] + VENC + AENC + [out])
+        return
     run(['-loop', '1', '-t', d, '-i', png] + silent_ins(d) + ['-filter_complex',
         f'[0:v]{fit()},fade=t=in:st=0:d=0.5,fade=t=out:st={d - 0.5:.2f}:d=0.5[v];[1:a]anull[a]',
         '-map', '[v]', '-map', '[a]', '-t', d] + VENC + AENC + [out])
