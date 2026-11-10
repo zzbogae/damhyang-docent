@@ -242,6 +242,18 @@ def demo(out, DEMO=DEMO):
 ISLAND_CUTS = {'sky': [(4.4, 12.6), (30.5, 35.5)], 'jungle': [(6.0, 11.1), (27.0, 32.0)]}
 
 
+# 11/10 보별: 섬 소리가 거칠다 → 깔끔하고 평화로운 쉼. 생성 원음의 저역 웅웅·고역 치찰을 덜고,
+# 갑자기 튀는 효과음은 눌러, 모든 섬을 같은 낮은 크기(-30 LUFS)로. 음악(홈 곡)이 톤을 잡는다.
+# 맥 측정(11/10 v8 서브): 원음은 섬마다 약 -16 LUFS. 짧은 조각에 1패스 loudnorm은 게인이 흔들려서 고정 게인으로.
+ISLAND_EQ = {'sky': 'highpass=f=70,lowshelf=f=120:g=-4,',          # 66Hz 바람 드론 → 웅웅 덜기
+             'jungle': 'highshelf=f=6000:g=-6,lowpass=f=9000,',     # 빗소리 고음
+             'music': '', 'sea': '', 'onsen': ''}
+ISLAND_GAIN = {'music': -15.0, 'sea': -13.5, 'sky': -12.0, 'jungle': -14.5, 'onsen': -12.0}  # 약 -29~-30 LUFS
+def island_af(key):
+    return (f'highpass=f=60,{ISLAND_EQ.get(key, "")}volume={ISLAND_GAIN.get(key, -13.5)}dB,'
+            'acompressor=threshold=-36dB:ratio=2.5:attack=10:release=350,'   # 발소리·문소리 급등(+9~10dB) 누르기
+            'alimiter=limit=0.08:attack=3:release=250:level=disabled')
+ISL_LENS = []
 # ───────────────────────── 6 나의 섬 (섬 고르기 녹화에서 고른 음악방부터)
 def islands(spaces, out, cap=12.0, ixf=0.6, xf=0.8, min_piece=3.0):
     """spaces: [(파일, [(a,b),...], key)]. myspace.json의 구간 안에서만 자른다(구간 밖 컷이 섞이지 않게).
@@ -277,7 +289,7 @@ def islands(spaces, out, cap=12.0, ixf=0.6, xf=0.8, min_piece=3.0):
             vacc, aacc, t = f'iv{i}_{j}', f'ia{i}_{j}', t + (use[j][1] - use[j][0]) - ixf
         fc += (ov(n + i, 0.5, min(5.5, t - 0.3), 0.4) + f'[o{i}];[{vacc}][o{i}]overlay=0:0:shortest=1,'
                f'trim=0:{t:.3f},setpts=PTS-STARTPTS[t{i}];'
-               f'[{aacc}]atrim=0:{t:.3f},loudnorm=I=-24:LRA=6:TP=-4,aresample=48000[n{i}];')  # 섬마다 같은 크기로
+               f'[{aacc}]atrim=0:{t:.3f},{island_af(key)},aresample=48000[n{i}];')  # 섬마다 같은 크기·같은 톤으로
         lens.append(t)
         print(f'  섬 {key}: ' + ', '.join(f'{x:.1f}~{y:.1f}' for x, y in use) + f' → {t:.1f}초')
     acc, aacc, t = 't0', 'n0', lens[0]
@@ -286,6 +298,7 @@ def islands(spaces, out, cap=12.0, ixf=0.6, xf=0.8, min_piece=3.0):
         fc += f'[{aacc}][n{i}]acrossfade=d={xf}:c1=qsin:c2=qsin[m{i}];'
         acc, aacc, t = f'w{i}', f'm{i}', t + lens[i] - xf
     total = t
+    ISL_LENS[:] = [(sp[2], L) for sp, L in zip(spaces, lens)]
     fc += ov(2 * n, 0.4, min(6.5, total - 1.0), 0.5) + f'[isl];[{acc}][isl]overlay=0:0:shortest=1[ac2];'
     acc = 'ac2'
     fc += (f'[{acc}]fade=t=in:st=0:d=0.5,fade=t=out:st={total - 0.8:.2f}:d=0.8[v];'
@@ -359,10 +372,11 @@ def credit(out, d=7.0):
 
 
 def env_expr(base, ducks, ramp=1.2):
-    """음악 음량: base에서 시작해 구간마다 (a,b,v)로 부드럽게 바뀜."""
+    """음악 음량: base에서 시작해 구간마다 (a,b,v)로 부드럽게 바뀜.
+    11/10: 램프를 경계 가운데에 걸어, 맞닿은 두 구간 사이에서 base로 튀어 오르지 않게."""
     e = f'{base}'
     for a, b, v in ducks:
-        k = f'(clip((t-{a})/{ramp},0,1)*clip(({b}-t)/{ramp},0,1))'
+        k = f'(clip((t-{a})/{ramp}+0.5,0,1)*clip(({b}-t)/{ramp}+0.5,0,1))'
         e += f'+({v}-{base})*{k}'
     return e
 
@@ -454,11 +468,12 @@ def main():
         acc = st[s][1]
     ducks = [(st['03_story'][0], st['03_story'][1], 0.30),  # 이야기: 목소리·발소리 위로
              (st['05_demo'][0], st['05_demo'][1], 0.34),
-             (st['06_islands'][0], st['06_islands'][1], 0.14),  # 섬 영상은 제 소리가 있으니 낮게
+             (st['06_islands'][0], st['07_end'][0] + 0.8, 0.30),  # 11/10: 섬 원음은 낮추고 음악이 쉼의 톤을 잡게(여운까지 이어서)
              (st['07_end'][0] + 0.8, st['07_end'][0] + 5.5, 0.26)]  # 오늘의 한마디
-    if 'main' == o.cut:
-        ducks[2] = (st['06_islands'][0], st['06_islands'][1], 0.22)
-    vol = env_expr(0.46, ducks)
+    if ISL_LENS and ISL_LENS[0][0] == 'music':  # 음악방 원음에 LP 음악 → 두 음악이 겹치지 않게 배경음악을 거의 끔
+        a0 = st['06_islands'][0]
+        ducks[2:3] = [(a0, a0 + ISL_LENS[0][1], 0.06), (a0 + ISL_LENS[0][1], st['07_end'][0] + 0.8, 0.30)]
+    vol = env_expr(0.46, ducks, ramp=1.6)
     run(['-i', 'seg/joined.mp4', '-i', f'{A}/mus_home.mp3', '-i', f'{A}/mus_home.mp3', '-filter_complex',
          f'[1:a][2:a]acrossfade=d=3,aresample=48000,atrim=0:{T},'
          f"volume='{vol}':eval=frame,afade=t=in:st=0:d=1.5,afade=t=out:st={T - 2.5:.2f}:d=2.5[m];"

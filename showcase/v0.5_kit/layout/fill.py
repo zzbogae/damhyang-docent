@@ -69,7 +69,7 @@ TECH_S = '한 주를 한 층으로. 기록은 기기 안에서만 읽고, 달랐
 TECH_L = '기록을 ‘한 주 = 한 층’으로 다시 정의했다. 수면·걸음·언어·소통 네 축을 나의 평소와 비교해 달랐던 주는 광석, 달랐던 축은 결 색으로 보여 준다. 원문은 기기 밖으로 나가지 않는다. KAIST 문화기술대학원 Social Computing Lab은 기록 기반 개인 챗봇을 개발해, 민디와의 대화에 연계하도록 설계했다.'
 TECH_XL = ['기록을 ‘한 주 = 한 층’으로 다시 정의했다. 수면·걸음·언어·소통 네 축을 나의 지난 기록과 같은 척도(백분위)로 비교해, 가장 크게 벗어난 축이 광석의 겉색이 되고 세 축 이상이면 여러 색 광석이 된다. 개인 기록이라 원문은 기기 밖으로 나가지 않는다.',
            '진단하지 않기 위해, 민디와의 대화는 판정값 질문과 위기·진단 문장을 앱 규칙이 먼저 받고 나머지 말만 KAIST 문화기술대학원 Social Computing Lab의 기록 기반 개인 챗봇이 받도록 연계했다. 챗봇이 꺼져 있어도 선택지로 섬까지 완성된다.']
-AITOOL = 'Claude, ChatGPT, Google Flow(Veo 3.1), Seedance 2.0, GPT 이미지, Kling, Gemini, Suno, Kokoro, MediaPipe, CLIP'
+AITOOL = 'Claude, ChatGPT, Google Flow(Veo 3.1), Seedance 2.0, GPT 이미지, Kling, Suno, Kokoro, MediaPipe(BlazeFace), PP-OCRv5'
 
 def tech_box(slide, body):
     sh = find(slide, '이 부분에는')
