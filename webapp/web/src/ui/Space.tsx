@@ -237,7 +237,7 @@ export function Space({ onField }: { onField: () => void }) {
         <div className="stack space-make">
           <p>이야기에서 받은 단어로 섬을 짓습니다.{chatOres.length === SPACE_NEED ? ' 마지막에 캔 광석 셋을 곁에 둘게요.' : ''}</p>
           <IslandMake key={`chat-${chatIsland!.at}`} suggestions={choices} fromChat={chatWords} defaultName={defaultName} onDone={build} />
-          <button className="btn quiet" onClick={() => { clearChatIsland(); setMaking(false); }}>단어 두고 나가기</button>
+          <button className="btn quiet" onClick={() => { clearChatIsland(); setMaking(false); }}>이 단어로는 짓지 않기</button>
         </div>
       )}
       {!built && !chatMake && spaces.length > 0 && !making && (
