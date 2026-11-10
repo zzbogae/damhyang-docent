@@ -48,8 +48,14 @@ export function island(history: Turn[], voice: Voice) {
 // 민디와 이야기에서 받은 단어를 나의 공간 섬 만들기의 추천 단어로 넘긴다. 이 브라우저 세션에만 둔다.
 const CHAT_ISLAND_KEY = 'mined.island.fromChat.v1';
 export interface ChatIsland { keywords: string[]; summary: string; at: string }
+// 챗봇 요약은 3~5문장으로 오므로, 화면에는 첫 문장만 「한 줄」로 보여 준다
+export function firstSentence(s: string): string {
+  const t = String(s ?? '').trim();
+  const m = t.match(/^.*?[.!?。](?=\s|$)/);
+  return (m ? m[0] : t).trim();
+}
 export function saveChatIsland(i: Island) {
-  const v: ChatIsland = { keywords: (i.keywords ?? []).map((k) => String(k).trim()).filter(Boolean).slice(0, 5), summary: i.summary ?? '', at: new Date().toISOString() };
+  const v: ChatIsland = { keywords: (i.keywords ?? []).map((k) => String(k).trim()).filter(Boolean).slice(0, 5), summary: firstSentence(i.summary ?? ''), at: new Date().toISOString() };
   try { sessionStorage.setItem(CHAT_ISLAND_KEY, JSON.stringify(v)); } catch { /* 저장소를 못 써도 진행 */ }
   return v;
 }
