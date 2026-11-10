@@ -34,5 +34,5 @@ python3 build5.py --cut sub --pre $P/slide-16.png,$P/slide-17.png,$P/slide-18.pn
 
 
 ## 크레딧 고치기
-`layout/credit_names.txt`에 한 줄에 한 명씩 `이름<탭>역할`로 적고 `layout/render.sh lay.pptx img pages`를 다시 돌린다. 이름 없이 팀명만: `CREDIT=team`.
+`layout/credit_names.txt`에 한 줄에 한 명씩 `이름<탭>역할`로 적고 `layout/render.sh lay.pptx img pages`를 다시 돌린다. 기본은 팀명만(11/10 보별 확정). 이름·역할을 넣으려면 `CREDIT=names`.
 제목 글꼴은 웹과 같은 마루 부리(MaruBuri), 본문은 Pretendard. 렌더 기기에 두 글꼴이 설치돼 있어야 한다.

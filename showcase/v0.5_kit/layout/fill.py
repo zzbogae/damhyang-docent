@@ -171,7 +171,7 @@ if THEME == 'dark':
 # 크레딧 이름·역할: layout/credit_names.txt 한 줄에 한 명(이 파일만 고치고 render.sh 다시 돌리면 됨)
 _cn = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'credit_names.txt')
 NAMES = [l.rstrip() for l in open(_cn, encoding='utf-8') if l.strip()]
-CREDIT = os.environ.get('CREDIT', 'names')  # names=이름·역할(11/09 보별 임시 확정, 11/10 18시 팀원 문구로 갱신 가능) / team=HERIZON만
+CREDIT = os.environ.get('CREDIT', 'team')  # team=HERIZON만(11/10 보별 확정) / names=이름·역할(credit_names.txt)
 from pptx.enum.text import PP_ALIGN
 def credit_cols(slide):
     """이름(오른쪽 정렬) | 역할(왼쪽 정렬, 가는 글씨) 두 칸. 줄 높이가 같게 글자 크기는 같게 둔다."""
