@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>XR Blocks · 광석 공간 프로토타입</title>
+<style>
+  html, body { margin:0; height:100%; background:#15121b; overflow:hidden; }
+  #hud {
+    position:fixed; left:16px; top:16px; z-index:10;
+    font-family:-apple-system,BlinkMacSystemFont,"Malgun Gothic",sans-serif;
+    color:#e7e0d6; max-width:320px;
+  }
+  #hud h1 { font-size:15px; margin:0 0 6px; letter-spacing:.02em; }
+  #hud p { font-size:12px; line-height:1.6; color:#b8b0c4; margin:0 0 10px; }
+  #hud .row { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  #hud button {
+    background:rgba(161,127,209,0.18); border:1px solid rgba(161,127,209,0.6);
+    color:#e2d6f5; font-size:12.5px; padding:7px 12px; border-radius:6px; cursor:pointer;
+  }
+  #hud button:hover { background:rgba(161,127,209,0.32); }
+  #hud .stat { font-size:11.5px; color:#8b87a0; }
+  #hud .stat b { color:#d99a3f; }
+  #load-note { position:fixed; right:16px; bottom:14px; z-index:10; font-size:10.5px; color:#6d6878; max-width:260px; text-align:right; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/",
+    "xrblocks": "https://cdn.jsdelivr.net/gh/google/xrblocks@build/xrblocks.js",
+    "xrblocks/addons/": "https://cdn.jsdelivr.net/gh/google/xrblocks@build/addons/"
+  }
+}
+</script>
+</head>
+<body>
+  <div id="hud">
+    <h1>광석 공간 프로토타입</h1>
+    <p>
+      v6 §5 시험용 — 광석을 드래그해 배치를 바꿔보고(완성도),
+      "광석 추가"로 새 광석이 기존 공간 바깥 링에 자동으로 이어 붙는 방식(확장성)을 확인하세요.
+      시뮬레이터 화면에서는 마우스 드래그로 둘러보고, 광석을 클릭+드래그하면 잡아 옮길 수 있습니다.
+    </p>
+    <div class="row">
+      <button id="add-ore-btn">+ 광석 추가</button>
+      <span class="stat">광석 <b id="ore-count">0</b>개</span>
+    </div>
+    <div class="stat" id="ore-ring-info"></div>
+  </div>
+  <div id="load-note">
+    ES 모듈 임포트를 쓰므로 file://로 열면 동작하지 않습니다.<br />
+    이 폴더에서 <code>python3 -m http.server</code> 실행 후 접속하세요.
+  </div>
+  <script type="module">
+    import * as THREE from 'three';
+    import * as xb from 'xrblocks';
+
+    // 기존 앱(mined_app.html)의 광물 팔레트와 동일하게 맞춤: 흑요석·자수정·청금석·호박
+    const MINERALS = [
+      { name: '흑요석', color: 0x8b87a0, geo: () => new THREE.OctahedronGeometry(0.10, 0) },
+      { name: '자수정', color: 0xa17fd1, geo: () => new THREE.IcosahedronGeometry(0.095, 0) },
+      { name: '청금석', color: 0x5a94d6, geo: () => new THREE.DodecahedronGeometry(0.09, 0) },
+      { name: '호박',   color: 0xd99a3f, geo: () => new THREE.SphereGeometry(0.09, 10, 8) },
+    ];
+
+    const PLATFORM_Y_OFFSET = -1.0;   // 눈높이보다 1m 아래 — 발치의 작은 좌대
+    const ORE_Y_ABOVE_PLATFORM = 0.12;
+    const RING0_CAP = 4;              // 첫 링(중심 좌대 위 4개)
+    const RING_BASE_RADIUS = 0.28;
+    const RING_STEP = 0.20;
+
+    // index → 어느 링의 몇 번째 칸인지 계산. 확장성 실험의 핵심: 새 광석마다 이 규칙 하나로 위치가 정해진다.
+    function ringSlot(index) {
+      let ring = 0, used = 0, cap = RING0_CAP;
+      while (index >= used + cap) {
+        used += cap;
+        ring += 1;
+        cap = RING0_CAP + ring * 2;
+      }
+      const posInRing = index - used;
+      const radius = RING_BASE_RADIUS + ring * RING_STEP;
+      const stagger = ring * 0.35; // 링마다 각도를 살짝 틀어 정렬돼 보이지 않게
+      const angle = stagger + (posInRing / cap) * Math.PI * 2;
+      return { x: Math.cos(angle) * radius, z: Math.sin(angle) * radius, ring, cap };
+    }
+
+    class Environment extends xb.Script {
+      init() {
+        const y = xb.user.height + PLATFORM_Y_OFFSET;
+        const z = -xb.user.objectDistance;
+
+        this.add(new THREE.HemisphereLight(0xfff2df, 0x2a2433, 2.2));
+
+        const accent = new THREE.PointLight(0xffcf9e, 1.1, 2.5);
+        accent.position.set(0, y + 0.6, z);
+        this.add(accent);
+
+        const platformGeo = new THREE.CylinderGeometry(0.5, 0.56, 0.06, 8);
+        const platformMat = new THREE.MeshStandardMaterial({
+          color: 0x332f3d, roughness: 0.9, metalness: 0.05, flatShading: true,
+        });
+        const platform = new THREE.Mesh(platformGeo, platformMat);
+        platform.position.set(0, y, z);
+        this.add(platform);
+      }
+    }
+
+    class OreBlock extends xb.MeshScript {
+      constructor(slotIndex) {
+        const mineral = MINERALS[slotIndex % MINERALS.length];
+        const geometry = mineral.geo();
+        const material = new THREE.MeshStandardMaterial({
+          color: mineral.color, roughness: 0.35, metalness: 0.15, flatShading: true,
+        });
+        super(geometry, material);
+        this.name = `ore-${slotIndex}`;
+        this.mineralName = mineral.name;
+        this.slotIndex = slotIndex;
+        this.xb = { manipulation: true }; // 손으로 잡아 재배치 — 완성도(배치) 실험용
+      }
+
+      init() {
+        const slot = ringSlot(this.slotIndex);
+        const y = xb.user.height + PLATFORM_Y_OFFSET + ORE_Y_ABOVE_PLATFORM;
+        const z = -xb.user.objectDistance;
+        this.position.set(slot.x, y, z + slot.z);
+      }
+
+      onObjectSelectStart(event) {
+        this.material.emissive.set(0x2a2010);
+        event.stopPropagation();
+      }
+
+      onObjectSelectEnd(event) {
+        this.material.emissive.set(0x000000);
+        event.stopPropagation();
+      }
+
+      dispose() {
+        this.geometry.dispose();
+        this.material.dispose();
+      }
+    }
+
+    let oreTotal = 0;
+
+    function updateHud(block) {
+      const countEl = document.getElementById('ore-count');
+      const ringEl = document.getElementById('ore-ring-info');
+      if (countEl) countEl.textContent = String(oreTotal);
+      if (ringEl && block) {
+        const slot = ringSlot(block.slotIndex);
+        ringEl.textContent = `최근 추가: ${block.mineralName} · 링 ${slot.ring} (한 링당 최대 ${slot.cap}개)`;
+      }
+    }
+
+    function spawnOre() {
+      const block = new OreBlock(oreTotal);
+      xb.add(block);
+      oreTotal += 1;
+      updateHud(block);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      xb.add(new Environment());
+      for (let i = 0; i < 4; i++) spawnOre();
+
+      document.getElementById('add-ore-btn').addEventListener('click', spawnOre);
+
+      const options = new xb.Options();
+      options.simulator.defaultMode = xb.SimulatorMode.CONTROLLER;
+      // 완성도 실험의 핵심 전제: 기본 제공되는 거실·사무실 배경 대신 빈 방에서 시작해,
+      // 광석 몇 개만으로 "공간"이 성립하는지를 본다.
+      options.simulator.environments = [{
+        name: '빈 방',
+        manifestPath: `data:application/json,${encodeURIComponent(JSON.stringify({ name: '빈 방', objects: [] }))}`,
+      }];
+      options.simulator.activeEnvironmentIndex = 0;
+      xb.init(options);
+    });
+  </script>
+</body>
+</html>
