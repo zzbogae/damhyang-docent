@@ -30,6 +30,25 @@ import { panelScene, sceneSound } from './mindi/soundKit';
 function Door109En() {
   return useEn() ? <span lang="en" className="muted"> · {FOOTER_EN}</span> : null;
 }
+// 11/10 보별: 109 안내 줄은 아주 작게, 한 번만. 입장 인트로가 닫힌 뒤 처음 한 번 아래에 작게 떴다가 20초 뒤(또는 닫기) 사라진다.
+// 도움은 그 뒤에도 모든 화면 우상단 「관측소의 문」으로 언제든 연다. 전시 초기화(sessionStorage.clear)마다 다음 관객에게 다시 한 번.
+const DOOR_KEY = 'mined.door.shown.v1';
+function DoorNote({ active }: { active: boolean }) {
+  const [show, setShow] = useState(() => { try { return sessionStorage.getItem(DOOR_KEY) !== '1'; } catch { return true; } });
+  useEffect(() => {
+    if (!active || !show) return;
+    try { sessionStorage.setItem(DOOR_KEY, '1'); } catch { /* 저장소를 못 써도 진행 */ }
+    const t = setTimeout(() => setShow(false), 20000);
+    return () => clearTimeout(t);
+  }, [active, show]);
+  if (!active || !show) return null;
+  return (
+    <footer className="door door-once" role="note">
+      이야기를 들어 줄 곳 · <b>자살예방상담전화 109</b> (24시간) · 언제든 위 「관측소의 문」<Door109En />
+      <button type="button" className="door-x" onClick={() => setShow(false)} aria-label="안내 닫기">×</button>
+    </footer>
+  );
+}
 import type { Axis } from './types';
 import { arrivedCount, loadLetters } from './letters/letters';
 
@@ -56,7 +75,7 @@ type Panel = 'week' | 'settings' | 'import' | 'room' | 'islands' | 'eras' | 'eva
   // 10/23 버튼배치 확정: P5 엘리베이터 · P7 광석 캐기는 따로 된 화면
   | 'elevator' | 'mine';
 
-function Shell() {
+function Shell({ intro }: { intro: boolean }) {
   const { phase, selected, byKey, select, labels, result } = useStore();
   // 안드로이드 공유로 사진이 넘어오면 가져오기 화면부터 연다
   const [panel, setPanel] = useState<Panel>(FLAGS.has('shared') ? 'import' : GRID ? 'week' : 'hub');
@@ -131,7 +150,7 @@ function Shell() {
     </header>
   );
 
-  const door = <><OreReadGuide />{resetting && <KioskOverlay />}<footer className="door" role="note">이야기를 들어 줄 곳 · <b>자살예방상담전화 109</b> (24시간)<Door109En /></footer></>;
+  const door = <><OreReadGuide />{resetting && <KioskOverlay />}<DoorNote active={!intro} /></>;
   if (phase === 'boot') return <div className="app">{header}<main />{door}</div>;
   if (panel === 'eval' && phase !== 'working') {
     return (
@@ -299,5 +318,5 @@ function useIntro() {
 
 export default function App() {
   const [intro, done] = useIntro();
-  return <StoreProvider><Shell />{intro && <Intro onDone={done} />}</StoreProvider>;
+  return <StoreProvider><Shell intro={intro} />{intro && <Intro onDone={done} />}</StoreProvider>;
 }
