@@ -253,6 +253,7 @@ def islands(spaces, out, cap=12.0, ixf=0.6, xf=0.8, min_piece=3.0):
     n = len(spaces)
     for *_x, key in spaces:
         ins += ['-loop', '1', '-i', card(f'opt_{key}')]
+    ins += ['-loop', '1', '-i', card('isl2')]  # 11/10 보별: 기록이 쌓여 나만의 섬이 된다 · 스스로 디자인 · 섬끼리 연결
     lens = []
     for i, (f, cuts, key) in enumerate(spaces):
         use, left = [], cap
@@ -285,6 +286,8 @@ def islands(spaces, out, cap=12.0, ixf=0.6, xf=0.8, min_piece=3.0):
         fc += f'[{aacc}][n{i}]acrossfade=d={xf}:c1=qsin:c2=qsin[m{i}];'
         acc, aacc, t = f'w{i}', f'm{i}', t + lens[i] - xf
     total = t
+    fc += ov(2 * n, 0.4, min(6.5, total - 1.0), 0.5) + f'[isl];[{acc}][isl]overlay=0:0:shortest=1[ac2];'
+    acc = 'ac2'
     fc += (f'[{acc}]fade=t=in:st=0:d=0.5,fade=t=out:st={total - 0.8:.2f}:d=0.8[v];'
            f'[{aacc}]afade=t=in:st=0:d=0.6,afade=t=out:st={total - 1:.2f}:d=1,atrim=0:{total}[a]')
     run(ins + ['-filter_complex', fc, '-map', '[v]', '-map', '[a]', '-t', f'{total:.3f}'] + VENC + AENC + [out])
@@ -368,6 +371,8 @@ def main():
     ap = argparse.ArgumentParser()
     for k in ('sea', 'sky', 'jungle', 'music'):
         ap.add_argument('--' + k, required=True)
+    ap.add_argument('--onsen', default='', help='온천 섬 영상(11/10 보별: 온천도 넣기)')
+    ap.add_argument('--onsen-cut', default='', help='온천에서 쓸 구간 a,b(초). 비우면 끝 풍경(길이-6.8 ~ 길이-0.8)')
     ap.add_argument('--out', default='MineD_쇼케이스_v0.5.mp4')
     ap.add_argument('--cut', choices=['full', 'sub', 'main'], default='full',
                     help='full=출품 영상(제목·기술·본편·크레딧) / sub=서브·심포지엄(레이아웃 장+본편 2분+크레딧 장) / main=메인(레이아웃 장+1분 축약)')
@@ -385,6 +390,9 @@ def main():
         cuts = [tuple(x) for x in c] if isinstance(c[0], (list, tuple)) else [tuple(c)]
         cuts = ISLAND_CUTS.get(key, cuts)
         spaces.append((f, cuts, key))
+    if o.onsen:  # 손이 나오는 잔 컷(S4)은 피하고 끝 풍경(S5)을 쓴다
+        oc = tuple(float(x) for x in o.onsen_cut.split(',')) if o.onsen_cut else (dur(o.onsen) - 6.8, dur(o.onsen) - 0.8)
+        spaces.append((o.onsen, [oc], 'onsen'))
     pre = [x for x in o.pre.split(',') if x]
     post = [x for x in o.post.split(',') if x]
     segs = []
@@ -412,19 +420,21 @@ def main():
         dm_ = [x[:5] + ([(rc(c), *r) for c, *r in x[5]],) + x[6:] for x in DEMO_S]
         story('seg/03_story.mp4', st_); segs.append('03_story')
         demo('seg/05_demo.mp4', dm_); segs.append('05_demo')
-        two = [(f, [(4.4, 9.4)] if k == 'sky' else [(3.4, 8.4)] if k == 'sea' else c, k) for f, c, k in spaces if k in ('sea', 'sky')]  # 하늘산 원본 9.52초 컷 뒤 짧은 숏 빼기
-        islands(two, 'seg/06_islands.mp4', cap=6.0); segs.append('06_islands')
+        two = [(f, [(4.4, 9.4)] if k == 'sky' else [(3.4, 8.4)] if k == 'sea' else c, k) for f, c, k in spaces if k in ('sea', 'sky', 'onsen')]  # 하늘산 원본 9.52초 컷 뒤 짧은 숏 빼기
+        islands(two, 'seg/06_islands.mp4', cap=4.6 if o.onsen else 6.0); segs.append('06_islands')
         ending('seg/07_end.mp4', short=True); segs.append('07_end')
     else:
         story('seg/03_story.mp4'); segs.append('03_story')
         bridge('seg/04_bridge.mp4'); segs.append('04_bridge')
+        if o.cut == 'sub':  # 11/10 보별: 멘토 기술 시연(10/24 AtoZ) 내용을 긴 판에 — 실제 구현 5가지
+            still(card('tech'), 11, 'seg/045_tech.mp4', fi=0.6, fo=0.6); segs.append('045_tech')
         two_min = o.cut == 'sub'  # 서브·심포지엄 「풀 영상」: 섬 고르기를 조금 빠르게, 섬마다 10초(운영: 3분 조금 넘어도 됨)
         dm = [(x[:3] + (2.0,) + x[4:]) if two_min and 'island' in x[0] else x for x in DEMO]
         demo('seg/05_demo.mp4', dm); segs.append('05_demo')
-        if two_min:  # 10초 상한에서도 하늘산은 구름바다 와이드로 끝나게
-            spaces = [(f, [(4.4, 9.4), (30.5, 35.5)] if k == 'sky' else [(4.1, 10.0), (30.3, 33.8)] if k == 'music' else c, k)
-                      for f, c, k in spaces]  # 음악방도 창밖 풍경 엔딩(30.3~33.8)까지
-        islands(spaces, 'seg/06_islands.mp4', cap=9.5 if two_min else 12.0, min_piece=3.5 if two_min else 3.0); segs.append('06_islands')
+        if two_min:  # 11/10 보별: 섬마다 포인트 한 컷 + 온천. 한 컷은 원본 안 컷 사이 구간만
+            pt = {'sky': [(4.4, 9.4)], 'music': [(4.1, 10.0)], 'sea': [(3.4, 8.4)], 'jungle': [(6.0, 11.1)]}
+            spaces = [(f, pt.get(k, c[:1]), k) for f, c, k in spaces]
+        islands(spaces, 'seg/06_islands.mp4', cap=6.0 if two_min else 12.0, min_piece=3.5 if two_min else 3.0); segs.append('06_islands')
         ending('seg/07_end.mp4'); segs.append('07_end')
     if post:
         pages(post, '08_post')

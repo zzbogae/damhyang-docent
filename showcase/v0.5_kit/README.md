@@ -25,12 +25,13 @@ python3 build5.py --sea <바다> --sky <하늘산> --jungle <정글> --music <�
 ```
 P=layout/pages
 # 1 메인 디스플레이: 제목·소개 장 + 1분 축약
-python3 build5.py --cut main --pre $P/slide-02.png,$P/slide-03.png --page-sec 6,10 --copy b --sea … --sky … --jungle … --music … --out MineD메인.mp4
+python3 build5.py --cut main --pre $P/slide-02.png,$P/slide-03.png --page-sec 6,10 --copy b --sea … --sky … --jungle … --music … --onsen 온천_완성본_v1.mp4 --out MineD메인.mp4
 # 2 서브 디스플레이: 제목·시나리오·구현기술·콘텐츠개발·기술개발 → 풀 영상 2분 → 크레딧
-python3 build5.py --cut sub --pre $P/slide-06.png,$P/slide-07.png,$P/slide-08.png,$P/slide-09.png,$P/slide-10.png --post $P/slide-12.png --page-sec 5,10,13,13,12,5 … --out MineD서브.mp4
+python3 build5.py --cut sub --pre $P/slide-06.png,$P/slide-07.png,$P/slide-08.png,$P/slide-09.png,$P/slide-10.png --post $P/slide-12.png --page-sec 5,10,13,13,12,5 --onsen 온천_완성본_v1.mp4 … --out MineD서브.mp4
 # 3 심포지엄: 제목·시나리오·구현기술 → 풀 영상 2분 → 크레딧
-python3 build5.py --cut sub --pre $P/slide-16.png,$P/slide-17.png,$P/slide-18.png --post $P/slide-20.png --page-sec 5,10,18,5 … --out MineD심포지엄.mp4
+python3 build5.py --cut sub --pre $P/slide-16.png,$P/slide-17.png,$P/slide-18.png --post $P/slide-20.png --page-sec 5,10,18,5 --onsen 온천_완성본_v1.mp4 … --out MineD심포지엄.mp4
 첫 장(slide-02·06·16)은 같은 이름 `_s0~_s3.png`가 있으면 배경 → 과정 줄 → 로고 → 부제 → 팀명 순서로 한 줄씩 뜬다. 단계판은 `STAGE=0..3 layout/render.sh …`로 만든다.
+11/10 v8: 섬마다 포인트 한 컷 + 온천(`--onsen`, 구간은 `--onsen-cut a,b`, 비우면 끝 풍경 6초), 섬 장면 첫머리 자막 isl2, 서브·심포지엄 풀영상에 기술 카드(tech, 11초, 멘토 AtoZ 시연 내용). 카드 원본은 cards/cards_src.html.
 ```
 
 

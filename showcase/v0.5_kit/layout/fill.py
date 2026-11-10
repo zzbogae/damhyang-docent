@@ -63,8 +63,8 @@ def pic(slide, path, x, y, w, h):
     pc.crop_left = pc.crop_right = cl[0]; pc.crop_top = pc.crop_bottom = cl[1]
     return pc
 
-SCEN_S = '흩어진 나의 기록을 지층으로 쌓고, 평소와 달랐던 주를 광석으로 캐내는 웹 체험.'
-SCEN_L = '앞으로만 달려온 나에게 잠시 쉬어 갈 곳. 흩어진 기록이 한 주에 한 층씩 쌓이고, 평소와 달랐던 주는 광석이 된다. 민디와 나눈 말로 나만의 섬을 짓는다.'
+SCEN_S = '흩어진 나의 기록을 지층으로 쌓고, 평소와 달랐던 주를 광석으로 캐낸다. 쌓인 기록은 나만을 위해 스스로 디자인하는 섬이 된다.'
+SCEN_L = '앞으로만 달려온 나에게 잠시 쉬어 갈 곳. 흩어진 기록이 한 주에 한 층씩 쌓이고, 평소와 달랐던 주는 광석이 된다. 쌓인 기록은 민디와 나눈 말을 거쳐 나만의 섬이 된다. 온전히 나만을 위해 스스로 디자인하는 공간이며, 섬이 늘어나면 서로 이어진다.'
 TECH_S = '한 주를 한 층으로. 기록은 기기 안에서만 읽고, 달랐던 축을 결 색으로 보여 준다.'
 TECH_L = '기록을 ‘한 주 = 한 층’으로 다시 정의했다. 수면·걸음·언어·소통 네 축을 나의 평소와 비교해 달랐던 주는 광석, 달랐던 축은 결 색으로 보여 준다. 원문은 기기 밖으로 나가지 않는다. KAIST 문화기술대학원 Social Computing Lab은 기록 기반 개인 챗봇을 개발해, 민디와의 대화에 연계하도록 설계했다.'
 TECH_XL = ['기록을 ‘한 주 = 한 층’으로 다시 정의했다. 수면·걸음·언어·소통 네 축을 나의 지난 기록과 같은 척도(백분위)로 비교해, 가장 크게 벗어난 축이 광석의 겉색이 되고 세 축 이상이면 여러 색 광석이 된다. 개인 기록이라 원문은 기기 밖으로 나가지 않는다.',
@@ -130,11 +130,12 @@ pic(s9, I('strata.png'), 36.0, 16.1, 14.3, 2.7)
 s10 = S(10); kill(s10, '여기엔 주요 기술')
 set_text(find(s10, '주요 개발 기술'), ['지층·광석 판정'])
 set_text(find(s10, '시스템 구조'), ['시스템 구조'])
-set_text(find(s10, 'OOOO'), [' '])  # 11/09 운영: 연구실 칸은 연구실이 작성 중, 비워 둠
+set_text(find(s10, 'OOOO'), ['기록 기반 개인 챗봇'])  # 11/10 보별: 비워 두지 말고 서연님 챗봇 분석으로 채움
 tmpl = b1  # 9번 본문 상자 서식 복제
 for k, (img, lines) in enumerate([
     ('ore.png', ['한 주는 한 층. 네 축을 나의 지난 기록과 같은 척도(백분위)로 비교해 가장 크게 벗어난 축이 겉색, 세 축 이상이면 여러 색 광석이 된다.']),
-    ('diag.png', ['처리는 모두 기기 안에서. 민디 대화는 판정 질문·위기 문장을 앱 규칙이 먼저 받고, 나머지만 연구실 챗봇이 받는다.'])]):
+    ('diag.png', ['처리는 모두 기기 안에서. 민디 대화는 판정 질문·위기 문장을 앱 규칙이 먼저 받고, 나머지만 연구실 챗봇이 받는다.']),
+    ('diag_scl.png', ['연구실이 만든 기록 기반 개인 챗봇. 생활 기록을 검색 색인으로 두고, 대화 모델이 도구 4개로 근거를 찾아 민디 말투로 답한다. 위기 문장은 안내로 돌리고, 대화는 섬 키워드 5개로 정리한다.'])]):
     x = 2.5 + k * 16.35
     pic(s10, I(img), x + 0.6, 9.9, 14.5, 8.0)
     el = copy.deepcopy(tmpl._element); s10.shapes._spTree.append(el)
@@ -154,7 +155,7 @@ def placeholder03(slide, color):
     set_text(sh, ['연구실 작성 예정'], color)
     from pptx.enum.text import PP_ALIGN
     for pp in sh.text_frame.paragraphs: pp.alignment = PP_ALIGN.CENTER
-placeholder03(s10, '6B645C' if THEME == 'dark' else 'B0B0B0')
+# placeholder03(s10, …)  11/10: 03 칸을 채워서 쓰지 않음
 if THEME == 'dark':
     BG, BODY, HEAD, ACC, SUB, LINE = '15120F', 'D9D2C8', 'F2ECE4', 'F0A24A', '8C857C', '4A443D'
     for slide in (s9, s10):
@@ -170,7 +171,7 @@ if THEME == 'dark':
             if t.startswith('2026 KAIST'): c = SUB
             elif t.startswith('MineD: Your'): c = 'E8962E'
             elif t in ('콘텐츠 개발', '기술 개발') or t in ('01', '02', '03') or t.startswith('HERIZON'): c = HEAD
-            elif t in ('캐릭터', '세계와 소리', '시나리오', '지층·광석 판정', '시스템 구조'): c = ACC
+            elif t in ('캐릭터', '세계와 소리', '시나리오', '지층·광석 판정', '시스템 구조', '기록 기반 개인 챗봇'): c = ACC
             elif t in ('Social Computing Lab', '연구실 작성 예정'): c = '6B645C'
             else: c = BODY
             for r in runs_of(sh): r.font.color.rgb = RGBColor.from_string(c)
@@ -215,7 +216,7 @@ def ea(sh, face):
                 if el is None:
                     el = rPr.makeelement(qn(tag), {}); rPr.append(el)
                 el.set('typeface', face)
-HEADS = ('콘텐츠 시나리오', '구현 기술', '콘텐츠 개발', '기술 개발', '개발팀', '캐릭터', '세계와 소리', '시나리오', '지층·광석 판정', '시스템 구조')
+HEADS = ('콘텐츠 시나리오', '구현 기술', '콘텐츠 개발', '기술 개발', '개발팀', '캐릭터', '세계와 소리', '시나리오', '지층·광석 판정', '시스템 구조', '기록 기반 개인 챗봇')
 for slide in p.slides:
     for sh in slide.shapes:
         if not sh.has_text_frame: continue
