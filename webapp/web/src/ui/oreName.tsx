@@ -80,38 +80,3 @@ export function OreName({ w }: { w: OreWeek }) {
     </span>
   );
 }
-
-/**
- * 11/11 보별: 캐기가 끝나면 이름 짓기 창이 바로 뜬다. 적거나 예시를 고르고 「붙이기」, 아니면 「나중에」.
- * 나중에 붙이고 싶으면 열린 광석 화면의 「이름 붙이기」가 그대로 있다.
- */
-export function OreNameAsk({ week, mineral }: { week: string; mineral: string }) {
-  const [saved, setSaved] = useState(() => customOreName(week));
-  const [closed, setClosed] = useState(false);
-  const [draft, setDraft] = useState(saved ?? '');
-  if (closed) return null;
-  if (saved) {
-    return <p className="ore-name-ask done" aria-live="polite"><span className="chip"><i style={{ background: MINERAL_COLOR[mineral] }} />{saved}</span> 이름을 붙였어요.</p>;
-  }
-  return (
-    <form className="ore-name-ask" aria-label="이 광석에 이름 붙이기" onSubmit={(e) => {
-      e.preventDefault();
-      const v = draft.trim().slice(0, 20);
-      if (!v) return;
-      saveOreName(week, v); sfx('nameSave'); setSaved(v);
-    }}>
-      <p className="ore-name-ask-q">이 광석에 이름을 붙여 볼까요?</p>
-      <input value={draft} maxLength={20} placeholder="이름을 적거나 아래에서 고르기"
-        aria-label="이 광석의 이름" onChange={(e) => setDraft(e.target.value)} />
-      <div className="ore-name-examples" role="group" aria-label="예시 이름">
-        {exampleNames(mineral).slice(0, 6).map((m) => (
-          <button key={m} className="chip" type="button" aria-pressed={draft === m} onClick={() => setDraft(m)}>{m}</button>
-        ))}
-      </div>
-      <div className="ore-name-ask-btns">
-        <button className="btn" type="submit" disabled={!draft.trim()}>붙이기</button>
-        <button className="btn" type="button" onClick={() => setClosed(true)}>나중에</button>
-      </div>
-    </form>
-  );
-}

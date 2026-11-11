@@ -14,7 +14,6 @@ import { GeodeCore, bandColor, bandWord, bandsOf } from './OreSplit';
 import { openOreRead } from './OreReadGuide';
 import { MindiMark } from './Icons';
 import { mindiSay, sfx } from '../mindi/soundKit';
-import { OreNameAsk } from './oreName';
 import './mine.css';
 
 // 민디 대사 정본(전체대본집 v1.1 §6-2 따라가기, 조용한 결): 7-1 시작, 7-2 칠 때마다, 7-3 깨진 단면, 7-4 두 갈래
@@ -90,7 +89,6 @@ export function Mine({ w, onCarry, onView, onMore, onSpace }: { w: WeekRecord; o
           <ul className="mine-bands" aria-label="안쪽 결 · 네 지표">
             {bands.map((b) => <li key={b.axis}><i style={{ background: bandColor(b) }} aria-hidden="true" />{bandWord(b)}</li>)}
           </ul>
-          {m && <OreNameAsk week={w.week} mineral={m} />}
           {guide
             ? <p className="mine-open-next mine-count"><b>광석 {after}/{SPACE_NEED}</b> · {after >= SPACE_NEED ? '안개 옆에 나의 섬을 놓을 수 있어요.' : `${SPACE_NEED - after}개 더 캐면 나의 섬을 지을 수 있어요.`}</p>
             : <p className="mine-open-next">{LINE_NEXT}</p>}
