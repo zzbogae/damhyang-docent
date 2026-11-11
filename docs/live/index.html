@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mine D</title>
+<meta name="theme-color" content="#1B1620">
+<link rel="icon" href="../demo/icons/mined-192.png">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; height: 100%; background: #1B1620; color: #d9d2c5;
+    font-family: -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif; }
+  main { height: 100%; display: grid; place-items: center; text-align: center; padding: 0 16px; }
+  p { opacity: .7; font-size: 15px; letter-spacing: .02em; }
+</style>
+</head>
+<body>
+<main><p>Mine D 여는 중…</p></main>
+<script>
+// 공개 고정 주소: 집 맥(챗봇 연결판)이 살아 있으면 그쪽으로, 아니면 Pages 시연판(규칙 답)으로 넘긴다.
+// 맥 주소(터널)는 live-target 브랜치의 target.json 에 있다. 맥 스크립트가 터널이 바뀔 때 갱신한다.
+(function () {
+  var FALLBACK = '../demo/';
+  var TARGET = 'https://raw.githubusercontent.com/zzbogae/damhyang-docent/live-target/target.json';
+  var done = false;
+  function go(url) { if (!done) { done = true; location.replace(url); } }
+  setTimeout(function () { go(FALLBACK); }, 6000);
+  fetch(TARGET + '?t=' + Date.now(), { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (j) {
+      if (!j || !/^https:\/\/[a-z0-9-]+\.trycloudflare\.com\/?$/.test(j.url || '')) return go(FALLBACK);
+      var base = j.url.replace(/\/$/, '');
+      return fetch(base + '/api/lifebot/health', { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (h) { go(h && h.ok ? base + '/' : FALLBACK); });
+    })
+    .catch(function () { go(FALLBACK); });
+})();
+</script>
+</body>
+</html>
