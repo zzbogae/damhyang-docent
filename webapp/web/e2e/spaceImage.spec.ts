@@ -19,7 +19,7 @@ async function openVisit(page: Page) {
   await expect(page.locator('.isl-visit-full')).toBeVisible();
 }
 
-test('생성 성공: 생성 그림이 예시 영상 대신 보이고, 사전 밖 단어는 나가지 않는다', async ({ page }) => {
+test('생성 성공: 생성 그림이 예시 영상 위에 겹쳐 보이고, 사전 밖 단어는 나가지 않는다', async ({ page }) => {
   const bodies: Record<string, unknown>[] = [];
   await page.route('**/api/space/image', async (r) => {
     bodies.push(r.request().postDataJSON());
@@ -29,7 +29,8 @@ test('생성 성공: 생성 그림이 예시 영상 대신 보이고, 사전 밖
   await expect(page.locator('.isl-visit-full')).toHaveAttribute('data-gen', 'ok', { timeout: 30000 });
   await page.getByRole('button', { name: '섬으로 들어가기' }).click({ timeout: 15000 });
   await expect(page.locator('img.isl-room.isl-gen')).toBeVisible();
-  await expect(page.locator('video.isl-room')).toHaveCount(0);
+  // 예시 영상은 빠지지 않고 생성 그림 아래에 남는다(그림이 그 위로 서서히 겹친다).
+  await expect(page.locator('video.isl-room')).toHaveCount(1);
   expect(bodies).toHaveLength(1);
   expect(bodies[0]).toMatchObject({ island: 'sea', words: ['부두', '컵'] });
   expect(JSON.stringify(bodies[0])).not.toMatch(/민준|서울역/);
@@ -47,4 +48,20 @@ test('생성 실패(504): 안내 없이 예시 영상을 그대로 보여 준다
   await expect(page.locator('video.isl-room')).toBeVisible();
   await expect(page.locator('img.isl-gen')).toHaveCount(0);
   expect(bodies[0]).toHaveProperty('island', 'sea');
+});
+
+test('생성 지연: 그림보다 먼저 섬에 들어가면 영상 위에 생성 중 표시가 있고, 그림은 영상 위로 겹쳐 나타난다', async ({ page }) => {
+  await page.route('**/api/space/image', async (r) => {
+    await new Promise((ok) => setTimeout(ok, 9000));
+    await r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ image: PNG, island: 'sea', used: {}, ms: 9000 }) }).catch(() => {});
+  });
+  await openVisit(page);
+  await page.getByRole('button', { name: '섬으로 들어가기' }).click({ timeout: 15000 });
+  await expect(page.locator('.isl-visit-full')).toHaveAttribute('data-gen', 'loading');
+  await expect(page.locator('.isl-inside .isl-gen-wait')).toHaveCount(1);
+  await expect(page.locator('.isl-inside video.isl-room')).toHaveCount(1);
+  await expect(page.locator('.isl-visit-full')).toHaveAttribute('data-gen', 'ok', { timeout: 30000 });
+  await expect(page.locator('.isl-inside img.isl-gen')).toBeVisible();
+  await expect(page.locator('.isl-inside video.isl-room')).toHaveCount(1);
+  await expect(page.locator('.isl-inside .isl-gen-wait')).toHaveCount(0);
 });

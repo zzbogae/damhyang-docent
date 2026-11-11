@@ -163,11 +163,12 @@ export function IslandVisit({ row, byKey, onExit }: { row: VisitRow; byKey: Map<
       )}
       {inside && (
         <div className="isl-inside">
-          {genImg && view === 'inside'
-            ? <img className="isl-room isl-gen" src={genImg} style={{ filter: (o.era && ERA_FILTER[o.era]) || undefined }} alt={`${row.name} 안`} />
-            : clip && view === 'inside'
+          {clip && view === 'inside'
             ? <video className="isl-room" src={clip.src} poster={clip.poster} muted loop playsInline autoPlay={!still} style={{ filter: (o.era && ERA_FILTER[o.era]) || undefined }} aria-label={`${row.name} 안`} />
             : <img className="isl-room" src={view === 'inside' ? art.inside : art.reveal} alt={view === 'inside' ? `${row.name} 안` : `${row.name}을 내려다본 모습`} />}
+          {/* 그림이 섬에 들어간 뒤에 오더라도 영상을 빼지 않고 그 위에 겹쳐 서서히 나타나게 한다. */}
+          {genImg && view === 'inside' && <img className="isl-room isl-gen" src={genImg} style={{ filter: (o.era && ERA_FILTER[o.era]) || undefined }} alt={`${row.name} 안`} />}
+          {gen.state === 'loading' && view === 'inside' && <p className="isl-gen-wait in small" role="status"><span aria-hidden="true" />고른 것으로 섬을 그리고 있어요</p>}
           <IslandMood o={o} inside={view === 'inside'} />
           <header className="isl-hud">
             <button className="btn quiet" onClick={onExit}>‹ 관측소로</button>

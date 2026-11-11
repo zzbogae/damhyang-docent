@@ -1092,6 +1092,7 @@ html { scrollbar-color: var(--mined-slate) transparent; }
 @keyframes isl-gen-in { from { opacity: 0; } }
 @keyframes isl-kb { from { transform: scale(1) translate(0, 0); } to { transform: scale(1.14) translate(-2%, 1.5%); } }
 .isl-gen-wait { position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%); margin: 0; display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: rgba(27, 22, 32, .6); color: #f3e9dc; }
+.isl-gen-wait.in { top: 72px; bottom: auto; }
 .isl-gen-wait span { width: 10px; height: 10px; border-radius: 50%; border: 2px solid rgba(243, 233, 220, .35); border-top-color: #f3e9dc; animation: isl-spin 1s linear infinite; }
 @keyframes isl-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .isl-gen { animation: isl-gen-in .01s both; } .isl-gen-wait span { animation: none; } }
