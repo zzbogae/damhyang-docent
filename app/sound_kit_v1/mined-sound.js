@@ -694,6 +694,7 @@
   var BABBLE_MAX = 2; // 옹알이(설명 대사)는 길어도 낱말 2개까지 (11/11 보별 「처음 진입할 때도 너무 수다스럽다」, 전 5)
   function needVoice(vk) {
     vk = vk || state.voice;
+    if (VOICE_FILES[vk] && !FILES['voice_' + vk]) FILES['voice_' + vk] = VOICE_FILES[vk]; // cute·bella 는 FILES 에 없어서 audio/undefined 를 받다 실패했다 (11/11)
     if (VOICE_FILES[vk] && !buffers['voice_' + vk]) load('voice_' + vk);
     if (VOICE_UNIT_FILES[vk] && !VOICE_UNITS[vk]) {
       VOICE_UNITS[vk] = 'loading';
