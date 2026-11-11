@@ -66,13 +66,17 @@ async def call_gradio(name: str, data: list):
     raise RuntimeError("no_complete")
 
 
+# 고정 주소 페이지(docs/live, GitHub Pages)가 살아 있는지 확인할 수 있게 health 만 다른 출처 허용
+CORS = {"Access-Control-Allow-Origin": "*"}
+
+
 @app.get("/api/lifebot/health")
 async def health():
     try:
         r = await client.get(f"{BASE}/gradio_api/info", timeout=5.0)
-        return JSONResponse({"ok": r.is_success}, status_code=200 if r.is_success else 503)
+        return JSONResponse({"ok": r.is_success}, status_code=200 if r.is_success else 503, headers=CORS)
     except Exception:
-        return JSONResponse({"ok": False}, status_code=503)
+        return JSONResponse({"ok": False}, status_code=503, headers=CORS)
 
 
 @app.post("/api/lifebot/{name}")
