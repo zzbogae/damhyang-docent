@@ -14,9 +14,10 @@ ISLANDS = {
 }
 
 STYLE = (
-    "Photorealistic cinematic still, first-person point of view: the viewer's own hand rests at the lower edge of the frame "
+    "Photorealistic photograph, first-person point of view: the viewer's own hand rests at the lower edge of the image "
     "(on a railing, rock, leaf or door frame). Natural soft light, gentle depth of field, calm healing mood, "
-    "rich but not oversaturated colors, 16:9 landscape composition. Nobody else is in the scene. "
+    "rich but not oversaturated colors. Full-bleed: the scene fills the whole image edge to edge, no black bars, "
+    "no letterbox, no border or frame. Nobody else is in the scene. "
     "No text, letters, signs, logos, watermarks or UI."
 )
 

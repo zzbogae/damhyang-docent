@@ -72,3 +72,10 @@ def test_weather_capped_and_bad_types():
 def test_words_capped_at_five():
     out = build_prompt({"words": ["바다", "산", "하늘", "정글", "숲", "호수", "강"]})
     assert len(out["used"]["words"]) == 5
+
+
+def test_style_asks_full_bleed():
+    # 「cinematic」·「16:9 composition」이 위아래 검은 띠를 불렀다. 꽉 찬 화면을 명시한다
+    prompt = build_prompt({"place": "바다"})["prompt"]
+    assert "no black bars" in prompt and "no letterbox" in prompt
+    assert "cinematic" not in prompt.lower()
