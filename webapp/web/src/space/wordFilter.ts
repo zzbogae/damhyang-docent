@@ -4,7 +4,7 @@
 // 서버(hf-space/space_words.py)도 같은 파일로 한 번 더 거른다. 규칙을 바꾸면 두 곳을 같이 고친다.
 import dict from './islandKeywords.json';
 
-export interface KeywordEntry { id: string; word: string; syn: string[]; cat: string; scene: string; teen_exclude?: boolean }
+export interface KeywordEntry { id: string; word: string; syn: string[]; cat: string; scene: string; en: string; teen_exclude?: boolean }
 
 export const KEYWORDS: KeywordEntry[] = (dict as { words: KeywordEntry[] }).words;
 /** 프롬프트에 넣는 단어 수 상한 */

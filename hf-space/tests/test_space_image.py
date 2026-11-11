@@ -58,7 +58,7 @@ def test_ok_returns_image_and_island(make):
     assert seen["body"]["modalities"] == ["image", "text"]
     prompt = seen["body"]["messages"][0]["content"]
     # 사람 이름이 섞인 낱말은 서버에서 다시 걸러 OpenRouter 로 나가지 않는다
-    assert "민준" not in prompt and "부두" in prompt
+    assert "민준" not in prompt and "wooden pier deck" in prompt
 
 
 def test_no_key_503(make):

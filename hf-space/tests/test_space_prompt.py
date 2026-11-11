@@ -48,7 +48,7 @@ def test_full_selection():
     assert out["island"] == "sea"
     assert out["used"] == {"time": "해질녘", "weather": ["여름", "햇살"], "place": "바다", "era": "시대 없음", "dwelling": "오두막", "words": ["부두", "책", "등대"]}
     p = out["prompt"]
-    assert "first-person" in p and "warm golden-orange" in p and "small wooden cabin" in p and "부두" in p
+    assert "first-person" in p and "warm golden-orange" in p and "small wooden cabin" in p and "wooden pier deck" in p
     assert "No text" in p
 
 
@@ -79,3 +79,24 @@ def test_style_asks_full_bleed():
     prompt = build_prompt({"place": "바다"})["prompt"]
     assert "no black bars" in prompt and "no letterbox" in prompt
     assert "cinematic" not in prompt.lower()
+
+
+HANGUL = re.compile(r"[가-힣ㄱ-ㅎㅏ-ㅣ]")
+
+
+@pytest.mark.parametrize("island", list(ISLANDS))
+def test_prompt_has_no_hangul(island):
+    # 프롬프트의 「Island (하늘산)」이 그림에 글자로 찍혔다(11/12 시험 생성 sky-1). 한국어는 used 에만 남긴다
+    sel = {"island": island, "time": "해질녘", "weather": ["비", "안개"], "place": "구름 위", "era": "1970년대",
+           "dwelling": "방갈로", "words": ["레코드", "민준이랑", "고양이", "등불", "창가에"]}
+    out = build_prompt(sel)
+    assert not HANGUL.search(out["prompt"]), out["prompt"]
+    assert out["used"]["words"] and out["used"]["place"] == "하늘"
+
+
+def test_every_dictionary_word_has_english_scene():
+    from space_words import KEYWORDS
+    for e in KEYWORDS:
+        assert e.get("en") and not HANGUL.search(e["en"]), e["id"]
+    out = build_prompt({"words": [e["word"] for e in KEYWORDS]})
+    assert not HANGUL.search(out["prompt"])

@@ -3,6 +3,8 @@
 #   「직접 쓰기」 값은 섬 키워드 사전(space_words.py)에 있을 때만 대표어로 바꿔 넣고, 없으면 버린다.
 # - 섬 다섯 곳(SpaceTour.tsx TOUR: 바다·하늘산·정글·음악방·온천)은 예시 영상과 같은 화풍(1인칭 실사, 손이 화면 아래에 보임)으로 맞춘다.
 # - 소리(곡)는 그림에 들어가지 않고, 섬을 정하는 데만 쓴다. 관객 원문은 프롬프트에 들어가지 않는다.
+# - 프롬프트에는 한국어를 한 글자도 넣지 않는다(섬 이름 「하늘산」이 그림에 글자로 찍힌 일, 11/12 시험 생성).
+#   사전 단어는 영어 장면 설명(en)만 넣고, 한국어 값은 응답의 used 에만 남긴다.
 from space_words import filter_words, match_word
 
 ISLANDS = {
@@ -86,7 +88,7 @@ def _choice(raw, table: dict):
         return v, table[v]
     e = match_word(v)
     if e:
-        return e["word"], f"{e['word']} ({e['scene']})"
+        return e["word"], e["en"]
     return None
 
 
@@ -137,13 +139,12 @@ def build_prompt(sel) -> dict:
     words = filter_words(sel.get("words"))
     used["words"] = [w["word"] for w in words]
 
-    label, scene = ISLANDS[island]
-    lines = [STYLE, f"Island ({label}): {scene}."]
+    scene = ISLANDS[island][1]
+    lines = [STYLE, f"Island: {scene}."]
     if parts:
         lines.append("Setting: " + "; ".join(parts) + ".")
     if words:
         lines.append(
-            "Include these small details naturally (Korean keyword, then what it looks like): "
-            + "; ".join(f"{w['word']} ({w['scene']})" for w in words) + "."
+            "Include these small details naturally: " + "; ".join(w["en"] for w in words) + "."
         )
     return {"island": island, "prompt": "\n".join(lines), "used": used}
