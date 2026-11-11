@@ -13,6 +13,7 @@ import { dateLabel } from '../mindi/templates';
 import type { WeekRecord } from '../types';
 import { DEMO_SNAPSHOT } from '../demo/snapshot';
 import qrDemo from '../assets/qr-demo.svg';
+import { requestSpaceImage, spaceImageBody } from '../space/spaceImage';
 
 // 11/06 전시: 시연판(가짜 샘플)·전시 모드에서는 섬 안 마지막에 「당신의 기록이라면」 안내와 시연판 주소 QR 을 둔다
 const SHOWCASE = DEMO_SNAPSHOT || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('kiosk'));
@@ -124,16 +125,29 @@ export function IslandVisit({ row, byKey, onExit }: { row: VisitRow; byKey: Map<
     addEventListener('keydown', esc);
     return () => removeEventListener('keydown', esc);
   }, [onExit]);
+  // 11/12 멘토진: 고른 여섯 가지와 사전 단어로 섬 그림을 그 자리에서 그린다. 안개가 걷히는 동안(약 5초) 받아 오고,
+  // 실패하거나 늦으면(서버 없음·상한·23초) 따로 알리지 않고 지금처럼 예시 영상을 보여 준다. 그림에는 천천히 다가가는 카메라(Ken Burns)를 입힌다.
+  const [gen, setGen] = useState<{ state: 'off' | 'loading' | 'ok' | 'fail'; src?: string }>({ state: row.opts ? 'loading' : 'off' });
+  useEffect(() => {
+    if (!row.opts) return;
+    let on = true;
+    void requestSpaceImage(row.id, spaceImageBody(row.opts, row.words, row.clip)).then((r) => {
+      if (on) setGen(r ? { state: 'ok', src: r.image } : { state: 'fail' });
+    });
+    return () => { on = false; };
+  }, [row.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const genImg = gen.state === 'ok' ? gen.src : undefined;
   const ores = row.ores.map((k) => byKey.get(k)).filter(Boolean) as WeekRecord[];
   const inside = phase === 'inside';
   return (
-    <div className={`isl-visit-full ${phase}${inside ? ` view-${view}` : ''}`} role="dialog" aria-modal="true" aria-label={`${row.name}으로 가는 길`}>
+    <div className={`isl-visit-full ${phase}${inside ? ` view-${view}` : ''}`} data-gen={gen.state} role="dialog" aria-modal="true" aria-label={`${row.name}으로 가는 길`}>
       {!inside && (
         <div className="isl-reveal">
           <img className="isl-from" src={ART.introPoster} alt="" />
           {clip
             ? <video className="isl-to" src={clip.src} poster={clip.poster} muted loop playsInline autoPlay={!still} style={{ filter: (o.era && ERA_FILTER[o.era]) || undefined }} aria-label={`안개가 걷힌 자리에 ${clip.label}이 보입니다`} />
             : <img className="isl-to" src={art.reveal} alt={`안개가 걷힌 자리에 ${art.label}이 보입니다`} />}
+          {genImg && phase !== 'fog' && <img className="isl-gen" src={genImg} style={{ filter: (o.era && ERA_FILTER[o.era]) || undefined }} alt={`안개가 걷힌 자리에 고른 것으로 그린 ${row.name}이 보입니다`} />}
           {phase !== 'fog' && <div className="isl-mood-in"><IslandMood o={o} /></div>}
           <div className="isl-fog f1" aria-hidden="true" /><div className="isl-fog f2" aria-hidden="true" />
           <p className="isl-cap">{phase === 'fog' ? '안개가 걷히고 있어요' : phase === 'clearing' ? '' : row.name}</p>
@@ -143,12 +157,15 @@ export function IslandVisit({ row, byKey, onExit }: { row: VisitRow; byKey: Map<
               <button className="btn quiet" onClick={onExit}>관측소로 돌아가기</button>
             </div>
           )}
-          <p className="isl-note small">{clip ? `고른 영상 · ${clip.label}` : `가장 가까운 예시 그림으로 보여 드립니다 · ${art.label}`}</p>
+          {gen.state === 'loading' && <p className="isl-gen-wait small" role="status"><span aria-hidden="true" />고른 것으로 섬을 그리고 있어요</p>}
+          <p className="isl-note small">{genImg ? '고른 것으로 방금 그린 섬' : clip ? `고른 영상 · ${clip.label}` : `가장 가까운 예시 그림으로 보여 드립니다 · ${art.label}`}</p>
         </div>
       )}
       {inside && (
         <div className="isl-inside">
-          {clip && view === 'inside'
+          {genImg && view === 'inside'
+            ? <img className="isl-room isl-gen" src={genImg} style={{ filter: (o.era && ERA_FILTER[o.era]) || undefined }} alt={`${row.name} 안`} />
+            : clip && view === 'inside'
             ? <video className="isl-room" src={clip.src} poster={clip.poster} muted loop playsInline autoPlay={!still} style={{ filter: (o.era && ERA_FILTER[o.era]) || undefined }} aria-label={`${row.name} 안`} />
             : <img className="isl-room" src={view === 'inside' ? art.inside : art.reveal} alt={view === 'inside' ? `${row.name} 안` : `${row.name}을 내려다본 모습`} />}
           <IslandMood o={o} inside={view === 'inside'} />
