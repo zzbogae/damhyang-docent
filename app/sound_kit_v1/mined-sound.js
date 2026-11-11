@@ -105,16 +105,26 @@
   };
 
   // 민디 목소리 낱말 묶음: [파일 안 시작 초, 길이 초, 높이 맞춤 배수]. 뜻 없는 외계어 낱말 40개 (로컬 TTS 목소리 B, 430Hz로 맞춤)
-  var VOICE_FILES = { alien: 'mindi_voice_alien.wav' };
+  var VOICE_FILES = { alien: 'mindi_voice_alien.wav', cute: 'mindi_voice_cute.mp3', bella: 'mindi_voice_bella.mp3' };
+  // 옹알이 낱말 목소리의 낱말 위치표를 파일 옆 .json 에서 읽는다([[시작, 길이, 배수], ...]). bella = Bella 높게 옹알이 38낱말(v1.4)
+  var VOICE_UNIT_FILES = { bella: 'mindi_voice_bella.json' };
+  var BABBLE_VOICE = 'bella';
+  var VOICE_GAIN = { cute: 0.6, bella: 0.65, alien: 0.7 }; // 11/11 보별 「힐링인데 너무 하이」 → 목소리는 효과음보다 한결 작게
+  var VOICE_RATE = { cute: 0.94, bella: 0.94, alien: 1.0 }; // 조금 느리게 = 차분하게 // 설명 대사 옹알이에 쓰는 목소리. 파일이 없으면 alien 으로
+  // 감탄사 목소리(v1.4, 11/11): 말 대신 상황마다 짧은 감탄사 하나만 낸다. 문장 길이만큼 옹알이를 늘어놓던 방식은 폐기.
+  // 음성 파일 옆의 같은 이름 .json 이 자리표: { hello: [[시작, 길이], ...], ask: ..., laugh: ... } (tools/voice_sprite.py 가 만든다)
+  var VOICE_SPRITES = { cute: 'mindi_voice_cute.json' };
+  var sprites = {}; // voice key → 자리표 | 'loading' | 'failed'
+  var REACT_UNIT = { eung: 'cheer', eo: 'notice', a: 'found', eum: 'wait' }; // 맞장구 → 감탄사 자리
   var VOICE_UNITS = { alien: [[0.0, 0.346, 1.0], [0.426, 0.62, 1.0], [1.125, 0.675, 1.0], [1.881, 0.552, 1.0], [2.512, 0.322, 1.0], [2.914, 0.684, 1.0], [3.679, 0.499, 1.0], [4.257, 0.247, 1.0], [4.584, 0.646, 1.0], [5.311, 0.573, 1.0], [5.963, 0.26, 1.0], [6.303, 0.616, 1.0], [6.999, 0.443, 1.0], [7.523, 0.569, 1.0], [8.171, 0.432, 1.0], [8.684, 0.205, 1.0], [8.969, 0.323, 1.0], [9.372, 0.242, 1.0], [9.694, 0.568, 1.0], [10.342, 0.435, 1.0], [10.858, 0.294, 1.0], [11.232, 0.288, 1.0], [11.6, 0.507, 1.0], [12.187, 0.346, 1.0], [12.613, 0.457, 1.0], [13.15, 0.33, 1.0], [13.559, 0.316, 1.0], [13.955, 0.434, 1.0], [14.469, 0.509, 1.0], [15.058, 0.517, 1.0], [15.655, 0.658, 1.0], [16.393, 0.453, 1.0], [16.925, 0.469, 1.0], [17.474, 0.559, 1.0], [18.113, 0.481, 1.0], [18.674, 0.364, 1.0], [19.118, 0.534, 1.0], [19.732, 0.336, 1.0], [20.148, 0.433, 1.0], [20.661, 0.473, 1.0]] };
-  var VOICE_WORDS = { alien: true }; // 낱말 단위 목소리: 자르지 않고 통째로 쓰고, 낱말 하나 = 글자 약 2개
+  var VOICE_WORDS = { alien: true, bella: true }; // 낱말 단위 목소리: 자르지 않고 통째로 쓰고, 낱말 하나 = 글자 약 2개
   // 대사 상황별 곡조: st = 음절마다 반음(길이에 맞춰 늘이거나 줄임), rate = 말 빠르기, gap = 음절 사이(초)
-  var MELODIES = {"explain": {"ko": "설명·담백", "st": [0, 2, 0, 2, -1, -3], "rate": 1.0, "gap": 0.03, "gain": 0.85}, "hello": {"ko": "인사", "st": [0, 4, 7, 2], "rate": 1.0, "gap": 0.03, "gain": 0.9}, "ask": {"ko": "질문 (끝 올림)", "st": [0, -1, 0, 1, 2, 7], "rate": 0.95, "gap": 0.03, "gain": 0.85}, "cheer": {"ko": "응원·밝음", "st": [0, 2, 4, 7, 4, 9], "rate": 1.05, "gap": 0.025, "gain": 0.9}, "comfort": {"ko": "위로·조용히", "st": [0, -1, -3, -2, -5], "rate": 0.85, "gap": 0.05, "gain": 0.7}, "think": {"ko": "생각·말끝 흐림 …", "st": [0, -1, -2, -3, -4], "rate": 0.82, "gap": 0.07, "gain": 0.75}, "surprise": {"ko": "놀람", "st": [7, 12, 5], "rate": 1.15, "gap": 0.02, "gain": 0.95}, "found": {"ko": "찾았다", "st": [0, 3, 5, 7, 12], "rate": 1.1, "gap": 0.02, "gain": 0.9}, "mined": {"ko": "캐기 성공", "st": [0, 4, 7, 12, 12], "rate": 1.1, "gap": 0.02, "gain": 0.95}, "wait": {"ko": "기다림", "st": [-2, -3, -5], "rate": 0.8, "gap": 0.06, "gain": 0.75}, "effort": {"ko": "영차·힘쓰기", "st": [0, 5], "rate": 1.2, "gap": 0.04, "gain": 0.95}, "notice": {"ko": "안내·고지 (평평)", "st": [0, 0, 0, 0, -2], "rate": 0.95, "gap": 0.035, "gain": 0.8}};
+  var MELODIES = {"explain": {"ko": "설명·담백", "st": [0, 1, 0, 1, -1, -2], "rate": 1.0, "gap": 0.03, "gain": 0.85}, "hello": {"ko": "인사", "st": [0, 2, 3, 1], "rate": 1.0, "gap": 0.03, "gain": 0.9}, "ask": {"ko": "질문 (끝 올림)", "st": [0, -1, 0, 1, 2, 3], "rate": 0.95, "gap": 0.03, "gain": 0.85}, "cheer": {"ko": "응원·밝음", "st": [0, 1, 2, 3, 2, 3], "rate": 1.05, "gap": 0.025, "gain": 0.9}, "comfort": {"ko": "위로·조용히", "st": [0, -1, -3, -2, -5], "rate": 0.85, "gap": 0.05, "gain": 0.7}, "think": {"ko": "생각·말끝 흐림 …", "st": [0, -1, -2, -3, -4], "rate": 0.82, "gap": 0.07, "gain": 0.75}, "surprise": {"ko": "놀람", "st": [7, 12, 5], "rate": 1.15, "gap": 0.02, "gain": 0.95}, "found": {"ko": "찾았다", "st": [0, 3, 5, 7, 12], "rate": 1.1, "gap": 0.02, "gain": 0.9}, "mined": {"ko": "캐기 성공", "st": [0, 4, 7, 12, 12], "rate": 1.1, "gap": 0.02, "gain": 0.95}, "wait": {"ko": "기다림", "st": [-2, -3, -5], "rate": 0.8, "gap": 0.06, "gain": 0.75}, "effort": {"ko": "영차·힘쓰기", "st": [0, 5], "rate": 1.2, "gap": 0.04, "gain": 0.95}, "notice": {"ko": "안내·고지 (평평)", "st": [0, 0, 0, 0, -2], "rate": 0.95, "gap": 0.035, "gain": 0.8}};
   var REACT_MOOD = { eung: [0, 2], eo: [2], a: [5, 2], eum: [-2] }; // 맞장구 한두 음절
 
   // 민디 말투 4종 → 속도·음높이 고정값 (설계 v1 §1-6 rate_by_tone)
   var TONES = {
-    quiet: { rate: 0.85, pitch: 0.95 },
+    quiet: { rate: 0.78, pitch: 0.84 }, // 11/11 「너무 하이」 → 약 2반음 낮게, 더 느리게 (전시 맥 수치와 같음)
     warm: { rate: 0.9, pitch: 1.05 },
     plain: { rate: 1.1, pitch: 1.0 },
     dry: { rate: 1.0, pitch: 0.9 }
@@ -151,7 +161,7 @@
   var buffers = {}; // file key → AudioBuffer | 'loading' | 'failed'
   var state = {
     on: false, volume: 0.8, zone: null, env: 'sea', scene: 'lantern', depth: 0, moving: false, overlays: {},
-    reduced: false, music: true, voice: 'alien', base: 'audio/', listeners: []
+    reduced: false, music: true, voice: 'cute', base: 'audio/', listeners: []
   };
   var musBus = null, musNow = null, musTimer = null; // 지금 흐르는 곡 { key, gain, ... }
   var dripTimer = null, lanternTimer = null, depthAnim = null;
@@ -652,18 +662,26 @@
     for (var i = 0; i < n; i++) { var x = i * (st.length - 1) / (n - 1), a = Math.floor(x), b = Math.min(st.length - 1, a + 1); out.push(st[a] + (st[b] - st[a]) * (x - a)); }
     return out;
   }
-  function voiceLine(st, n, moodKey, tone_) {
-    var vk = state.voice, buf = buffers['voice_' + vk], units = VOICE_UNITS[vk];
-    if (!buf || !buf.getChannelData) return false;
+  var recentUnits = []; // 옹알이에서 최근 쓴 낱말 번호 (최대 6개)
+  function voiceLine(st, n, moodKey, tone_, vk, salt) { // salt = 문장마다 다른 수(같은 문장은 늘 같은 소리)
+    vk = vk || state.voice;
+    var buf = buffers['voice_' + vk], units = VOICE_UNITS[vk];
+    if (!buf || !buf.getChannelData || !units || !units.length) return false;
     var words = VOICE_WORDS[vk]; // 낱말 목소리면 n = 낱말 수
     var tn = TONES[tone_] || TONES.quiet, m = MELODIES[moodKey] || MELODIES.explain, c = contourOf(st, n);
-    var t = ac.currentTime + 0.02, seed = n * 3 + Object.keys(MELODIES).indexOf(moodKey);
+    var t = ac.currentTime + 0.02, seed = n * 3 + Object.keys(MELODIES).indexOf(moodKey) + (salt || 0);
     for (var i = 0; i < c.length; i++) {
-      var u = units[(i * 5 + seed) % units.length];
+      var ui = (i * 5 + seed) % units.length;
+      if (salt != null) { // 이어지는 줄과 낱말이 겹치지 않게: 최근 쓴 낱말은 건너뛴다
+        for (var tries = 0; recentUnits.indexOf(ui) >= 0 && tries < units.length; tries++) ui = (ui + 7) % units.length;
+        recentUnits.push(ui); if (recentUnits.length > 6) recentUnits.shift();
+      }
+      var u = units[ui];
       var rate = u[2] * tn.pitch * Math.pow(2, c[i] / 12), next = i + 1 < c.length ? c[i + 1] : c[i];
       var r1 = u[2] * tn.pitch * Math.pow(2, (c[i] + (next - c[i]) * 0.35) / 12); // 다음 음으로 살짝 미끄러짐
       var last = i === c.length - 1, dur = words ? u[1] / rate : Math.min(u[1], last ? 0.3 : 0.2) / rate / (m.rate * tn.rate);
-      var src = ac.createBufferSource(), g = ac.createGain(), pk = 0.9 * m.gain;
+      var src = ac.createBufferSource(), g = ac.createGain(), pk = 0.9 * m.gain * (VOICE_GAIN[vk] || 1);
+      rate *= (VOICE_RATE[vk] || 1); r1 *= (VOICE_RATE[vk] || 1);
       src.buffer = buf;
       src.playbackRate.setValueAtTime(rate, t); src.playbackRate.linearRampToValueAtTime(r1, t + dur);
       g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(pk, t + 0.012);
@@ -673,7 +691,43 @@
     }
     return true;
   }
-  function needVoice() { var vk = state.voice; if (VOICE_FILES[vk] && !buffers['voice_' + vk]) load('voice_' + vk); }
+  var WORD_LEAD = ['hello', 'think', 'explain', 'comfort', 'notice', 'wait']; // 대화 답 감탄사의 앞쪽 후보(마지막은 문장 끝 곡조)
+  var BABBLE_MAX = 2; // 옹알이(설명 대사)는 길어도 낱말 2개까지 (11/11 보별 「처음 진입할 때도 너무 수다스럽다」, 전 5)
+  function needVoice(vk) {
+    vk = vk || state.voice;
+    if (VOICE_FILES[vk] && !FILES['voice_' + vk]) FILES['voice_' + vk] = VOICE_FILES[vk]; // cute·bella 는 FILES 에 없어서 audio/undefined 를 받다 실패했다 (11/11)
+    if (VOICE_FILES[vk] && !buffers['voice_' + vk]) load('voice_' + vk);
+    if (VOICE_UNIT_FILES[vk] && !VOICE_UNITS[vk]) {
+      VOICE_UNITS[vk] = 'loading';
+      fetch(state.base + VOICE_UNIT_FILES[vk]).then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) { VOICE_UNITS[vk] = j && j.length ? j : 'failed'; })
+        .catch(function () { VOICE_UNITS[vk] = 'failed'; });
+    }
+    if (VOICE_SPRITES[vk] && !sprites[vk]) {
+      sprites[vk] = 'loading';
+      fetch(state.base + VOICE_SPRITES[vk]).then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) { sprites[vk] = j && typeof j === 'object' ? j : 'failed'; })
+        .catch(function () { sprites[vk] = 'failed'; });
+    }
+  }
+  // 감탄사 하나. moodKey 자리가 없으면 explain, 그것도 없으면 아무 자리. 같은 자리에 여러 벌이 있으면 seed 로 고른다
+  function sayUnit(moodKey, tone_, seed, at) { // at = 시작 시각(이어 붙일 때). 끝나는 시각을 돌려준다
+    var vk = state.voice, buf = buffers['voice_' + vk], map = sprites[vk];
+    if (!buf || !buf.getChannelData || !map || typeof map !== 'object') return false;
+    var list = map[moodKey] || map.explain || map[Object.keys(map)[0]];
+    if (!list || !list.length) return false;
+    if (typeof list[0] === 'number') list = [list];
+    var u = list[(seed || 0) % list.length], tn = TONES[tone_] || TONES.quiet;
+    var rate = 0.97 + 0.06 * ((seed || 0) % 3) / 2; // 아주 조금씩만 달라져 같은 소리가 기계적으로 반복되지 않게
+    rate *= (0.5 + tn.pitch * 0.5) * (VOICE_RATE[vk] || 1);
+    var t = at || ac.currentTime + 0.02, dur = u[1] / rate, src = ac.createBufferSource(), g = ac.createGain(), pk = 0.9 * (VOICE_GAIN[vk] || 1);
+    src.buffer = buf; src.playbackRate.value = rate;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(pk, t + 0.01);
+    g.gain.setValueAtTime(pk, t + Math.max(0.02, dur - 0.04)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(g); g.connect(sfxBus); src.start(t, u[0], u[1] + 0.01); src.stop(t + dur + 0.02);
+    return t + dur;
+  }
+  function spriteVoice() { return !!VOICE_SPRITES[state.voice]; }
 
   function syllables(list, t, tone_, out) {
     var tn = TONES[tone_] || TONES.quiet;
@@ -708,7 +762,33 @@
     var clean = String(text || '').replace(/\s+/g, '');
     var n = Math.max(1, Math.min(14, Math.round(clean.length / 4.5))); // 글자 4~5개당 외계어 낱말 1개
     needVoice();
-    if (state.voice !== 'synth' && voiceLine(MELODIES[mood].st, n + 1, mood, tone_)) return n + 1;
+    // style: 'word' = 감탄사 하나(대화 답) · 'babble' = 짧은 옹알이(설명·안내 대사). 감탄사 목소리일 때 기본은 word
+    var style = opts.style || (spriteVoice() ? 'word' : 'babble');
+    if (style === 'word' && spriteVoice()) { // 감탄사 2~3개를 짧게 이어서 (11/11 보별: 하나보다 2~3개). 마지막은 문장 끝(? ! …)에 맞춘다
+      var cnt = clean.length > 30 ? 3 : 2, keys = [], k0 = clean.length % WORD_LEAD.length;
+      for (var j = 0; keys.length < cnt - 1 && j < WORD_LEAD.length; j++) {
+        var cand = WORD_LEAD[(k0 + j * 2) % WORD_LEAD.length];
+        if (cand !== mood && keys.indexOf(cand) < 0) keys.push(cand);
+      }
+      keys.push(mood);
+      var at = 0, said = 0;
+      for (var q = 0; q < keys.length; q++) {
+        var end = sayUnit(keys[q], tone_, clean.length + q, at || undefined);
+        if (end) { said++; at = end + 0.14; }
+      }
+      if (said) return said;
+      syllables(SYL_REACT.eung, ac.currentTime + 0.02, tone_); // 파일이 아직 없으면 짧은 합성 한 음절
+      return 1;
+    }
+    if (style === 'babble' && spriteVoice()) { // 감탄사 목소리 + 옹알이 요청: 외계어 목소리로 짧게
+      // 11/11 보별: 첫 입장 안내는 원래(v1.3) 외계어 목소리를 길이 절반으로. Bella 는 외계어 파일이 없을 때만
+      n = Math.max(1, Math.round((n + 1) / 2)); needVoice('alien'); needVoice(BABBLE_VOICE);
+      // 낱말 수가 같아도 문장마다 다른 낱말을 고른다 (11/11 「세 문장 어휘가 똑같음」)
+      var salt = 0; for (var k = 0; k < clean.length; k++) salt = (salt * 31 + clean.charCodeAt(k)) % 9973;
+      if (voiceLine(MELODIES[mood].st, n, mood, tone_, 'alien', salt)) return n;
+      if (voiceLine(MELODIES[mood].st, Math.min(n, BABBLE_MAX), mood, tone_, BABBLE_VOICE, salt)) return n;
+    }
+    if (state.voice !== 'synth' && voiceLine(MELODIES[mood].st, Math.min(n, BABBLE_MAX) + 1, mood, tone_)) return n + 1;
     var seq = [];
     for (var i = 0; i < n; i++) seq.push(SYL_BASE[(i * 3) % SYL_BASE.length]); // 합성 음절 (파일이 없을 때)
     var end = mood === 'ask' ? 'up' : mood === 'think' ? 'fade' : 'down';
@@ -719,12 +799,14 @@
   function react(kind, opts) {
     if (!ready()) return; needVoice();
     var tone_ = (opts && opts.tone) || 'quiet', st = REACT_MOOD[kind] || REACT_MOOD.eung;
+    if (spriteVoice()) { if (sayUnit(REACT_UNIT[kind] || 'explain', tone_, 1)) return; syllables(SYL_REACT[kind] || SYL_REACT.eung, ac.currentTime + 0.02, tone_); return; }
     if (state.voice !== 'synth' && voiceLine(st, VOICE_WORDS[state.voice] ? 1 : st.length, 'explain', tone_)) return;
     syllables(SYL_REACT[kind] || SYL_REACT.eung, ac.currentTime + 0.02, tone_);
   }
   function cue(kind, opts) {
     if (!ready()) return; needVoice();
     var tone_ = (opts && opts.tone) || 'plain', m = MELODIES[kind];
+    if (spriteVoice()) { if (sayUnit(kind, tone_, 2)) return; syllables(SYL_REACT.eung, ac.currentTime + 0.02, tone_); return; }
     if (m && state.voice !== 'synth' && voiceLine(m.st, VOICE_WORDS[state.voice] ? Math.ceil(m.st.length / 2) : m.st.length, kind, tone_)) return;
     syllables(SYL_EVENT[kind] || SYL_EVENT.found, ac.currentTime + 0.02, tone_);
   }
@@ -736,7 +818,7 @@
     if (!ensureContext()) return false;
     if (ac.state === 'suspended') ac.resume();
     state.on = true; writeStored(true);
-    if (VOICE_FILES[state.voice]) load('voice_' + state.voice); // 민디 목소리 미리 불러오기
+    needVoice(); needVoice(BABBLE_VOICE); // 민디 목소리(감탄사 자리표·옹알이 낱말표) 미리 불러오기
     ramp(master.gain, state.volume, ac.currentTime, 0.6);
     applyDepth(state.depth, 0);
     applyLevels(1.2);
@@ -753,7 +835,7 @@
   }
 
   var api = {
-    version: '1.3.0',
+    version: '1.4.1',
     zones: ZONES,
     envs: Object.keys(ENVS),
     scenes: Object.keys(SCENES),
@@ -782,8 +864,8 @@
     setVolume: function (v) { state.volume = clamp01(v); if (ac && state.on) ramp(master.gain, state.volume, ac.currentTime, 0.2); emit(); },
     /** 연출 줄이기(설정 7번)와 함께 쓰면 바탕 소리를 절반으로 */
     /** 음악(C층)만 켜고 끈다. 바탕 소리·효과음은 그대로 */
-    /** 민디 목소리: 'alien' 외계어 목소리 B(기본) · 'synth' 합성 음절 */
-    setVoice: function (v) { if (v === 'synth' || VOICE_FILES[v]) { state.voice = v; if (ac && VOICE_FILES[v]) load('voice_' + v); emit(); } },
+    /** 민디 목소리: 'cute' 감탄사 하나(기본, v1.4) · 'alien' 외계어 목소리 B(v1.3) · 'synth' 합성 음절 */
+    setVoice: function (v) { if (v === 'synth' || VOICE_FILES[v]) { state.voice = v; if (ac) needVoice(); emit(); } },
     setMusic: function (v) { state.music = !!v; applyMusic(1.2); emit(); },
     setReduced: function (v) { state.reduced = !!v; applyLevels(0.6); emit(); },
 
@@ -835,7 +917,7 @@
     },
     /** 효과음 하나 */
     sfx: function (name) { if (ready() && SFX[name]) SFX[name](ac.currentTime + 0.01); },
-    /** 민디 말풍선: 자막 글자 수로 음절 수, 끝 글자(? . …)로 끝맺음 */
+    /** 민디 말풍선. opts.style 'word'(감탄사 하나, 대화 답 기본) | 'babble'(짧은 옹알이, 설명·안내 대사). mood 없으면 끝 글자(? ! …)로 고른다 */
     say: say,
     /** 민디 맞장구: 'eung' | 'eo' | 'a' | 'eum' */
     react: react,

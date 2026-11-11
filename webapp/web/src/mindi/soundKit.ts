@@ -24,7 +24,7 @@ export interface MineDSoundKit {
   descend(toDepth: number, sec?: number): Promise<void>;
   overlay(kind: 'door' | 'help' | 'panel' | 'notice', open: boolean): void;
   sfx(name: string): void;
-  say(text: string, opts?: { mood?: string; tone?: string }): number;
+  say(text: string, opts?: { mood?: string; tone?: string; style?: 'word' | 'babble' }): number;
   cue(kind: string, opts?: { tone?: string }): void;
 }
 
@@ -205,7 +205,14 @@ export function sfx(name: SfxName) {
 /** 민디 말풍선: 문장 길이만큼 외계어 목소리(키트 v1.3 목소리 B). 곡조는 문장 끝(? ! …) 또는 mood 로 */
 export function mindiSay(text: string, mood?: string) {
   if (!on || !kit?.isOn()) return false;
-  kit.say(text, mood ? { mood } : undefined);
+  kit.say(text, { mood, style: 'babble' }); // 설명·안내 대사: 짧은 옹알이(키트 v1.4에서 최대 5낱말)
+  return true;
+}
+
+/** 민디와의 대화에서 답 하나가 떴을 때: 말소리 대신 감탄사 하나(응!·음…·오~…). 키트가 꺼져 있으면 false */
+export function mindiTalk(text: string) {
+  if (!on || !kit?.isOn()) return false;
+  kit.say(text, { style: 'word' });
   return true;
 }
 
