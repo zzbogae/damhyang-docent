@@ -14,14 +14,23 @@ describe('spaceImageBody', () => {
     expect(b.words).toEqual(['부두', '컵']);
     expect(JSON.stringify(b)).not.toMatch(/민준|서울역/);
   });
-  it('겨울이나 눈을 고르면 고른 카드와 상관없이 onsen', () => {
-    expect(spaceImageBody(opts({ weather: ['겨울', '맑음'] }), [], 'jungle').island).toBe('onsen');
-    expect(islandFor(opts({ weather: ['봄', '눈'] }), 'sky')).toBe('onsen');
+  it('겨울이나 눈을 골라도 고른 카드의 섬을 보낸다(그림이 안내 줄·섬 소리와 맞게)', () => {
+    expect(islandFor(opts({ weather: ['겨울'] }), 'jungle')).toBe('jungle');
+    const b = spaceImageBody(opts({ weather: ['겨울', '맑음'] }), [], 'jungle');
+    expect(b.island).toBe('jungle');
+    expect(b.weather).toEqual(['겨울', '맑음']);
+    expect(islandFor(opts({ weather: ['봄', '눈'] }), 'sky')).toBe('sky');
+    expect(islandFor(opts({ weather: ['겨울'] }), 'onsen')).toBe('onsen');
   });
-  it('고른 카드의 섬을 보내고, 모르는 카드는 sea', () => {
+  it('카드가 없거나 모르는 카드면 겨울·눈일 때 onsen, 아니면 sea', () => {
+    expect(islandFor(opts({ weather: ['겨울'] }), undefined)).toBe('onsen');
+    expect(islandFor(opts({ weather: ['봄', '눈'] }), 'moon')).toBe('onsen');
+    expect(islandFor(opts(), undefined)).toBe('sea');
+    expect(islandFor(opts(), 'moon')).toBe('sea');
+  });
+  it('고른 카드의 섬을 보낸다', () => {
     expect(islandFor(opts(), 'sky')).toBe('sky');
     expect(islandFor(opts(), 'music')).toBe('music');
-    expect(islandFor(opts(), undefined)).toBe('sea');
   });
   it('소리 없음은 music 을 비우고 날씨는 둘까지', () => {
     const b = spaceImageBody(opts({ weather: ['여름', '햇살', '비'] }), [], 'sea');

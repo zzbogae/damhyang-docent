@@ -29,6 +29,7 @@ def test_islands_match_tour():
 
 @pytest.mark.parametrize("sel,island", [
     ({"island": "onsen", "music": "sea"}, "onsen"),
+    ({"island": "jungle", "weather": ["겨울", "눈"]}, "jungle"),
     ({"music": "jungle", "place": "바다"}, "jungle"),
     ({"weather": ["겨울", "눈"], "place": "산"}, "onsen"),
     ({"place": "도시"}, "music"),
@@ -100,3 +101,11 @@ def test_every_dictionary_word_has_english_scene():
         assert e.get("en") and not HANGUL.search(e["en"]), e["id"]
     out = build_prompt({"words": [e["word"] for e in KEYWORDS]})
     assert not HANGUL.search(out["prompt"])
+
+
+def test_card_island_keeps_winter_in_prompt():
+    # 화면은 겨울·눈이어도 고른 카드의 섬을 보낸다. 계절·날씨는 그 섬의 프롬프트에 들어가야 한다
+    out = build_prompt({"island": "jungle", "weather": ["겨울", "눈"]})
+    assert out["island"] == "jungle"
+    assert "winter" in out["prompt"] and "snow falling" in out["prompt"]
+    assert out["used"]["weather"] == ["겨울", "눈"]

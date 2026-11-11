@@ -15,10 +15,13 @@ export interface SpaceImageBody {
   island: SpaceIsland; time?: string; weather: string[]; place?: string; era?: string; dwelling?: string; music?: string; words: string[];
 }
 
-/** 온천은 고를 카드가 없다. 겨울이나 눈을 고르면 온천으로 보낸다(예시 영상 「겨울 노천 온천」과 같은 규칙) */
+const CARD_ISLANDS: readonly string[] = ['sea', 'sky', 'jungle', 'music', 'onsen'];
+
+/** 고른 카드의 섬을 그대로 보낸다. 그래야 그림이 안내 줄(고른 영상 · ○○ 섬)과 섬 소리와 맞는다.
+ *  겨울·눈은 서버 프롬프트가 그 섬의 계절·날씨로 넣는다. 카드가 없을 때만 겨울·눈이면 온천(예시 영상 「겨울 노천 온천」 규칙), 아니면 바다 */
 export function islandFor(o: IslandOpts, clip?: string): SpaceIsland {
-  if (o.weather.some((w) => w === '겨울' || w === '눈')) return 'onsen';
-  return clip === 'sky' || clip === 'jungle' || clip === 'music' ? clip : 'sea';
+  if (clip && CARD_ISLANDS.includes(clip)) return clip as SpaceIsland;
+  return o.weather.some((w) => w === '겨울' || w === '눈') ? 'onsen' : 'sea';
 }
 
 /** 서버로 보낼 본문. 사전에 없는 단어(이름·실제 장소 등)는 여기서 빠진다 */
