@@ -8,6 +8,9 @@ OUT=~/Downloads/mined-hf-space
 HERE="$(cd "$(dirname "$0")" && pwd)"
 rm -rf "$OUT"; mkdir -p "$OUT/chatbot"
 cp "$HERE"/{server.py,start.sh,Dockerfile,requirements.txt,README.md} "$OUT/"
+# 나의 공간 그림 생성 중계(server.py 가 import) + 섬 키워드 사전(space_words.py 가 server.py 옆에서 먼저 찾는다)
+cp "$HERE"/{space_image.py,space_prompt.py,space_words.py} "$OUT/"
+cp "$WEB/webapp/web/src/space/islandKeywords.json" "$OUT/"
 cp "$HERE/space_boot.py" "$OUT/chatbot/"
 # 챗봇 코드(원본 그대로) + 합성 데이터
 rsync -a --exclude '__pycache__' --exclude '*.bak*' "$SRC/lifebot" "$OUT/chatbot/"

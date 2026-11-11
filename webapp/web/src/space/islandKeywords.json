@@ -1,0 +1,1307 @@
+{
+ "_source": "팀 드라이브 261024_MineD_키워드_최종본_v1.csv (status=active 만, 운영규칙 v1.2: candidate 는 쓰지 않음)",
+ "_rule": "이 사전에 있는 단어(대표어·동의어)만 이미지 프롬프트에 넣는다. 화면(wordFilter.ts)과 서버(space_words.py)가 같은 파일을 읽는다. 프롬프트에는 영어 장면 설명(en)만 넣고, 한국어(word·scene)는 화면 표시와 기록에만 쓴다.",
+ "version": "v1-final-20261024",
+ "words": [
+  {
+   "id": "ENV_01",
+   "word": "바다",
+   "syn": [
+    "바닷가",
+    "해변",
+    "파도치는"
+   ],
+   "cat": "ENV",
+   "scene": "수평선까지 물, 해안선",
+   "en": "the sea stretching to the horizon with a shoreline"
+  },
+  {
+   "id": "ENV_02",
+   "word": "산",
+   "syn": [
+    "산속",
+    "산꼭대기",
+    "능선"
+   ],
+   "cat": "ENV",
+   "scene": "원경 능선, 경사 지형",
+   "en": "distant mountain ridges and sloping terrain"
+  },
+  {
+   "id": "ENV_03",
+   "word": "하늘",
+   "syn": [
+    "구름 위",
+    "하늘섬"
+   ],
+   "cat": "ENV",
+   "scene": "공중에 뜬 땅, 아래는 구름",
+   "en": "floating land high in the sky with clouds below"
+  },
+  {
+   "id": "ENV_04",
+   "word": "정글",
+   "syn": [
+    "밀림",
+    "열대"
+   ],
+   "cat": "ENV",
+   "scene": "빽빽한 큰 잎 식물",
+   "en": "dense plants with huge leaves"
+  },
+  {
+   "id": "ENV_05",
+   "word": "숲",
+   "syn": [
+    "수풀",
+    "숲길"
+   ],
+   "cat": "ENV",
+   "scene": "나무 군락, 낮은 하층 식생",
+   "en": "a cluster of trees with low undergrowth"
+  },
+  {
+   "id": "ENV_06",
+   "word": "작은 방",
+   "syn": [
+    "방",
+    "내 방",
+    "다락방"
+   ],
+   "cat": "ENV",
+   "scene": "실내 한 칸, 창 하나",
+   "en": "a small single room with one window"
+  },
+  {
+   "id": "ENV_07",
+   "word": "호수",
+   "syn": [
+    "연못",
+    "저수지"
+   ],
+   "cat": "ENV",
+   "scene": "잔잔한 물, 반사",
+   "en": "a calm lake with mirror reflections"
+  },
+  {
+   "id": "ENV_08",
+   "word": "강",
+   "syn": [
+    "냇가",
+    "개울",
+    "시냇물"
+   ],
+   "cat": "ENV",
+   "scene": "흐르는 물줄기",
+   "en": "a flowing river"
+  },
+  {
+   "id": "ENV_09",
+   "word": "사막",
+   "syn": [
+    "모래언덕"
+   ],
+   "cat": "ENV",
+   "scene": "모래 지형, 넓은 지평선",
+   "en": "sandy desert terrain with a wide horizon"
+  },
+  {
+   "id": "ENV_10",
+   "word": "들판",
+   "syn": [
+    "초원",
+    "풀밭",
+    "평원"
+   ],
+   "cat": "ENV",
+   "scene": "넓은 풀밭, 낮은 지평선",
+   "en": "a wide grassy meadow with a low horizon"
+  },
+  {
+   "id": "ENV_11",
+   "word": "습지",
+   "syn": [
+    "늪",
+    "갯벌"
+   ],
+   "cat": "ENV",
+   "scene": "물 고인 낮은 땅",
+   "en": "a marshy wetland with shallow pools"
+  },
+  {
+   "id": "ENV_12",
+   "word": "도시",
+   "syn": [
+    "골목길 많은 동네",
+    "시내"
+   ],
+   "cat": "ENV",
+   "scene": "건물 실루엣 원경",
+   "en": "a distant silhouette of city buildings"
+  },
+  {
+   "id": "ENV_13",
+   "word": "정원",
+   "syn": [
+    "마당",
+    "뜰"
+   ],
+   "cat": "ENV",
+   "scene": "가꾼 화단, 낮은 담",
+   "en": "a tended garden with flower beds and a low wall"
+  },
+  {
+   "id": "ENV_14",
+   "word": "옥상",
+   "syn": [
+    "루프탑"
+   ],
+   "cat": "ENV",
+   "scene": "건물 꼭대기 평면, 난간",
+   "en": "a flat rooftop with a railing"
+  },
+  {
+   "id": "ENV_15",
+   "word": "동굴",
+   "syn": [
+    "굴"
+   ],
+   "cat": "ENV",
+   "scene": "바위 아치, 안쪽 어두움",
+   "en": "a rocky cave arch with a dark interior"
+  },
+  {
+   "id": "LIGHT_01",
+   "word": "새벽",
+   "syn": [
+    "동틀녘",
+    "이른 아침"
+   ],
+   "cat": "LIGHT",
+   "scene": "낮은 조도, 푸른 빛",
+   "en": "dim blue pre-dawn light"
+  },
+  {
+   "id": "LIGHT_02",
+   "word": "아침",
+   "syn": [
+    "오전"
+   ],
+   "cat": "LIGHT",
+   "scene": "맑고 밝은 사광",
+   "en": "clear bright slanting morning light"
+  },
+  {
+   "id": "LIGHT_03",
+   "word": "낮",
+   "syn": [
+    "한낮",
+    "대낮",
+    "정오"
+   ],
+   "cat": "LIGHT",
+   "scene": "높은 해, 파랑·하양",
+   "en": "a high sun, blue and white sky"
+  },
+  {
+   "id": "LIGHT_04",
+   "word": "노을",
+   "syn": [
+    "해질녘",
+    "석양",
+    "저녁놀"
+   ],
+   "cat": "LIGHT",
+   "scene": "핑크·퍼플·오렌지 하늘",
+   "en": "a pink, purple and orange sunset sky"
+  },
+  {
+   "id": "LIGHT_05",
+   "word": "밤",
+   "syn": [
+    "한밤",
+    "자정",
+    "야경"
+   ],
+   "cat": "LIGHT",
+   "scene": "어두운 하늘, 점광원",
+   "en": "a dark night sky with small points of light"
+  },
+  {
+   "id": "LIGHT_06",
+   "word": "별",
+   "syn": [
+    "별빛",
+    "은하수"
+   ],
+   "cat": "LIGHT",
+   "scene": "하늘의 별 파티클",
+   "en": "stars sparkling across the sky"
+  },
+  {
+   "id": "LIGHT_07",
+   "word": "달",
+   "syn": [
+    "달빛",
+    "보름달"
+   ],
+   "cat": "LIGHT",
+   "scene": "달 오브젝트, 은은한 역광",
+   "en": "the moon with soft backlight"
+  },
+  {
+   "id": "LIGHT_08",
+   "word": "햇살",
+   "syn": [
+    "햇빛",
+    "볕"
+   ],
+   "cat": "LIGHT",
+   "scene": "방향광, 빛줄기",
+   "en": "directional sunbeams and rays of light"
+  },
+  {
+   "id": "LIGHT_09",
+   "word": "그늘",
+   "syn": [
+    "나무 그늘"
+   ],
+   "cat": "LIGHT",
+   "scene": "부분 차광",
+   "en": "a patch of cool shade"
+  },
+  {
+   "id": "LIGHT_10",
+   "word": "촛불",
+   "syn": [
+    "양초"
+   ],
+   "cat": "LIGHT",
+   "scene": "작은 따뜻한 점광원",
+   "en": "a small warm candle flame"
+  },
+  {
+   "id": "LIGHT_11",
+   "word": "가로등",
+   "syn": [
+    "등불"
+   ],
+   "cat": "LIGHT",
+   "scene": "거리 점광원",
+   "en": "a warm street lamp"
+  },
+  {
+   "id": "LIGHT_12",
+   "word": "전구",
+   "syn": [
+    "알전구",
+    "조명줄"
+   ],
+   "cat": "LIGHT",
+   "scene": "줄 조명 장식",
+   "en": "strings of small light bulbs"
+  },
+  {
+   "id": "WEATHER_01",
+   "word": "비",
+   "syn": [
+    "빗방울",
+    "소나기",
+    "장맛비"
+   ],
+   "cat": "WEATHER",
+   "scene": "비 파티클, 젖은 표면",
+   "en": "falling rain and wet surfaces"
+  },
+  {
+   "id": "WEATHER_02",
+   "word": "눈",
+   "syn": [
+    "눈송이",
+    "함박눈"
+   ],
+   "cat": "WEATHER",
+   "scene": "눈 파티클, 쌓인 눈",
+   "en": "falling snow and snow on the ground"
+  },
+  {
+   "id": "WEATHER_03",
+   "word": "안개",
+   "syn": [
+    "물안개",
+    "흐릿한"
+   ],
+   "cat": "WEATHER",
+   "scene": "볼류메트릭 안개",
+   "en": "volumetric mist"
+  },
+  {
+   "id": "WEATHER_04",
+   "word": "구름",
+   "syn": [
+    "뭉게구름",
+    "흰 구름"
+   ],
+   "cat": "WEATHER",
+   "scene": "구름 레이어",
+   "en": "layers of clouds"
+  },
+  {
+   "id": "WEATHER_05",
+   "word": "바람",
+   "syn": [
+    "산들바람",
+    "바람결"
+   ],
+   "cat": "WEATHER",
+   "scene": "식물·천 흔들림",
+   "en": "a breeze swaying plants and fabric"
+  },
+  {
+   "id": "WEATHER_06",
+   "word": "무지개",
+   "syn": [],
+   "cat": "WEATHER",
+   "scene": "무지개 아치",
+   "en": "a rainbow arch"
+  },
+  {
+   "id": "WEATHER_07",
+   "word": "맑은 날",
+   "syn": [
+    "맑음",
+    "쾌청"
+   ],
+   "cat": "WEATHER",
+   "scene": "구름 적은 하늘",
+   "en": "a clear sky with few clouds"
+  },
+  {
+   "id": "WEATHER_08",
+   "word": "서리",
+   "syn": [
+    "얼음",
+    "살얼음"
+   ],
+   "cat": "WEATHER",
+   "scene": "표면 결빙 질감",
+   "en": "frost crystals on surfaces"
+  },
+  {
+   "id": "NATURE_01",
+   "word": "나무",
+   "syn": [
+    "큰 나무",
+    "고목"
+   ],
+   "cat": "NATURE",
+   "scene": "나무 1그루 중심 배치",
+   "en": "a single tree as a focal point"
+  },
+  {
+   "id": "NATURE_02",
+   "word": "꽃",
+   "syn": [
+    "들꽃",
+    "꽃밭"
+   ],
+   "cat": "NATURE",
+   "scene": "꽃 군락",
+   "en": "a cluster of flowers"
+  },
+  {
+   "id": "NATURE_03",
+   "word": "화분",
+   "syn": [
+    "식물",
+    "화초"
+   ],
+   "cat": "NATURE",
+   "scene": "실내 화분 소품",
+   "en": "a potted plant"
+  },
+  {
+   "id": "NATURE_04",
+   "word": "이끼",
+   "syn": [],
+   "cat": "NATURE",
+   "scene": "바위·벽 이끼 질감",
+   "en": "moss on rocks and walls"
+  },
+  {
+   "id": "NATURE_05",
+   "word": "풀",
+   "syn": [
+    "잔디",
+    "잡초"
+   ],
+   "cat": "NATURE",
+   "scene": "지면 풀",
+   "en": "grass on the ground"
+  },
+  {
+   "id": "NATURE_06",
+   "word": "갈대",
+   "syn": [
+    "억새"
+   ],
+   "cat": "NATURE",
+   "scene": "바람에 눕는 키 큰 풀",
+   "en": "tall reeds bending in the wind"
+  },
+  {
+   "id": "NATURE_07",
+   "word": "벚꽃",
+   "syn": [
+    "꽃잎"
+   ],
+   "cat": "NATURE",
+   "scene": "분홍 꽃나무, 꽃잎 파티클",
+   "en": "a pink cherry blossom tree with drifting petals"
+  },
+  {
+   "id": "NATURE_08",
+   "word": "단풍",
+   "syn": [
+    "낙엽",
+    "가을잎"
+   ],
+   "cat": "NATURE",
+   "scene": "붉은 잎, 낙엽 파티클",
+   "en": "red autumn leaves and falling leaves"
+  },
+  {
+   "id": "NATURE_09",
+   "word": "선인장",
+   "syn": [
+    "다육이"
+   ],
+   "cat": "NATURE",
+   "scene": "선인장 소품",
+   "en": "a small cactus"
+  },
+  {
+   "id": "NATURE_10",
+   "word": "돌",
+   "syn": [
+    "조약돌",
+    "바위"
+   ],
+   "cat": "NATURE",
+   "scene": "바위 배치",
+   "en": "a few natural rocks"
+  },
+  {
+   "id": "NATURE_11",
+   "word": "조개",
+   "syn": [
+    "소라",
+    "조개껍데기"
+   ],
+   "cat": "NATURE",
+   "scene": "해변 소품",
+   "en": "seashells on the shore"
+  },
+  {
+   "id": "NATURE_12",
+   "word": "모래",
+   "syn": [
+    "모래사장"
+   ],
+   "cat": "NATURE",
+   "scene": "모래 지면",
+   "en": "sandy ground"
+  },
+  {
+   "id": "NATURE_13",
+   "word": "파도",
+   "syn": [
+    "물결"
+   ],
+   "cat": "NATURE",
+   "scene": "물 표면 움직임",
+   "en": "rippling waves on the water"
+  },
+  {
+   "id": "CREATURE_01",
+   "word": "고양이",
+   "syn": [
+    "냥이"
+   ],
+   "cat": "CREATURE",
+   "scene": "곁에 머무는 고양이",
+   "en": "a cat resting nearby"
+  },
+  {
+   "id": "CREATURE_02",
+   "word": "강아지",
+   "syn": [
+    "멍멍이",
+    "댕댕이"
+   ],
+   "cat": "CREATURE",
+   "scene": "곁에 머무는 강아지",
+   "en": "a puppy resting nearby"
+  },
+  {
+   "id": "CREATURE_03",
+   "word": "새",
+   "syn": [
+    "참새",
+    "갈매기",
+    "비둘기"
+   ],
+   "cat": "CREATURE",
+   "scene": "하늘을 나는 새",
+   "en": "birds flying in the sky"
+  },
+  {
+   "id": "CREATURE_04",
+   "word": "물고기",
+   "syn": [
+    "금붕어",
+    "열대어"
+   ],
+   "cat": "CREATURE",
+   "scene": "물속 물고기 떼",
+   "en": "a school of fish under the water"
+  },
+  {
+   "id": "CREATURE_05",
+   "word": "복어",
+   "syn": [
+    "가시복"
+   ],
+   "cat": "CREATURE",
+   "scene": "물속 복어 한 마리",
+   "en": "a single pufferfish in the water"
+  },
+  {
+   "id": "CREATURE_06",
+   "word": "고래",
+   "syn": [],
+   "cat": "CREATURE",
+   "scene": "원경 고래 실루엣",
+   "en": "a distant whale silhouette"
+  },
+  {
+   "id": "CREATURE_07",
+   "word": "나비",
+   "syn": [],
+   "cat": "CREATURE",
+   "scene": "날아다니는 나비",
+   "en": "fluttering butterflies"
+  },
+  {
+   "id": "CREATURE_08",
+   "word": "반딧불이",
+   "syn": [
+    "반딧불"
+   ],
+   "cat": "CREATURE",
+   "scene": "밤 빛 파티클",
+   "en": "glowing fireflies in the dark"
+  },
+  {
+   "id": "CREATURE_09",
+   "word": "거북이",
+   "syn": [],
+   "cat": "CREATURE",
+   "scene": "느린 거북이",
+   "en": "a slow turtle"
+  },
+  {
+   "id": "CREATURE_10",
+   "word": "오리",
+   "syn": [
+    "고무오리"
+   ],
+   "cat": "CREATURE",
+   "scene": "물 위 오리(고무오리 가능)",
+   "en": "a duck floating on the water"
+  },
+  {
+   "id": "OBJECT_01",
+   "word": "책",
+   "syn": [
+    "책장",
+    "소설",
+    "시집"
+   ],
+   "cat": "OBJECT",
+   "scene": "책 더미·책장",
+   "en": "a stack of books and a bookshelf"
+  },
+  {
+   "id": "OBJECT_02",
+   "word": "책상",
+   "syn": [
+    "작업대"
+   ],
+   "cat": "OBJECT",
+   "scene": "책상 한 개",
+   "en": "a single desk"
+  },
+  {
+   "id": "OBJECT_03",
+   "word": "의자",
+   "syn": [
+    "흔들의자",
+    "벤치"
+   ],
+   "cat": "OBJECT",
+   "scene": "앉을 자리",
+   "en": "a chair to sit on"
+  },
+  {
+   "id": "OBJECT_04",
+   "word": "창문",
+   "syn": [
+    "창",
+    "창가"
+   ],
+   "cat": "OBJECT",
+   "scene": "빛이 드는 창",
+   "en": "a window letting in light"
+  },
+  {
+   "id": "OBJECT_05",
+   "word": "문",
+   "syn": [
+    "대문",
+    "문틈"
+   ],
+   "cat": "OBJECT",
+   "scene": "닫힌/열린 문",
+   "en": "a wooden door"
+  },
+  {
+   "id": "OBJECT_06",
+   "word": "계단",
+   "syn": [
+    "층계"
+   ],
+   "cat": "OBJECT",
+   "scene": "오르내리는 계단",
+   "en": "a staircase"
+  },
+  {
+   "id": "OBJECT_07",
+   "word": "침대",
+   "syn": [
+    "이불",
+    "베개"
+   ],
+   "cat": "OBJECT",
+   "scene": "침대",
+   "en": "a bed"
+  },
+  {
+   "id": "OBJECT_08",
+   "word": "담요",
+   "syn": [
+    "무릎담요"
+   ],
+   "cat": "OBJECT",
+   "scene": "걸쳐 둔 담요",
+   "en": "a draped blanket"
+  },
+  {
+   "id": "OBJECT_09",
+   "word": "램프",
+   "syn": [
+    "스탠드",
+    "조명"
+   ],
+   "cat": "OBJECT",
+   "scene": "탁상 조명",
+   "en": "a table lamp"
+  },
+  {
+   "id": "OBJECT_10",
+   "word": "컵",
+   "syn": [
+    "머그",
+    "찻잔"
+   ],
+   "cat": "OBJECT",
+   "scene": "테이블 위 컵",
+   "en": "a cup on a table"
+  },
+  {
+   "id": "OBJECT_11",
+   "word": "커피",
+   "syn": [
+    "커피잔",
+    "아메리카노"
+   ],
+   "cat": "OBJECT",
+   "scene": "김 나는 커피잔",
+   "en": "a steaming cup of coffee"
+  },
+  {
+   "id": "OBJECT_12",
+   "word": "차",
+   "syn": [
+    "녹차",
+    "홍차",
+    "찻주전자"
+   ],
+   "cat": "OBJECT",
+   "scene": "찻주전자·찻잔",
+   "en": "a teapot and teacups"
+  },
+  {
+   "id": "OBJECT_13",
+   "word": "맥주",
+   "syn": [
+    "맥줏잔",
+    "캔맥주"
+   ],
+   "cat": "OBJECT",
+   "scene": "유리잔 맥주",
+   "teen_exclude": true,
+   "en": "a glass of beer"
+  },
+  {
+   "id": "OBJECT_14",
+   "word": "라디오",
+   "syn": [],
+   "cat": "OBJECT",
+   "scene": "라디오, 낮은 음악",
+   "en": "an old radio"
+  },
+  {
+   "id": "OBJECT_15",
+   "word": "레코드",
+   "syn": [
+    "LP",
+    "턴테이블"
+   ],
+   "cat": "OBJECT",
+   "scene": "턴테이블",
+   "en": "a record turntable"
+  },
+  {
+   "id": "OBJECT_16",
+   "word": "기타",
+   "syn": [
+    "통기타"
+   ],
+   "cat": "OBJECT",
+   "scene": "기댄 기타",
+   "en": "a guitar leaning against the wall"
+  },
+  {
+   "id": "OBJECT_17",
+   "word": "피아노",
+   "syn": [
+    "건반"
+   ],
+   "cat": "OBJECT",
+   "scene": "피아노",
+   "en": "a piano"
+  },
+  {
+   "id": "OBJECT_18",
+   "word": "카메라",
+   "syn": [
+    "필름카메라"
+   ],
+   "cat": "OBJECT",
+   "scene": "놓인 카메라",
+   "en": "a camera set down"
+  },
+  {
+   "id": "OBJECT_19",
+   "word": "자전거",
+   "syn": [],
+   "cat": "OBJECT",
+   "scene": "세워 둔 자전거",
+   "en": "a parked bicycle"
+  },
+  {
+   "id": "OBJECT_20",
+   "word": "우산",
+   "syn": [],
+   "cat": "OBJECT",
+   "scene": "펼친 우산",
+   "en": "an open umbrella"
+  },
+  {
+   "id": "OBJECT_21",
+   "word": "빨래줄",
+   "syn": [
+    "빨래"
+   ],
+   "cat": "OBJECT",
+   "scene": "널린 천",
+   "en": "cloth hanging on a clothesline"
+  },
+  {
+   "id": "OBJECT_22",
+   "word": "욕조",
+   "syn": [
+    "목욕"
+   ],
+   "cat": "OBJECT",
+   "scene": "욕조",
+   "en": "a bathtub"
+  },
+  {
+   "id": "OBJECT_23",
+   "word": "편지",
+   "syn": [
+    "엽서",
+    "쪽지"
+   ],
+   "cat": "OBJECT",
+   "scene": "책상 위 편지",
+   "en": "an envelope letter on a desk"
+  },
+  {
+   "id": "OBJECT_24",
+   "word": "시계",
+   "syn": [
+    "탁상시계",
+    "괘종시계"
+   ],
+   "cat": "OBJECT",
+   "scene": "멈추지 않는 시계",
+   "en": "a ticking clock"
+  },
+  {
+   "id": "OBJECT_25",
+   "word": "거울",
+   "syn": [],
+   "cat": "OBJECT",
+   "scene": "벽 거울",
+   "en": "a wall mirror"
+  },
+  {
+   "id": "OBJECT_26",
+   "word": "해먹",
+   "syn": [
+    "그네"
+   ],
+   "cat": "OBJECT",
+   "scene": "걸린 해먹/그네",
+   "en": "a hanging hammock or swing"
+  },
+  {
+   "id": "OBJECT_27",
+   "word": "텐트",
+   "syn": [
+    "캠핑"
+   ],
+   "cat": "OBJECT",
+   "scene": "텐트 하나",
+   "en": "a single tent"
+  },
+  {
+   "id": "OBJECT_28",
+   "word": "배",
+   "syn": [
+    "보트",
+    "돛단배",
+    "나룻배"
+   ],
+   "cat": "OBJECT",
+   "scene": "물 위 작은 배",
+   "en": "a small boat on the water"
+  },
+  {
+   "id": "OBJECT_29",
+   "word": "등대",
+   "syn": [],
+   "cat": "OBJECT",
+   "scene": "원경 등대",
+   "en": "a distant lighthouse"
+  },
+  {
+   "id": "OBJECT_30",
+   "word": "인형",
+   "syn": [
+    "곰인형"
+   ],
+   "cat": "OBJECT",
+   "scene": "놓인 인형",
+   "en": "a soft toy doll"
+  },
+  {
+   "id": "STRUCTURE_01",
+   "word": "벽",
+   "syn": [
+    "담",
+    "담장"
+   ],
+   "cat": "STRUCTURE",
+   "scene": "닫힌 경계 요소",
+   "en": "a stone wall"
+  },
+  {
+   "id": "STRUCTURE_02",
+   "word": "다리",
+   "syn": [
+    "징검다리",
+    "구름다리"
+   ],
+   "cat": "STRUCTURE",
+   "scene": "건너는 다리",
+   "en": "a bridge to cross"
+  },
+  {
+   "id": "STRUCTURE_03",
+   "word": "탑",
+   "syn": [
+    "타워",
+    "높은 건물"
+   ],
+   "cat": "STRUCTURE",
+   "scene": "압도적 높이 구조물",
+   "en": "a towering tall tower"
+  },
+  {
+   "id": "STRUCTURE_04",
+   "word": "발코니",
+   "syn": [
+    "베란다",
+    "테라스"
+   ],
+   "cat": "STRUCTURE",
+   "scene": "밖으로 난 바닥",
+   "en": "a balcony"
+  },
+  {
+   "id": "STRUCTURE_05",
+   "word": "오두막",
+   "syn": [
+    "통나무집",
+    "작은 집"
+   ],
+   "cat": "STRUCTURE",
+   "scene": "작은 집 한 채",
+   "en": "a small hut"
+  },
+  {
+   "id": "STRUCTURE_06",
+   "word": "온실",
+   "syn": [
+    "유리온실"
+   ],
+   "cat": "STRUCTURE",
+   "scene": "유리 구조물+식물",
+   "en": "a glass greenhouse full of plants"
+  },
+  {
+   "id": "STRUCTURE_07",
+   "word": "부두",
+   "syn": [
+    "선착장",
+    "방파제"
+   ],
+   "cat": "STRUCTURE",
+   "scene": "물 위 나무 데크",
+   "en": "a wooden pier deck over the water"
+  },
+  {
+   "id": "STRUCTURE_08",
+   "word": "정자",
+   "syn": [
+    "원두막"
+   ],
+   "cat": "STRUCTURE",
+   "scene": "지붕 있는 쉼터",
+   "en": "a roofed open pavilion"
+  },
+  {
+   "id": "STRUCTURE_09",
+   "word": "울타리",
+   "syn": [],
+   "cat": "STRUCTURE",
+   "scene": "낮은 울타리",
+   "en": "a low fence"
+  },
+  {
+   "id": "STRUCTURE_10",
+   "word": "철길",
+   "syn": [
+    "기찻길",
+    "선로"
+   ],
+   "cat": "STRUCTURE",
+   "scene": "끝없이 이어진 선로",
+   "en": "railway tracks stretching into the distance"
+  },
+  {
+   "id": "SENSE_01",
+   "word": "빗소리",
+   "syn": [],
+   "cat": "SENSE",
+   "scene": "비 앰비언스",
+   "en": "visible raindrops and wet surfaces"
+  },
+  {
+   "id": "SENSE_02",
+   "word": "파도 소리",
+   "syn": [
+    "파도소리"
+   ],
+   "cat": "SENSE",
+   "scene": "파도 앰비언스",
+   "en": "waves breaking gently on the shore"
+  },
+  {
+   "id": "SENSE_03",
+   "word": "새소리",
+   "syn": [],
+   "cat": "SENSE",
+   "scene": "새 앰비언스",
+   "en": "small songbirds perched nearby"
+  },
+  {
+   "id": "SENSE_04",
+   "word": "음악",
+   "syn": [
+    "플레이리스트",
+    "배경음악"
+   ],
+   "cat": "SENSE",
+   "scene": "낮은 배경음악",
+   "en": "a small speaker or instrument suggesting soft music"
+  },
+  {
+   "id": "SENSE_05",
+   "word": "조용함",
+   "syn": [
+    "고요",
+    "정적",
+    "조용한"
+   ],
+   "cat": "SENSE",
+   "scene": "앰비언스 최소, 움직임 최소",
+   "en": "a very still, quiet scene with little motion"
+  },
+  {
+   "id": "SENSE_06",
+   "word": "따뜻함",
+   "syn": [
+    "따뜻한",
+    "훈훈한"
+   ],
+   "cat": "SENSE",
+   "scene": "색온도 따뜻하게",
+   "en": "a warm color temperature"
+  },
+  {
+   "id": "SENSE_07",
+   "word": "시원함",
+   "syn": [
+    "시원한",
+    "서늘한"
+   ],
+   "cat": "SENSE",
+   "scene": "색온도 차갑게",
+   "en": "a cool color temperature"
+  },
+  {
+   "id": "SENSE_08",
+   "word": "향기",
+   "syn": [
+    "냄새",
+    "꽃향기",
+    "커피향"
+   ],
+   "cat": "SENSE",
+   "scene": "향을 암시하는 소품(김·꽃)",
+   "en": "rising steam and flowers suggesting a pleasant scent"
+  },
+  {
+   "id": "SENSE_09",
+   "word": "바스락",
+   "syn": [
+    "낙엽 밟는 소리"
+   ],
+   "cat": "SENSE",
+   "scene": "발밑 소리",
+   "en": "dry fallen leaves underfoot"
+  },
+  {
+   "id": "SENSE_10",
+   "word": "낡은",
+   "syn": [
+    "오래된",
+    "빈티지",
+    "녹슨"
+   ],
+   "cat": "SENSE",
+   "scene": "질감 마모도 올림",
+   "en": "worn, weathered textures"
+  },
+  {
+   "id": "SENSE_11",
+   "word": "반짝이는",
+   "syn": [
+    "빛나는",
+    "윤슬"
+   ],
+   "cat": "SENSE",
+   "scene": "반사·반짝임",
+   "en": "glittering reflections and sparkles"
+  },
+  {
+   "id": "SENSE_12",
+   "word": "몽환적",
+   "syn": [
+    "꿈같은",
+    "꿈속"
+   ],
+   "cat": "SENSE",
+   "scene": "초현실감 올림",
+   "en": "a slightly surreal dreamlike atmosphere"
+  },
+  {
+   "id": "ACTION_01",
+   "word": "걷기",
+   "syn": [
+    "산책",
+    "거닐기"
+   ],
+   "cat": "ACTION",
+   "scene": "걸어 보기 모드 경로",
+   "en": "a walking path leading ahead"
+  },
+  {
+   "id": "ACTION_02",
+   "word": "앉기",
+   "syn": [
+    "걸터앉기"
+   ],
+   "cat": "ACTION",
+   "scene": "앉을 자리 하이라이트",
+   "en": "an inviting place to sit"
+  },
+  {
+   "id": "ACTION_03",
+   "word": "눕기",
+   "syn": [
+    "드러눕기",
+    "낮잠"
+   ],
+   "cat": "ACTION",
+   "scene": "누울 자리",
+   "en": "a comfortable place to lie down"
+  },
+  {
+   "id": "ACTION_04",
+   "word": "마시기",
+   "syn": [
+    "한잔"
+   ],
+   "cat": "ACTION",
+   "scene": "잔을 드는 상호작용",
+   "en": "a drink in a cup within reach"
+  },
+  {
+   "id": "ACTION_05",
+   "word": "읽기",
+   "syn": [
+    "독서"
+   ],
+   "cat": "ACTION",
+   "scene": "책 펼치기 상호작용",
+   "en": "an open book"
+  },
+  {
+   "id": "ACTION_06",
+   "word": "쓰기",
+   "syn": [
+    "글쓰기",
+    "일기"
+   ],
+   "cat": "ACTION",
+   "scene": "노트 펼치기",
+   "en": "an open notebook and a pen"
+  },
+  {
+   "id": "ACTION_07",
+   "word": "그리기",
+   "syn": [
+    "스케치",
+    "그림"
+   ],
+   "cat": "ACTION",
+   "scene": "이젤·스케치북",
+   "en": "an easel and sketchbook"
+  },
+  {
+   "id": "ACTION_08",
+   "word": "수영",
+   "syn": [
+    "헤엄",
+    "물놀이"
+   ],
+   "cat": "ACTION",
+   "scene": "물 들어가기",
+   "en": "water inviting a swim"
+  },
+  {
+   "id": "ACTION_09",
+   "word": "낚시",
+   "syn": [],
+   "cat": "ACTION",
+   "scene": "낚싯대 상호작용",
+   "en": "a fishing rod"
+  },
+  {
+   "id": "ACTION_10",
+   "word": "요리",
+   "syn": [
+    "밥 짓기"
+   ],
+   "cat": "ACTION",
+   "scene": "작은 조리대",
+   "en": "a small cooking counter"
+  },
+  {
+   "id": "ACTION_11",
+   "word": "노래",
+   "syn": [
+    "흥얼거리기"
+   ],
+   "cat": "ACTION",
+   "scene": "음악 재생 상호작용",
+   "en": "a microphone or songbook"
+  },
+  {
+   "id": "ACTION_12",
+   "word": "춤",
+   "syn": [],
+   "cat": "ACTION",
+   "scene": "가벼운 동작",
+   "en": "open space with flowing fabric suggesting dance"
+  },
+  {
+   "id": "ACTION_13",
+   "word": "기다리기",
+   "syn": [
+    "멍때리기",
+    "바라보기"
+   ],
+   "cat": "ACTION",
+   "scene": "바라보는 자리(전망)",
+   "en": "a viewpoint seat looking out over the view"
+  },
+  {
+   "id": "ACTION_14",
+   "word": "만들기",
+   "syn": [
+    "조립",
+    "공작"
+   ],
+   "cat": "ACTION",
+   "scene": "작업대 소품",
+   "en": "a workbench with craft tools"
+  }
+ ]
+}

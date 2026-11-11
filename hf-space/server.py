@@ -4,6 +4,7 @@
 #   (webapp/web/src/mindi/lifebot-plugin.ts 와 같은 규칙. 같은 출처라 CORS가 필요 없다)
 # - 요청 본문·답은 기록하지 않는다. 합성 인물 「민」 데이터(data_demo)만 쓴다.
 # - 공개 주소이므로 IP당 분당 횟수, 하루 전체 횟수, 글자 수에 상한을 둔다(유료 키 보호).
+# - /api/space/image 는 나의 공간 이미지 생성 중계(space_image.py, Space Secret OPENROUTER_API_KEY)
 import json, os, time
 from collections import defaultdict, deque
 from pathlib import Path
@@ -12,6 +13,8 @@ import httpx
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+
+from space_image import router as space_image_router
 
 BASE = os.environ.get("LIFEBOT_URL", "http://127.0.0.1:7860").rstrip("/")
 STATIC = Path(os.environ.get("DEMO_DIR", "/app/demo"))
@@ -109,6 +112,9 @@ async def relay(name: str, request: Request):
 @app.get("/api/lifebot/{rest:path}")
 async def nope(rest: str):
     return JSONResponse({"error": "unknown"}, status_code=404)
+
+
+app.include_router(space_image_router)
 
 
 # 시연판: 없는 경로는 index.html (해시 라우팅이어도 안전)
