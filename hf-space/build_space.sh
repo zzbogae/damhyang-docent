@@ -17,7 +17,7 @@ rsync -a --exclude 'usage.jsonl' --exclude 'islands/*' "$SRC/data_demo" "$OUT/ch
 mkdir -p "$OUT/chatbot/data_demo/islands"
 test -f "$OUT/chatbot/data_demo/SYNTHETIC" || { echo "SYNTHETIC 표지 없음 — 중단"; exit 1; }
 # 시연판 빌드
-( cd "$WEB" && git pull -q origin main || true; cd webapp/web && VITE_DEMO_SNAPSHOT=1 npx vite build --base=./ --outDir "$OUT/demo" --emptyOutDir )
+( cd "$WEB/webapp/web" && VITE_DEMO_SNAPSHOT=1 npx vite build --base=./ --outDir "$OUT/demo" --emptyOutDir )
 [ -d "$WEB/docs/demo/demo" ] && rsync -a "$WEB/docs/demo/demo" "$OUT/demo/"
 [ -d "$WEB/docs/demo/sound" ] && rsync -a "$WEB/docs/demo/sound" "$OUT/demo/"
 # 마지막 점검: 금지 파일
