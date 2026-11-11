@@ -112,16 +112,3 @@
 .mine-open .ore-name-ask input { min-height: 36px; padding: 0 12px; border-radius: var(--mined-r-pill, 999px); border: 1px solid var(--mined-line-strong, #8886); background: transparent; color: inherit; font: inherit; max-width: 100%; }
 .mine-open .ore-name-ask-btns { display: flex; gap: 8px; }
 .mine-open .ore-name-ask.done { flex-direction: row; align-items: center; font-size: 14px; }
-/* 11/11 낮은 화면(태블릿 가로 등): 패널이 상단바·아래 버튼과 겹치지 않게 높이를 묶고 안에서 스크롤 */
-@media (min-width: 721px) {
-  .mine-open { max-height: calc(100vh - 240px); overflow-y: auto; overscroll-behavior: contain; }
-}
-@media (min-width: 721px) and (max-height: 700px) {
-  .mine-open { gap: 6px; padding: 10px 12px; }
-  .mine-open-say p { font-size: 13px; line-height: 1.5; }
-  .mine-bands { grid-template-columns: 1fr 1fr; font-size: 12px; }
-  .mine-open .ore-name-ask { margin: 4px 0 0; gap: 6px; }
-}
-@media (max-width: 720px) {
-  .mine-open { max-height: calc(100vh - 96px - 120px); overflow-y: auto; }
-}
