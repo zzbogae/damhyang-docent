@@ -108,7 +108,9 @@
   var VOICE_FILES = { alien: 'mindi_voice_alien.wav', cute: 'mindi_voice_cute.mp3', bella: 'mindi_voice_bella.mp3' };
   // 옹알이 낱말 목소리의 낱말 위치표를 파일 옆 .json 에서 읽는다([[시작, 길이, 배수], ...]). bella = Bella 높게 옹알이 38낱말(v1.4)
   var VOICE_UNIT_FILES = { bella: 'mindi_voice_bella.json' };
-  var BABBLE_VOICE = 'bella'; // 설명 대사 옹알이에 쓰는 목소리. 파일이 없으면 alien 으로
+  var BABBLE_VOICE = 'bella';
+  var VOICE_GAIN = { cute: 0.6, bella: 0.65, alien: 1.0 }; // 11/11 보별 「힐링인데 너무 하이」 → 목소리는 효과음보다 한결 작게
+  var VOICE_RATE = { cute: 0.94, bella: 0.94, alien: 1.0 }; // 조금 느리게 = 차분하게 // 설명 대사 옹알이에 쓰는 목소리. 파일이 없으면 alien 으로
   // 감탄사 목소리(v1.4, 11/11): 말 대신 상황마다 짧은 감탄사 하나만 낸다. 문장 길이만큼 옹알이를 늘어놓던 방식은 폐기.
   // 음성 파일 옆의 같은 이름 .json 이 자리표: { hello: [[시작, 길이], ...], ask: ..., laugh: ... } (tools/voice_sprite.py 가 만든다)
   var VOICE_SPRITES = { cute: 'mindi_voice_cute.json' };
@@ -672,7 +674,8 @@
       var rate = u[2] * tn.pitch * Math.pow(2, c[i] / 12), next = i + 1 < c.length ? c[i + 1] : c[i];
       var r1 = u[2] * tn.pitch * Math.pow(2, (c[i] + (next - c[i]) * 0.35) / 12); // 다음 음으로 살짝 미끄러짐
       var last = i === c.length - 1, dur = words ? u[1] / rate : Math.min(u[1], last ? 0.3 : 0.2) / rate / (m.rate * tn.rate);
-      var src = ac.createBufferSource(), g = ac.createGain(), pk = 0.9 * m.gain;
+      var src = ac.createBufferSource(), g = ac.createGain(), pk = 0.9 * m.gain * (VOICE_GAIN[vk] || 1);
+      rate *= (VOICE_RATE[vk] || 1); r1 *= (VOICE_RATE[vk] || 1);
       src.buffer = buf;
       src.playbackRate.setValueAtTime(rate, t); src.playbackRate.linearRampToValueAtTime(r1, t + dur);
       g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(pk, t + 0.012);
@@ -708,8 +711,8 @@
     if (typeof list[0] === 'number') list = [list];
     var u = list[(seed || 0) % list.length], tn = TONES[tone_] || TONES.quiet;
     var rate = 0.97 + 0.06 * ((seed || 0) % 3) / 2; // 아주 조금씩만 달라져 같은 소리가 기계적으로 반복되지 않게
-    rate *= 0.5 + tn.pitch * 0.5;
-    var t = ac.currentTime + 0.02, dur = u[1] / rate, src = ac.createBufferSource(), g = ac.createGain(), pk = 0.9;
+    rate *= (0.5 + tn.pitch * 0.5) * (VOICE_RATE[vk] || 1);
+    var t = ac.currentTime + 0.02, dur = u[1] / rate, src = ac.createBufferSource(), g = ac.createGain(), pk = 0.9 * (VOICE_GAIN[vk] || 1);
     src.buffer = buf; src.playbackRate.value = rate;
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(pk, t + 0.01);
     g.gain.setValueAtTime(pk, t + Math.max(0.02, dur - 0.04)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
