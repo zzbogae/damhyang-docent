@@ -88,7 +88,7 @@ copyDir(path.join(web, 'node_modules/onnxruntime-web/dist'), path.join(models, '
   const dest = path.join(pub, 'sound');
   if (fs.existsSync(path.join(kit, 'mined-sound.js'))) {
     copyDir(kit, dest, (f) => f === 'mined-sound.js');
-    copyDir(path.join(kit, 'audio'), path.join(dest, 'audio'), (f) => /\.(wav|mp3)$/.test(f));
+    copyDir(path.join(kit, 'audio'), path.join(dest, 'audio'), (f) => /\.(wav|mp3|json)$/.test(f)); // .json = 감탄사 자리표(v1.4)
     console.log('sound kit', fs.readdirSync(path.join(dest, 'audio')).length, 'files');
   } else console.log('sound kit not found (app/sound_kit_v1) — 소리는 내장 합성음으로만 납니다');
 }

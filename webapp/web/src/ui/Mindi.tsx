@@ -5,7 +5,7 @@ import { DONT_KNOW, GREETING, similarTemplate } from '../mindi/templates';
 import { applyVoice, speakAs, useVoice } from '../mindi/voices';
 import { MindiMark } from './Icons';
 import { playCue } from '../mindi/sound';
-import { mindiSay } from '../mindi/soundKit';
+import { mindiTalk } from '../mindi/soundKit';
 import { useEn } from '../i18n/useEn';
 import { dateEn, DONT_KNOW_EN, GREETING_EN } from '../i18n/en';
 import type { WeekRecord } from '../types';
@@ -44,7 +44,7 @@ export function MindiGreeting() {
     const r = await speakAs(tpl, voice, { useLlm: settings.tone, signal: abort.current.signal });
     setBusy(false);
     setAnswer({ text: r.text, used: r.used, target: sim.week });
-    if (settings.sound && !mindiSay(r.text)) playCue('found');
+    if (settings.sound && !mindiTalk(r.text)) playCue('found');
   }
 
   const say = answer ? answer.text : applyVoice(GREETING, voice);
