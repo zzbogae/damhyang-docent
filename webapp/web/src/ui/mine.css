@@ -105,3 +105,10 @@
 .mine-core.geode-wrap .geode { width: 100%; height: 100%; }
 .mine-ore.broken:has(.geode-wrap) .mine-shell { animation: mine-split-out .45s ease-out forwards; }
 @keyframes mine-split-out { to { opacity: 0; transform: scale(1.06); } }
+
+/* 11/11 캐자마자 이름 짓기 */
+.mine-open .ore-name-ask { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 4px; }
+.mine-open .ore-name-ask-q { margin: 0; font-size: 14px; opacity: .9; }
+.mine-open .ore-name-ask input { min-height: 36px; padding: 0 12px; border-radius: var(--mined-r-pill, 999px); border: 1px solid var(--mined-line-strong, #8886); background: transparent; color: inherit; font: inherit; max-width: 100%; }
+.mine-open .ore-name-ask-btns { display: flex; gap: 8px; }
+.mine-open .ore-name-ask.done { flex-direction: row; align-items: center; font-size: 14px; }
