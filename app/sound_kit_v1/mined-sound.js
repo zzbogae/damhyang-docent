@@ -691,6 +691,7 @@
     }
     return true;
   }
+  var WORD_LEAD = ['hello', 'think', 'explain', 'comfort', 'notice', 'wait']; // 대화 답 감탄사의 앞쪽 후보(마지막은 문장 끝 곡조)
   var BABBLE_MAX = 2; // 옹알이(설명 대사)는 길어도 낱말 2개까지 (11/11 보별 「처음 진입할 때도 너무 수다스럽다」, 전 5)
   function needVoice(vk) {
     vk = vk || state.voice;
@@ -710,7 +711,7 @@
     }
   }
   // 감탄사 하나. moodKey 자리가 없으면 explain, 그것도 없으면 아무 자리. 같은 자리에 여러 벌이 있으면 seed 로 고른다
-  function sayUnit(moodKey, tone_, seed) {
+  function sayUnit(moodKey, tone_, seed, at) { // at = 시작 시각(이어 붙일 때). 끝나는 시각을 돌려준다
     var vk = state.voice, buf = buffers['voice_' + vk], map = sprites[vk];
     if (!buf || !buf.getChannelData || !map || typeof map !== 'object') return false;
     var list = map[moodKey] || map.explain || map[Object.keys(map)[0]];
@@ -719,12 +720,12 @@
     var u = list[(seed || 0) % list.length], tn = TONES[tone_] || TONES.quiet;
     var rate = 0.97 + 0.06 * ((seed || 0) % 3) / 2; // 아주 조금씩만 달라져 같은 소리가 기계적으로 반복되지 않게
     rate *= (0.5 + tn.pitch * 0.5) * (VOICE_RATE[vk] || 1);
-    var t = ac.currentTime + 0.02, dur = u[1] / rate, src = ac.createBufferSource(), g = ac.createGain(), pk = 0.9 * (VOICE_GAIN[vk] || 1);
+    var t = at || ac.currentTime + 0.02, dur = u[1] / rate, src = ac.createBufferSource(), g = ac.createGain(), pk = 0.9 * (VOICE_GAIN[vk] || 1);
     src.buffer = buf; src.playbackRate.value = rate;
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(pk, t + 0.01);
     g.gain.setValueAtTime(pk, t + Math.max(0.02, dur - 0.04)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     src.connect(g); g.connect(sfxBus); src.start(t, u[0], u[1] + 0.01); src.stop(t + dur + 0.02);
-    return true;
+    return t + dur;
   }
   function spriteVoice() { return !!VOICE_SPRITES[state.voice]; }
 
@@ -763,17 +764,29 @@
     needVoice();
     // style: 'word' = 감탄사 하나(대화 답) · 'babble' = 짧은 옹알이(설명·안내 대사). 감탄사 목소리일 때 기본은 word
     var style = opts.style || (spriteVoice() ? 'word' : 'babble');
-    if (style === 'word' && spriteVoice()) { // 글자 수와 상관없이 짧은 감탄사 하나
-      if (sayUnit(mood, tone_, clean.length)) return 1;
+    if (style === 'word' && spriteVoice()) { // 감탄사 2~3개를 짧게 이어서 (11/11 보별: 하나보다 2~3개). 마지막은 문장 끝(? ! …)에 맞춘다
+      var cnt = clean.length > 30 ? 3 : 2, keys = [], k0 = clean.length % WORD_LEAD.length;
+      for (var j = 0; keys.length < cnt - 1 && j < WORD_LEAD.length; j++) {
+        var cand = WORD_LEAD[(k0 + j * 2) % WORD_LEAD.length];
+        if (cand !== mood && keys.indexOf(cand) < 0) keys.push(cand);
+      }
+      keys.push(mood);
+      var at = 0, said = 0;
+      for (var q = 0; q < keys.length; q++) {
+        var end = sayUnit(keys[q], tone_, clean.length + q, at || undefined);
+        if (end) { said++; at = end + 0.14; }
+      }
+      if (said) return said;
       syllables(SYL_REACT.eung, ac.currentTime + 0.02, tone_); // 파일이 아직 없으면 짧은 합성 한 음절
       return 1;
     }
     if (style === 'babble' && spriteVoice()) { // 감탄사 목소리 + 옹알이 요청: 외계어 목소리로 짧게
-      n = Math.min(n, BABBLE_MAX); needVoice(BABBLE_VOICE); needVoice('alien');
+      // 11/11 보별: 첫 입장 안내는 원래(v1.3) 외계어 목소리를 길이 절반으로. Bella 는 외계어 파일이 없을 때만
+      n = Math.max(1, Math.round((n + 1) / 2)); needVoice('alien'); needVoice(BABBLE_VOICE);
       // 낱말 수가 같아도 문장마다 다른 낱말을 고른다 (11/11 「세 문장 어휘가 똑같음」)
       var salt = 0; for (var k = 0; k < clean.length; k++) salt = (salt * 31 + clean.charCodeAt(k)) % 9973;
-      if (voiceLine(MELODIES[mood].st, n, mood, tone_, BABBLE_VOICE, salt)) return n;
       if (voiceLine(MELODIES[mood].st, n, mood, tone_, 'alien', salt)) return n;
+      if (voiceLine(MELODIES[mood].st, Math.min(n, BABBLE_MAX), mood, tone_, BABBLE_VOICE, salt)) return n;
     }
     if (state.voice !== 'synth' && voiceLine(MELODIES[mood].st, Math.min(n, BABBLE_MAX) + 1, mood, tone_)) return n + 1;
     var seq = [];
