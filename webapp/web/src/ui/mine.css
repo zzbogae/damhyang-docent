@@ -113,8 +113,9 @@
 .mine-open .ore-name-ask-btns { display: flex; gap: 8px; }
 .mine-open .ore-name-ask.done { flex-direction: row; align-items: center; font-size: 14px; }
 /* 11/11 낮은 화면(태블릿 가로 등): 패널이 상단바·아래 버튼과 겹치지 않게 높이를 묶고 안에서 스크롤 */
+/* .mine 은 1100px 아래에서 높이 560px(min-height)라 100vh 기준이 안 먹는다 → .mine 안에 묶는다 */
 @media (min-width: 721px) {
-  .mine-open { max-height: calc(100vh - 240px); overflow-y: auto; overscroll-behavior: contain; }
+  .mine-open { top: 76px; transform: none; max-height: calc(91% - 136px); overflow-y: auto; overscroll-behavior: contain; }
 }
 @media (min-width: 721px) and (max-height: 700px) {
   .mine-open { gap: 6px; padding: 10px 12px; }
