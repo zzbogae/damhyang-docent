@@ -114,3 +114,45 @@ def test_server_routes_before_static(monkeypatch, tmp_path):
     server = importlib.import_module("server")
     r = TestClient(server.app).post("/api/space/image", json=SEL)
     assert r.status_code == 503 and r.json()["error"] == "no_key"
+
+
+def _png_data_url(w=320, h=180):
+    from PIL import Image
+    import base64, io
+    img = Image.new("RGBA", (w, h))
+    img.putdata([((x * 7) % 256, (y * 5) % 256, (x * y) % 256, 255) for y in range(h) for x in range(w)])
+    buf = io.BytesIO()
+    img.save(buf, "PNG")
+    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode("ascii")
+
+
+def test_to_jpeg_converts_png_and_shrinks():
+    import base64, io
+    from PIL import Image
+    png = _png_data_url()
+    out = space_image.to_jpeg(png)
+    assert out.startswith("data:image/jpeg;base64,")
+    assert len(out) < len(png)
+    img = Image.open(io.BytesIO(base64.b64decode(out.split(",", 1)[1])))
+    assert img.format == "JPEG" and img.size == (320, 180) and img.mode == "RGB"
+
+
+def test_to_jpeg_keeps_original_on_failure():
+    # 깨진 PNG·JPEG 는 그대로 둔다
+    assert space_image.to_jpeg(PNG) == PNG
+    jpg = "data:image/jpeg;base64,/9j/4AAQ"
+    assert space_image.to_jpeg(jpg) == jpg
+
+
+def test_route_returns_jpeg(make):
+    png = _png_data_url()
+
+    def handler(request):
+        return httpx.Response(200, json={
+            "choices": [{"message": {"images": [{"type": "image_url", "image_url": {"url": png}}]}}],
+            "usage": {"cost": 0.039},
+        })
+
+    r = make(handler).post("/api/space/image", json=SEL)
+    assert r.status_code == 200
+    assert r.json()["image"].startswith("data:image/jpeg;base64,")
