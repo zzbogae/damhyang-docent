@@ -685,7 +685,7 @@
     }
     return true;
   }
-  var BABBLE_MAX = 5; // 옹알이(설명 대사)는 길어도 낱말 5개까지 (v1.4: 「말이 너무 많다」 → 1/3로)
+  var BABBLE_MAX = 2; // 옹알이(설명 대사)는 길어도 낱말 2개까지 (11/11 보별 「처음 진입할 때도 너무 수다스럽다」, 전 5)
   function needVoice(vk) {
     vk = vk || state.voice;
     if (VOICE_FILES[vk] && !buffers['voice_' + vk]) load('voice_' + vk);
