@@ -1,6 +1,6 @@
 # Mine D 공개 시연판 + 민디 챗봇 중계 (허깅페이스 Space 전용)
 # - 정적 시연판(VITE_DEMO_SNAPSHOT=1 빌드)을 / 에 서빙
-# - /api/lifebot/* 를 같은 컨테이너 안의 전시 모드 챗봇(app_exhibit.py, Gradio 127.0.0.1:7861)으로 넘긴다
+# - /api/lifebot/* 를 같은 컨테이너 안의 전시 모드 챗봇(app_exhibit.py, Gradio 127.0.0.1:7860)으로 넘긴다
 #   (webapp/web/src/mindi/lifebot-plugin.ts 와 같은 규칙. 같은 출처라 CORS가 필요 없다)
 # - 요청 본문·답은 기록하지 않는다. 합성 인물 「민」 데이터(data_demo)만 쓴다.
 # - 공개 주소이므로 IP당 분당 횟수, 하루 전체 횟수, 글자 수에 상한을 둔다(유료 키 보호).
@@ -13,7 +13,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-BASE = os.environ.get("LIFEBOT_URL", "http://127.0.0.1:7861").rstrip("/")
+BASE = os.environ.get("LIFEBOT_URL", "http://127.0.0.1:7860").rstrip("/")
 STATIC = Path(os.environ.get("DEMO_DIR", "/app/demo"))
 PER_MIN = int(os.environ.get("RATE_PER_MIN", "12"))      # IP 하나당 1분
 PER_DAY = int(os.environ.get("RATE_PER_DAY", "4000"))    # 전체 하루 (1턴 약 $0.0015 → 하루 최대 약 $6)

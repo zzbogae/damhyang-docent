@@ -1,7 +1,7 @@
 #!/bin/sh
-# 챗봇(Gradio, 안쪽 7861) → 중계·시연판(바깥 7860)
+# 챗봇(전시 모드, 안쪽 127.0.0.1:7860 — app_mined.py 고정) → 중계·시연판(바깥 8080)
 set -e
 cd /app/chatbot
-GRADIO_SERVER_NAME=127.0.0.1 GRADIO_SERVER_PORT=7861 python app_exhibit.py &
+python space_boot.py &
 cd /app
-exec uvicorn server:app --host 0.0.0.0 --port 7860 --proxy-headers --forwarded-allow-ips='*'
+exec uvicorn server:app --host 0.0.0.0 --port 8080 --proxy-headers --forwarded-allow-ips='*'
