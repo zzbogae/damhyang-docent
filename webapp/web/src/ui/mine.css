@@ -114,7 +114,8 @@
 .mine-open .ore-name-ask.done { flex-direction: row; align-items: center; font-size: 14px; }
 /* 11/11 낮은 화면(태블릿 가로 등): 패널이 상단바·아래 버튼과 겹치지 않게 높이를 묶고 안에서 스크롤 */
 @media (min-width: 721px) {
-  .mine-open { max-height: calc(100vh - 240px); overflow-y: auto; overscroll-behavior: contain; }
+  /* 창 높이가 아니라 캐기 화면(.mine) 안에서: 위 상단바(≈72px)와 아래 버튼 줄(bottom 9% + 버튼 높이) 사이에 두고, 넘치면 안에서 스크롤 */
+  .mine-open { top: 76px; transform: none; max-height: calc(91% - 136px); overflow-y: auto; overscroll-behavior: contain; }
 }
 @media (min-width: 721px) and (max-height: 700px) {
   .mine-open { gap: 6px; padding: 10px 12px; }
