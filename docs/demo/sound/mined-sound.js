@@ -662,15 +662,21 @@
     for (var i = 0; i < n; i++) { var x = i * (st.length - 1) / (n - 1), a = Math.floor(x), b = Math.min(st.length - 1, a + 1); out.push(st[a] + (st[b] - st[a]) * (x - a)); }
     return out;
   }
-  function voiceLine(st, n, moodKey, tone_, vk) {
+  var recentUnits = []; // 옹알이에서 최근 쓴 낱말 번호 (최대 6개)
+  function voiceLine(st, n, moodKey, tone_, vk, salt) { // salt = 문장마다 다른 수(같은 문장은 늘 같은 소리)
     vk = vk || state.voice;
     var buf = buffers['voice_' + vk], units = VOICE_UNITS[vk];
     if (!buf || !buf.getChannelData || !units || !units.length) return false;
     var words = VOICE_WORDS[vk]; // 낱말 목소리면 n = 낱말 수
     var tn = TONES[tone_] || TONES.quiet, m = MELODIES[moodKey] || MELODIES.explain, c = contourOf(st, n);
-    var t = ac.currentTime + 0.02, seed = n * 3 + Object.keys(MELODIES).indexOf(moodKey);
+    var t = ac.currentTime + 0.02, seed = n * 3 + Object.keys(MELODIES).indexOf(moodKey) + (salt || 0);
     for (var i = 0; i < c.length; i++) {
-      var u = units[(i * 5 + seed) % units.length];
+      var ui = (i * 5 + seed) % units.length;
+      if (salt != null) { // 이어지는 줄과 낱말이 겹치지 않게: 최근 쓴 낱말은 건너뛴다
+        for (var tries = 0; recentUnits.indexOf(ui) >= 0 && tries < units.length; tries++) ui = (ui + 7) % units.length;
+        recentUnits.push(ui); if (recentUnits.length > 6) recentUnits.shift();
+      }
+      var u = units[ui];
       var rate = u[2] * tn.pitch * Math.pow(2, c[i] / 12), next = i + 1 < c.length ? c[i + 1] : c[i];
       var r1 = u[2] * tn.pitch * Math.pow(2, (c[i] + (next - c[i]) * 0.35) / 12); // 다음 음으로 살짝 미끄러짐
       var last = i === c.length - 1, dur = words ? u[1] / rate : Math.min(u[1], last ? 0.3 : 0.2) / rate / (m.rate * tn.rate);
@@ -763,8 +769,10 @@
     }
     if (style === 'babble' && spriteVoice()) { // 감탄사 목소리 + 옹알이 요청: 외계어 목소리로 짧게
       n = Math.min(n, BABBLE_MAX); needVoice(BABBLE_VOICE); needVoice('alien');
-      if (voiceLine(MELODIES[mood].st, n, mood, tone_, BABBLE_VOICE)) return n;
-      if (voiceLine(MELODIES[mood].st, n, mood, tone_, 'alien')) return n;
+      // 낱말 수가 같아도 문장마다 다른 낱말을 고른다 (11/11 「세 문장 어휘가 똑같음」)
+      var salt = 0; for (var k = 0; k < clean.length; k++) salt = (salt * 31 + clean.charCodeAt(k)) % 9973;
+      if (voiceLine(MELODIES[mood].st, n, mood, tone_, BABBLE_VOICE, salt)) return n;
+      if (voiceLine(MELODIES[mood].st, n, mood, tone_, 'alien', salt)) return n;
     }
     if (state.voice !== 'synth' && voiceLine(MELODIES[mood].st, Math.min(n, BABBLE_MAX) + 1, mood, tone_)) return n + 1;
     var seq = [];
