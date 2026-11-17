@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { sfx } from '../mindi/soundKit';
 import { rangeLabel } from '../mindi/templates';
 import { playCue } from '../mindi/sound';
-import { mindiSay } from '../mindi/soundKit';
+import { mindiTalk } from '../mindi/soundKit';
 import { useStore } from '../state/store';
 import { answer, AXIS_DIR_QUESTION, axisDirAnswer, QUESTIONS, type Answer, type QuestionId } from '../mindi/answers';
 import { FEELING_TEXT, parseIntent, UNCLEAR_TEXT, UNKNOWN_TEXT } from '../mindi/intent';
@@ -64,7 +64,7 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
     else if (base) voiced(base, voice);
   }, [voice]);
   // 답이 나올 때마다 같은 소리 하나(답의 내용과 상관없이)
-  useEffect(() => { if (a && settings.sound && !mindiSay(a.text)) playCue('found'); }, [a]);
+  useEffect(() => { if (a && settings.sound && !mindiTalk(a.text)) playCue('found'); }, [a]);
   // 대화 기록(chat 배치): 새 질문을 보내기 전의 문답을 위에 남긴다
   const [log, setLog] = useState<{ q: string; a: string; bot?: boolean }[]>([]);
   // 11/10: 「이 대화로 섬 만들기」(챗봇 연결 시에만). 챗봇이 대화에서 꺼낸 단어·한 줄을 보여 주고, 나의 공간 섬 만들기의 추천 단어로 넘긴다
