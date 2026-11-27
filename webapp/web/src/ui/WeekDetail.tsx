@@ -7,6 +7,8 @@ import { MindiMark } from './Icons';
 import { applyVoice, useVoice } from '../mindi/voices';
 import './detail.css';
 import { useStore } from '../state/store';
+import { db } from '../db';
+import type { DailyRow } from '../types';
 import { AXES, axisScreen, CHANNEL_LABEL, CHANNELS, type Badge, type Grade, type MemoRecord, type WeekRecord } from '../types';
 import { gradeText, rangeLabel, sameDirectionText } from '../mindi/templates';
 import { ScreenReadButton } from './ScreenRead';
@@ -355,7 +357,6 @@ export function gyeolShares(w: WeekRecord): { axis: Axis; pct: number }[] {
   return out.filter((x) => x.pct > 0);
 }
 
-const TALK_SRC = /kakao|카톡|ai|claude|chatgpt|gpt|insta|sns|dm|facebook/i;
 
 function BackMenu({ onBack }: { onBack: (to: 'hub' | 'field' | 'space') => void }) {
   const [open, setOpen] = useState(false);
@@ -374,6 +375,81 @@ function BackMenu({ onBack }: { onBack: (to: 'hub' | 'field' | 'space') => void 
         </div>
       )}
     </div>
+  );
+}
+
+const DAY7 = ['월', '화', '수', '목', '금', '토', '일'];
+const TALK_TINT = { kakao: '#8DBB8A', dm: '#C9E0C4' };
+
+/** 그 주 7일의 대화 횟수 막대. 내용은 읽지 않는다: 하루 집계표(daily)의 횟수·시각 값만 쓴다. */
+function TalkBars({ w }: { w: WeekRecord }) {
+  const [rows, setRows] = useState<DailyRow[]>();
+  useEffect(() => {
+    let alive = true;
+    setRows(undefined);
+    db.daily.where('date').between(w.date_start, w.date_end, true, true).toArray()
+      .then((r) => { if (alive) setRows(r); }).catch(() => { if (alive) setRows([]); });
+    return () => { alive = false; };
+  }, [w.week, w.date_start, w.date_end]);
+  if (!rows) return <p className="p8-muted small">대화 횟수를 세는 중입니다.</p>;
+  const by = new Map(rows.map((r) => [r.date, r]));
+  const start = new Date(w.date_start + 'T00:00:00');
+  const days = DAY7.map((label, i) => {
+    const d = new Date(start); d.setDate(start.getDate() + i);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const r = by.get(key);
+    return { label, kakao: r?.kakao_n ?? 0, dm: r?.sns_dm_n ?? 0 };
+  });
+  const sum = (f: (r: DailyRow) => number | undefined) => rows.reduce((a, r) => a + (f(r) ?? 0), 0);
+  const kakao = sum((r) => r.kakao_n), dm = sum((r) => r.sns_dm_n);
+  if (!kakao && !dm) return <p className="p8-muted">이 주에는 대화 기록이 남아 있지 않습니다.</p>;
+  const first = sum((r) => r.kakao_first_n), replyN = sum((r) => r.kakao_reply_n), replyMin = sum((r) => r.kakao_reply_min_sum);
+  const max = Math.max(1, ...days.map((d) => d.kakao + d.dm));
+  const facts = [
+    kakao ? `카카오톡 ${kakao}번` : '', dm ? `인스타그램 DM ${dm}번` : '',
+    first ? `먼저 말을 건 대화 ${first}번` : '', replyN ? `답장까지 평균 ${Math.round(replyMin / replyN)}분` : '',
+  ].filter(Boolean);
+  return (
+    <div className="p8-talk">
+      <div className="p8-talk-bars" role="img" aria-label={`요일별 대화 횟수. ${days.map((d) => `${d.label}요일 ${d.kakao + d.dm}번`).join(', ')}`}>
+        {days.map((d) => (
+          <div className="p8-talk-day" key={d.label}>
+            <span className="p8-talk-n">{d.kakao + d.dm || ''}</span>
+            <div className="p8-talk-col">
+              {d.dm > 0 && <i style={{ height: `${(d.dm / max) * 100}%`, background: TALK_TINT.dm }} />}
+              {d.kakao > 0 && <i style={{ height: `${(d.kakao / max) * 100}%`, background: TALK_TINT.kakao }} />}
+            </div>
+            <span className="p8-talk-label">{d.label}</span>
+          </div>
+        ))}
+      </div>
+      <p className="p8-legend">
+        {kakao > 0 && <span><b style={{ color: TALK_TINT.kakao }}>■</b> 카카오톡</span>}
+        {dm > 0 && <span><b style={{ color: TALK_TINT.dm }}>■</b> 인스타그램 DM</span>}
+      </p>
+      <ul className="p8-talk-facts">{facts.map((f) => <li key={f}>{f}</li>)}</ul>
+      <p className="p8-muted small">무슨 말을 했는지는 읽지 않습니다. 횟수와 시각만 셉니다.</p>
+    </div>
+  );
+}
+
+/** 열린 광석 바로 아래: 그 주에 남은 사진·글·대화를 누르지 않아도 한눈에 보여 준다(11/27 시연 보완). */
+function WeekGlance({ w, focus }: { w: WeekRecord; focus?: Vibe }) {
+  return (
+    <section className="p8-glance" aria-label="이 주에 남은 기록">
+      <div id="wk-photos" className={`p8-glance-card${focus === 'photo' ? ' on' : ''}`}>
+        <h3 className="p8-glance-title">그때 찍은 사진</h3>
+        <Photos w={w} locked={false} />
+      </div>
+      <div id="wk-memos" className={`p8-glance-card${focus === 'memo' ? ' on' : ''}`}>
+        <h3 className="p8-glance-title">그때 쓴 글</h3>
+        <div className="p8-glance-scroll" tabIndex={0} role="group" aria-label="그때 쓴 글 목록"><Memos w={w} locked={false} /></div>
+      </div>
+      <div id="wk-talk" className={`p8-glance-card${focus === 'talk' ? ' on' : ''}`}>
+        <h3 className="p8-glance-title">그때 나눈 대화</h3>
+        <TalkBars w={w} />
+      </div>
+    </section>
   );
 }
 
@@ -397,11 +473,11 @@ function P8Top({ w, oreM, onBack, onAsk }: { w: WeekRecord; oreM: string | null;
   ];
   const miss = missingUsual(w, weeks);
   const src = CHANNELS.filter((c) => c !== 'quiet' && w.coverage[c] === 'observed').map((c) => CHANNEL_LABEL[c]);
-  const talkMemos = memos.filter((x) => TALK_SRC.test(x.source));
   const openVibe = (id: Vibe) => {
     if (vibe === id) { sfx('panelClose'); setVibe(undefined); return; }
     sfx('panelOpen'); setVibe(id);
-    setTimeout(() => document.getElementById('p8-vibe-panel')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
+    const target = id === 'photo' ? 'wk-photos' : id === 'memo' ? 'wk-memos' : id === 'talk' ? 'wk-talk' : 'p8-vibe-panel';
+    setTimeout(() => document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 60);
   };
   const ans = vibe ? vibeAnswer(vibe, w, { memos: memos.length, photos: photos.length, shown }) : null;
   const send = () => {
@@ -458,11 +534,9 @@ function P8Top({ w, oreM, onBack, onAsk }: { w: WeekRecord; oreM: string | null;
       {vibe && ans && (
         <div id="p8-vibe-panel" className="p8-vibe-panel" role="region" aria-label={`${VIBE_BUTTONS.find((q) => q.id === vibe)!.text} 근거`}>
           <p className="p8-ans">{v(ans.text)}</p>
-          {vibe === 'photo' && photos.length > 0 && <div id="wk-photos"><Photos w={w} locked={false} /></div>}
-          {vibe === 'memo' && memos.length > 0 && <div id="wk-memos"><Memos w={w} locked={false} /></div>}
-          {vibe === 'talk' && talkMemos.length === 0 && <p className="p8-muted small">대화 원문은 보여 드리지 않고 횟수만 셉니다.</p>}
         </div>
       )}
+      <WeekGlance w={w} focus={vibe} />
       {onAsk && (
         <form className="p8-ask" onSubmit={(e) => { e.preventDefault(); send(); }}>
           <input value={ask} onChange={(e) => setAsk(e.target.value)} placeholder="민디에게 물어보기…" aria-label="민디에게 물어보기" maxLength={200} />
@@ -511,10 +585,8 @@ export function WeekDetail({ w, team = false, onBack, onAsk }: { w: WeekRecord; 
 
       {team ? (
         <details className="p8-more">
-          <summary>이 주의 기록 더 보기 · 닮은 지난 주 · 이름 붙이기</summary>
+          <summary>닮은 지난 주 · 이름 붙이기 · 더 보기</summary>
           <div className="stack" style={{ marginTop: 12 }}>
-            <section><h3 className="h3">그때 쓴 글</h3><Memos w={w} locked={locked} /></section>
-            <section><h3 className="h3">그때 찍은 사진</h3><Photos w={w} locked={locked} /></section>
             {!onAsk && <MindiAsk w={w} />}
             <section><h3 className="h3">닮은 지난 주</h3><Similar w={w} /></section>
             <section><h3 className="h3">이름 붙이기</h3><Labels w={w} /></section>
