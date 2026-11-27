@@ -12,7 +12,7 @@ import { answerEn, axisDirEn, axisNowEn, DONT_KNOW_EN, FEELING_EN, MORE_EN, over
 import { DONT_KNOW } from '../mindi/templates';
 import { applyVoice, speakAs, useVoice, type Voice } from '../mindi/voices';
 import { fixedKind, fixedLine, scriptedReply } from '../mindi/talk';
-import { feelingWrap, openReply, smallTalk, smallTalkCategory } from '../mindi/smalltalk';
+import { feelingWrap, howAxis, openReply, smallTalk, smallTalkCategory } from '../mindi/smalltalk';
 import * as lifebot from '../mindi/lifebot';
 import { MindiMark } from './Icons';
 import { GO_ISLAND_EVENT } from './Intro';
@@ -33,7 +33,7 @@ const STOPPED_TEXT = '기다리기를 멈췄어요. 다른 걸 물어봐도 돼�
 
 const TALK_KEY = 'mined.talk.v1';
 
-const LEAN_SKIP = new Set(['aboutyou', 'worried', 'greeting', 'howareyou', 'whoareyou', 'whatcanyoudo', 'compliment', 'sorry', 'bye', 'goodnight', 'yes', 'no']);
+const LEAN_SKIP = new Set(['aboutyou', 'worried', 'howto', 'greeting', 'howareyou', 'whoareyou', 'whatcanyoudo', 'compliment', 'sorry', 'bye', 'goodnight', 'yes', 'no']);
 export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onAsk }: { w: WeekRecord; voiceChip?: boolean; chat?: boolean; initial?: string; chip?: ReactNode; onAsk?: () => void }) {
   const { result, byKey, memosByWeek, select, settings } = useStore();
   const [q, setQ] = useState<QuestionId | null>(null);
@@ -61,6 +61,7 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
   const [retrying, setRetrying] = useState(false);
   const waitCtl = useRef<AbortController | null>(null);
   const prevQ = useRef<string | null>(null);
+  const openN = useRef(0);
   useEffect(() => () => waitCtl.current?.abort(), []);
   useEffect(() => { void lifebot.available().then(setBot); }, []);
   useEffect(() => {
@@ -217,7 +218,17 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
     const sr = scriptedReply(q, voice);
     if (sr) { setQ(null); return sayScripted(sr, q); }
     // 챗봇이 없을 때(공개 시연판·오프라인) 일상 대화·마음은 기기 안 규칙으로 받는다(11/10). 기록을 묻는 말은 아래로
-    if (!bot) { const st = smallTalk(q, voice, undefined, before); if (st) { setQ(null); return sayScripted(st, q); } }
+    if (!bot) {
+      const st = smallTalk(q, voice, undefined, before);
+      if (st) {
+        setQ(null);
+        const r = sayScripted(st, q);
+        // 길을 묻는 말에는 「그게 되던 주」를 바로 찾는 버튼을 답 아래에 둔다
+        const ha = smallTalkCategory(q) === 'howto' ? howAxis(q) : null;
+        if (ha) setChoices([{ axis: ha, dir: 'up', text: AXIS_DIR_QUESTION[ha].up }]);
+        return r;
+      }
+    }
     const it = parseIntent(q);
     setQ(null);
     setChoices([]);
@@ -244,7 +255,7 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
     // 챗봇이 없을 때 못 받은 말: 「못 알아들었다」로 닫지 않고, 하신 말을 되돌리며 더 듣는다
     if (it.kind !== 'feeling') {
       const ax = axisIn(q);
-      return sayScripted(openReply(q, voice) + (ax ? `\n원하면 이 주의 ${AXIS_WORD[ax]} 기록도 같이 볼 수 있어요.` : ''), q);
+      return sayScripted(openReply(q, voice, openN.current++) + (ax ? `\n원하면 이 주의 ${AXIS_WORD[ax]} 기록도 같이 볼 수 있어요.` : ''), q);
     }
     setSrc({ kind: 'feeling' });
     return show(fallback);

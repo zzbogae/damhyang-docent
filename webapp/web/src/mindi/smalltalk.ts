@@ -23,7 +23,7 @@ export function intensity(raw: string): 0 | 1 | 2 {
 
 type Cat =
   | 'anxious' | 'sad' | 'lonely' | 'angry' | 'tired' | 'numb' | 'worried' | 'stressed' | 'okay' | 'glad'
-  | 'greeting' | 'aboutyou' | 'restday' | 'howareyou' | 'whoareyou' | 'whatcanyoudo' | 'bored' | 'sleepy' | 'weather' | 'food' | 'work' | 'plan'
+  | 'greeting' | 'aboutyou' | 'wantrest' | 'restday' | 'howto' | 'conflict' | 'howareyou' | 'whoareyou' | 'whatcanyoudo' | 'bored' | 'sleepy' | 'weather' | 'food' | 'work' | 'plan'
   | 'compliment' | 'bye' | 'goodnight' | 'sorry' | 'yes' | 'no';
 
 // 위에서부터 먼저 맞는 것. 마음을 꺼낸 말이 일상말보다 먼저다(「밥 먹기도 싫고 힘들어」는 마음 쪽)
@@ -34,13 +34,17 @@ const CATS: [Cat, RegExp][] = [
   ['angry', /(화나|화가|짜증|열받|빡치|억울|분해|미워|싫어\s?죽|꼴\s?보기)/],
   ['tired', /(피곤|지쳐|지친|지쳤|기운이?\s?없|힘이?\s?없|번아웃|녹초|졸린데\s?못|버거워|벅차)/],
   ['numb', /(무기력|의욕|하기\s?싫|아무것도\s?하기|멍하|공허|재미가?\s?없|감흥|흥미가?\s?없)/],
+  // 11/27 밤: 「어떻게 하면 …할 수 있을까」처럼 길을 묻는 말. 조언 대신 그 물음을 받고, 그게 되던 주의 기록으로 잇는다
+  ['howto', /(어떻게\s?하면|어떡하면|어찌\s?하면|수\s?있을까|방법이?\s?(있|없|뭘까))/],
   ['worried', /(걱정|고민|막막|불확실|어떡하지|어떻게\s?해야|망설|헷갈|모르겠어)/],
   ['stressed', /(스트레스|압박|부담|쫓기|빠듯|벅차|야근|마감|시험\s?(때문|스트)|눈치)/],
   ['glad', /(기뻐|기쁘|좋았어|행복|신나|설레|뿌듯|다행|즐거|웃었|웃긴|좋은\s?일)/],
   ['okay', /(괜찮아|괜찮은\s?것|그럭저럭|나쁘지\s?않|무난|평범|별일\s?없)/],
   // 11/27: 민디 자신의 이야기를 청하는 말, 종일 쉰 날을 건넨 말
   ['aboutyou', /((^|\s)(니|네|너의|너|민디)\s?(이야기|얘기|생각|마음|하루)|너는\s?어떻게|넌\s?어떻게|너에\s?대해)/],
-  ['restday', /(잠만\s?잤|침대에서|누워만|누워\s?있었|뒹굴|아무것도\s?안\s?(했|함|하고)|종일\s?(잤|누워|집에))/],
+  ['conflict', /(싸웠|싸우|다퉜|다투|말다툼|틀어졌|연락을?\s?끊|절교|헤어졌|혼났)/],
+  ['wantrest', /(누워|쉬고|쉬기만|자고|잠만|침대|집에만|아무것도\s?안\s?하고).{0,12}싶/],
+  ['restday', /(잠만\s?잤|침대에서|침대에\s?(누워|있었)|누워만|누워\s?있었|뒹굴|아무것도\s?안\s?(했|함|하고)|종일\s?(잤|누워|집에))/],
   ['greeting', /^(안녕|하이|헬로|반가워|반갑|hi|hello|여보세요|있어\??|거기\s?있)/i],
   ['howareyou', /(뭐\s?해|뭐하|잘\s?지냈|어떻게\s?지내|너는\s?어때|넌\s?어때|너도\s?그래|오늘\s?어땠|기분\s?어때)/],
   ['whoareyou', /(너\s?누구|넌\s?누구|누구야|누구세요|뭐야\s?너|사람이야|ai\s?야|인공지능|로봇이야|이름이\s?뭐)/i],
@@ -151,7 +155,7 @@ const FEEL: Record<'anxious' | 'sad' | 'lonely' | 'angry' | 'tired' | 'numb' | '
   ],
 };
 
-const TALK: Record<Exclude<Cat, keyof typeof FEEL>, ByVoice[]> = {
+const TALK: Record<Exclude<Cat, keyof typeof FEEL | 'howto' | 'wantrest' | 'conflict'>, ByVoice[]> = {
   aboutyou: [
     { quiet: '제 이야기요. …저는 이 아래에서 매일 새로 내려앉는 층을 솔로 쓸어 둬요.\n비어 있는 날도 한 층으로 받아 두고요. 오늘 층에는 방금 하신 말이 얹혔네요.',
       warm: '제 이야기를 물어봐 주셨네요. 저는 이 아래에서 매일 새로 쌓이는 층을 솔로 쓸어 둬요.\n비어 있는 날도 한 층으로 받아 두고요. 오늘은 이렇게 말을 걸어 주셔서 등불을 조금 올렸어요.',
@@ -256,14 +260,72 @@ const LEAN: ByVoice = {
   plain: '아까 「{앞말}」라고 하셨죠. 그 얘기로 들을게요.\n제가 정하진 않아요. 그런 날 다음엔 보통 뭐부터 했어요?',
   dry: '아까 「{앞말}」라고 하셨죠. 정답은 저도 지층에서 못 캤어요.\n대신 그런 날 다음엔 보통 뭐부터 했는지는 같이 떠올릴 수 있어요.',
 };
-/** 어느 범주에도 안 맞는 말: 못 알아들었다고 닫지 않고, 하신 말을 되돌리며 더 듣는다(11/27) */
-const OPEN: ByVoice = {
-  quiet: '「{앞말}」… 조금만 더 들려주실래요? 듣고 있어요.',
-  warm: '「{앞말}」라고 하셨네요. 조금 더 들려주실래요? 듣고 있어요.',
-  plain: '「{앞말}」. 조금 더 말해 줄래요?',
-  dry: '「{앞말}」라고요. 지하라 소리가 좀 울려요. 조금만 더 말해 줄래요?',
+/** 맞은 말이 든 마디만 꺼낸다(「바람은 없었어. 근데 오늘 종일 누워 있고 싶었어」 → 「오늘 종일 누워 있고 싶었어」). 말을 중간에 자르지 않는다 */
+function clauseOf(raw: string, re: RegExp): string {
+  const parts = raw.normalize('NFC').split(/[.!?…~\n]+|,\s|\s(?:근데|그런데|그리고|하지만|그래서)\s/).map((x) => x.trim()).filter(Boolean);
+  const hit = parts.find((x) => re.test(x)) ?? parts[parts.length - 1] ?? '';
+  return hit.replace(/^(근데|그런데|그리고|하지만|그래서)\s+/, '').replace(/[ㅠㅜ]+$/g, '').trim();
+}
+const WANTREST: ByVoice = {
+  quiet: '「{말}」… 그러고 싶은 날이 있죠.\n오늘은 바라던 만큼 그럴 수 있었어요?',
+  warm: '「{말}」라고 하셨네요. 그러고 싶은 날이 있어요.\n오늘은 바라던 만큼 그럴 수 있었는지 들려주실래요?',
+  plain: '「{말}」. 그런 날 있죠.\n바라던 만큼 그랬어요?',
+  dry: '「{말}」라고요. 저는 종일 지하에 있어서 그 마음은 조금 알 것 같아요.\n바라던 만큼 그럴 수 있었어요?',
 };
-export function openReply(raw: string, voice: Voice): string { return OPEN[voice].replace('{앞말}', clip(raw)); }
+const CONFLICT: ByVoice = {
+  quiet: '「{말}」… 그 일이 아직 가까이 있겠네요.\n그 뒤로 서로 말은 오갔어요, 아니면 아직 그대로예요?',
+  warm: '「{말}」라고 하셨네요. 그 일이 아직 가까이 있겠어요.\n그 뒤로 서로 말은 오갔는지, 아직 그대로인지 들려주실래요?',
+  plain: '「{말}」. 아직 가까운 일이네요.\n그 뒤로 말은 오갔어요, 그대로예요?',
+  dry: '「{말}」라고요. 지하까지 울릴 만한 일이네요.\n그 뒤로 말은 오갔어요, 아직 그대로예요?',
+};
+// 길을 묻는 말: ① 물음을 그대로 받고 ② 앞에 건넨 말과 잇고 ③ 조언 대신 「그게 되던 주」의 기록으로 연다
+export type HowAxis = 'move' | 'rest' | 'talk' | 'lang';
+const HOW_AXIS: [HowAxis, RegExp, string][] = [
+  ['move', /(밖|나가|나갈|나서|외출|산책|걷|걸어|걸을|움직|운동)/, '밖을 많이 걸은 주'],
+  ['rest', /(잠|자고|잘\s?수|푹|쉬)/, '잠을 길게 잔 주'],
+  ['talk', /(연락|사람|친구|만나|말을\s?걸|어울)/, '연락을 많이 주고받은 주'],
+  ['lang', /(글|쓰|적|기록)/, '글을 많이 남긴 주'],
+];
+export function howAxis(raw: string): HowAxis | null {
+  const t = raw.normalize('NFC');
+  return /(어떻게\s?하면|어떡하면|어찌\s?하면|수\s?있을까|방법이?\s?(있|없|뭘까))/.test(t) ? HOW_AXIS.find(([, re]) => re.test(t))?.[0] ?? null : null;
+}
+const HOW_HEAD: ByVoice = {
+  quiet: '「{말}」… 그 물음, 가볍게 넘기지 않을게요.',
+  warm: '「{말}」라고 물으셨네요. 그 물음, 가볍게 넘기지 않을게요.',
+  plain: '「{말}」. 그 물음, 잘 받았어요.',
+  dry: '「{말}」라고요. 큰 물음이네요. 흘려듣지 않을게요.',
+};
+const HOW_PREV: ByVoice = {
+  quiet: '아까 「{앞말}」라고 하신 것과 이어진 이야기로 들었어요.',
+  warm: '아까 「{앞말}」라고 하신 것과 이어진 이야기로 들었어요.',
+  plain: '아까 「{앞말}」라고 한 것과 이어서 들었어요.',
+  dry: '아까 「{앞말}」라고 하신 것과 한 줄기로 들었어요.',
+};
+const HOW_BODY: ByVoice = {
+  quiet: '길을 제가 정해 드리진 않아요. 대신 지층에는 {주}도 남아 있어요.\n그 주엔 지금과 무엇이 달랐는지, 같이 꺼내 볼까요?',
+  warm: '길을 제가 정해 드리진 않아요. 대신 지층에는 {주}도 고스란히 남아 있어요.\n그 주엔 지금과 무엇이 달랐는지, 같이 꺼내 볼까요?',
+  plain: '길은 제가 안 정해요. 대신 지층에 {주}가 남아 있어요.\n그 주엔 뭐가 달랐는지 같이 볼까요?',
+  dry: '길은 제가 못 정해요. 대신 캐 둔 게 있어요. {주}요.\n그 주엔 지금과 뭐가 달랐는지 같이 볼까요?',
+};
+/** 어느 범주에도 안 맞는 말: 말을 되풀이하지 않고(11/27 밤 보별), 이야기가 이어지게 하나만 묻는다. n은 대화 순번(같은 답이 연달아 나오지 않게) */
+const OPEN: ByVoice[] = [
+  { quiet: '네, 듣고 있어요.\n그 이야기에서 지금 제일 오래 남아 있는 건 어떤 장면이에요?',
+    warm: '네, 듣고 있어요. 말해 주셔서 고마워요.\n그 이야기에서 지금 제일 오래 남아 있는 건 어떤 장면이에요?',
+    plain: '듣고 있어요.\n그중에 제일 오래 남는 장면이 뭐예요?',
+    dry: '듣고 있어요. 지하는 조용해서 잘 들려요.\n그중에 제일 오래 남는 장면이 뭐예요?' },
+  { quiet: '그랬군요.\n그때 곁에 누가 있었어요, 아니면 혼자였어요?',
+    warm: '그랬군요. 여기 내려놓아 주셔서 좋아요.\n그때 곁에 누가 있었어요, 아니면 혼자였어요?',
+    plain: '그랬군요.\n그때 누구랑 있었어요, 혼자였어요?',
+    dry: '그랬군요. 받아 적진 않고 듣기만 할게요.\n그때 누구랑 있었어요, 혼자였어요?' },
+  { quiet: '천천히 말해도 돼요.\n그 일은 오늘 하루 중 어디쯤에 놓여 있었어요? 아침, 낮, 밤 중에서요.',
+    warm: '천천히 말해도 돼요. 저는 어디 안 가요.\n그 일은 오늘 하루 중 어디쯤에 놓여 있었어요? 아침, 낮, 밤 중에서요.',
+    plain: '천천히 해도 돼요.\n그게 오늘 언제쯤 일이에요? 아침, 낮, 밤 중에요.',
+    dry: '천천히 해도 돼요. 저는 지하라 어디 못 가요.\n그게 오늘 언제쯤 일이에요? 아침, 낮, 밤 중에요.' },
+];
+export function openReply(raw: string, voice: Voice, n = 0): string {
+  return OPEN[(hash(raw.normalize('NFC')) % OPEN.length + n) % OPEN.length][voice];
+}
 
 /**
  * 일상 대화·마음 공감 답. 받을 말이 아니면 null.
@@ -274,7 +336,16 @@ export function smallTalk(raw: string, voice: Voice, name?: string, prev?: strin
   if (!cat) return null;
   // 11/27: 「어떻게 해야 좋을지」처럼 앞말에 기대어 묻는 말은, 바로 앞에 하신 말을 먼저 되짚고 받는다
   if (cat === 'worried' && prev && prev.trim() && prev.trim() !== raw.trim()) return LEAN[voice].replace('{앞말}', clip(prev));
-  const quote = cat === 'restday' ? clip(raw) : quoteOf(raw, cat);
+  const re = CATS.find(([c]) => c === cat)![1];
+  const hasPrev = !!(prev && prev.trim() && prev.trim() !== raw.trim());
+  if (cat === 'conflict') return CONFLICT[voice].replace('{말}', clauseOf(raw, re));
+  if (cat === 'wantrest') return WANTREST[voice].replace('{말}', clauseOf(raw, re));
+  if (cat === 'howto') {
+    const ask = clauseOf(raw, re).replace(/^(어떻게\s?하면|어떡하면|어찌\s?하면)\s*/, '').replace(/^(내가|나는|난|제가)\s+/, '') || clauseOf(raw, re);
+    const week = HOW_AXIS.find(([, r]) => r.test(raw))?.[2] ?? '지금과 달랐던 주';
+    return [HOW_HEAD[voice].replace('{말}', ask), hasPrev ? HOW_PREV[voice].replace('{앞말}', clauseOf(prev!, /$^/)) : '', HOW_BODY[voice].replace('{주}', week)].filter(Boolean).join('\n');
+  }
+  const quote = cat === 'restday' ? clauseOf(raw, re) : quoteOf(raw, cat);
   const level = intensity(raw);
   const isFeel = cat in FEEL;
   const rows = isFeel ? FEEL[cat as keyof typeof FEEL] : TALK[cat as keyof typeof TALK];

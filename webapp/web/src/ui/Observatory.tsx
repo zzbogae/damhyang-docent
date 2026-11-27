@@ -327,7 +327,7 @@ export function Talk({ onSpace, withWeek, firstText }: { onSpace?: () => void; w
           </>
         ) : !noticed ? (
           <div className="talk-log">
-            <p className="ai-tag">민디 · AI</p>
+            <p className="ai-tag" title={bot ? "라이프로그 챗봇이 답합니다" : "기기 안 규칙으로 답합니다"}>민디 · AI{bot ? " · 대화 연결됨" : ""}</p>
             <div className="bubble notice" role="dialog" aria-label="민디와 처음 이야기하기 전에"><MindiMark size={36} /><div className="stack">
               {NOTICE_FIRST_CHAT.split('\n').map((l) => <p key={l}>{l}</p>)}
               <div><button className="btn primary" onClick={() => { try { localStorage.setItem(NOTICE_KEY, '1'); } catch { /* 이번 화면에서만 */ } setNoticed(true); }}>알겠어요</button></div>
@@ -335,7 +335,7 @@ export function Talk({ onSpace, withWeek, firstText }: { onSpace?: () => void; w
           </div>
         ) : base ? (
           <>
-            <p className="ai-tag">민디 · AI</p>
+            <p className="ai-tag" title={bot ? "라이프로그 챗봇이 답합니다" : "기기 안 규칙으로 답합니다"}>민디 · AI{bot ? " · 대화 연결됨" : ""}</p>
             {opener && (
               <div className="bubble opener"><MindiMark size={36} /><div className="stack">
                 <p>{openerLine(voice)}</p>

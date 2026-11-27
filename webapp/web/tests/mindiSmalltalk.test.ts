@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { intensity, openReply, smallTalk, smallTalkCategory } from '../src/mindi/smalltalk';
+import { howAxis, intensity, openReply, smallTalk, smallTalkCategory } from '../src/mindi/smalltalk';
 import { fixedKind, scriptedReply } from '../src/mindi/talk';
 import { parseIntent } from '../src/mindi/intent';
 import { VOICES } from '../src/mindi/voices';
@@ -89,6 +89,30 @@ describe('일상 대화·마음 공감(11/10, 챗봇 없을 때)', () => {
         for (const re of FORBIDDEN) expect(strip(r)).not.toMatch(re);
         expect(r).not.toMatch(/모릅니다|몰라요|모르겠|못 알아들/);
       }
+    }
+  });
+  it('11/27 밤: 말을 되풀이하지 않고, 바람·길을 묻는 말을 상황에 맞게 받는다', () => {
+    const a = '바람은 없었어. 근데 오늘 하루종일 침대에 누워있고 싶었어';
+    const b = '어떻게 하면 내가 다시 세상 밖으로 나갈 수 있을까?';
+    expect(smallTalkCategory(a)).toBe('wantrest');
+    expect(smallTalkCategory(b)).toBe('howto');
+    expect(howAxis(b)).toBe('move');
+    for (const v of ALL) {
+      const ra = smallTalk(a, v)!, rb = smallTalk(b, v, undefined, a)!;
+      expect(ra).toContain('「오늘 하루종일 침대에 누워있고 싶었어」');
+      expect(rb).toContain('「다시 세상 밖으로 나갈 수 있을까」');
+      expect(rb).toContain('밖을 많이 걸은 주');
+      expect(rb).toContain('아까 「오늘 하루종일 침대에 누워있고 싶었어」');
+      const rc = smallTalk('어제 친구랑 크게 다퉜어', v)!;
+      expect(rc).toContain('「어제 친구랑 크게 다퉜어」');
+      const opens = [0, 1, 2].map((n) => openReply('동생이 이사를 갔어', v, n));
+      for (const r of [ra, rb, rc, ...opens]) {
+        expect(r).not.toMatch(/…」|조금만 더 들려|모릅니다|몰라요|모르겠|못 알아들/);
+        for (const re of FORBIDDEN) expect(strip(r)).not.toMatch(re);
+        expect(r).not.toMatch(/\d/);
+      }
+      expect(new Set(opens).size).toBe(3);
+      for (const o of opens) expect(o).not.toContain('「');
     }
   });
 });
