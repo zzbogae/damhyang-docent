@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { intensity, smallTalk, smallTalkCategory } from '../src/mindi/smalltalk';
+import { intensity, openReply, smallTalk, smallTalkCategory } from '../src/mindi/smalltalk';
 import { fixedKind, scriptedReply } from '../src/mindi/talk';
 import { parseIntent } from '../src/mindi/intent';
 import { VOICES } from '../src/mindi/voices';
@@ -76,5 +76,19 @@ describe('일상 대화·마음 공감(11/10, 챗봇 없을 때)', () => {
     const named = ALL.map((v) => smallTalk('뭐 해?', v, '보경'));
     expect(named.every((s) => s!.includes('보경님'))).toBe(true);
     for (const v of ALL) expect(smallTalk('뭐 해?', v)).not.toMatch(/님|\{이름\}/);
+  });
+  it('11/27: 건넨 말·민디 이야기·앞말에 기댄 물음을 상황에 맞게 받는다', () => {
+    expect(smallTalkCategory('하루종일 침대에서 잠만 잤어')).toBe('restday');
+    expect(smallTalkCategory('근거 보단 니 이야기를 듣고 싶어')).toBe('aboutyou');
+    expect(smallTalkCategory('어머니 이야기 좀 할게')).toBeNull();
+    for (const v of ALL) {
+      expect(smallTalk('하루종일 침대에서 잠만 잤어', v)).toContain('「하루종일 침대에서 잠만 잤어」');
+      const lean = smallTalk('내가 어떻게 해야 좋을지 알려줘', v, undefined, '하루종일 침대에서 잠만 잤어')!;
+      expect(lean).toContain('아까 「하루종일 침대에서 잠만 잤어」');
+      for (const r of [smallTalk('하루종일 침대에서 잠만 잤어', v)!, smallTalk('니 이야기 해 줘', v)!, lean, openReply('친구랑 싸웠어', v)]) {
+        for (const re of FORBIDDEN) expect(strip(r)).not.toMatch(re);
+        expect(r).not.toMatch(/모릅니다|몰라요|모르겠|못 알아들/);
+      }
+    }
   });
 });
