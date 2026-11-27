@@ -1,0 +1,205 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<link rel="stylesheet" href="pret.css">
+<style>
+@font-face{font-family:Maru;src:url(maru.woff2)format("woff2");font-weight:400}
+@font-face{font-family:Maru;src:url(maru-sb.woff2)format("woff2");font-weight:600}
+:root{--bg:#141118;--ink:#efe6d8;--dim:#a99f92;--amber:#f0a850;--line:rgba(239,230,216,.14)}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1920px;height:1080px;overflow:hidden;background:var(--bg);color:var(--ink);font-family:"Pretendard Variable",sans-serif;-webkit-font-smoothing:antialiased}
+html.overlay,html.overlay body{background:transparent}
+.card{position:absolute;inset:0;display:none}
+.on{display:block}
+.bgfog{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(240,168,80,.07),transparent 60%)}
+.strata{position:absolute;left:0;right:0;bottom:0;height:300px;
+ background:
+  repeating-linear-gradient(180deg,#2a2420 0 26px,#211c1a 26px 34px,#3a2f27 34px 52px,#1c1816 52px 60px,#4a3a2c 60px 70px,#231d1a 70px 96px);
+ opacity:.8;-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 55%);mask-image:linear-gradient(180deg,transparent 0%,#000 55%)}
+.strata::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 0%,transparent 18%,transparent 82%,var(--bg) 100%)}
+.center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.logo{width:300px;opacity:.95;margin-bottom:34px}
+h1{font-family:Maru;font-weight:600;font-size:128px;letter-spacing:.02em;line-height:1}
+.en{margin-top:26px;font-size:30px;color:var(--dim);letter-spacing:.06em}
+.ko{margin-top:46px;font-family:Maru;font-size:40px;color:var(--ink)}
+.team{position:absolute;bottom:64px;width:100%;text-align:center;font-size:24px;letter-spacing:.32em;color:var(--amber)}
+.ev{position:absolute;top:56px;width:100%;text-align:center;font-size:20px;letter-spacing:.3em;color:var(--dim)}
+/* spec */
+.spec{position:absolute;left:220px;right:220px;top:50%;transform:translateY(-50%)}
+.kicker{font-size:22px;letter-spacing:.32em;color:var(--amber)}
+.spec h2{font-family:Maru;font-weight:600;font-size:60px;margin-top:18px}
+table{width:100%;border-collapse:collapse;margin-top:52px}
+td{padding:22px 0;border-top:1px solid var(--line);font-size:28px;vertical-align:top}
+tr:last-child td{border-bottom:1px solid var(--line)}
+td.k{width:250px;color:var(--amber);font-weight:600}
+td.t{width:600px;font-weight:600}
+td.u{color:var(--dim)}
+.note{margin-top:40px;font-family:Maru;font-size:30px;color:var(--ink)}
+/* credit */
+.cr .roles{margin-top:60px;font-size:26px;color:var(--dim);line-height:1.9}
+.cr .made{font-size:22px;letter-spacing:.32em;color:var(--dim)}
+.cr .tn{font-family:Maru;font-weight:600;font-size:96px;margin-top:22px;letter-spacing:.06em}
+.cr .ev2{margin-top:34px;font-size:28px;color:var(--ink);letter-spacing:.04em}
+.fine{position:absolute;bottom:56px;width:100%;text-align:center;font-size:20px;color:var(--dim);line-height:1.8}
+/* chapter lower third */
+.ch{position:absolute;left:96px;bottom:92px;display:flex;align-items:baseline;gap:26px;padding:22px 40px 24px;border-radius:18px;background:rgba(20,17,24,.62);backdrop-filter:blur(6px);border:1px solid rgba(240,168,80,.35)}
+.ch .n{font-size:26px;color:var(--amber);letter-spacing:.18em;font-weight:600}
+.ch .t{font-family:Maru;font-weight:600;font-size:40px}
+.ch .s{font-size:22px;color:var(--dim)}
+.opt{position:absolute;right:96px;top:80px;padding:18px 30px;border-radius:16px;background:rgba(20,17,24,.58);border:1px solid rgba(239,230,216,.18);text-align:right}
+.opt .p{font-family:Maru;font-weight:600;font-size:36px}
+.opt .o{margin-top:8px;font-size:22px;color:#e6dccd;letter-spacing:.02em}
+.opt .x{margin-top:6px;font-size:18px;color:var(--dim)}
+
+/* v0.3 overlays */
+.subbg{position:absolute;left:0;right:0;bottom:0;height:330px;background:linear-gradient(to top,rgba(8,8,10,.62),rgba(8,8,10,.38) 55%,rgba(8,8,10,0))}
+.sub{position:absolute;left:0;right:0;bottom:96px;text-align:center;color:#f7f3ea;font-size:44px;font-weight:600;line-height:1.5;white-space:pre;text-shadow:0 2px 6px rgba(0,0,0,.85),0 0 22px rgba(0,0,0,.6)}
+.sub .who{display:inline-block;font-size:26px;letter-spacing:.12em;color:#f6d44b;margin-bottom:6px;text-shadow:0 1px 4px rgba(0,0,0,.9)}
+.pip{position:absolute;left:96px;top:150px;width:560px;padding:30px 34px;border-radius:22px;background:rgba(20,17,24,.86);border:1px solid rgba(239,230,216,.22);box-shadow:0 18px 50px rgba(0,0,0,.45)}
+.pip .h{font-size:22px;color:var(--amber);letter-spacing:.16em;font-weight:600}
+.pip .d{margin-top:6px;font-size:30px;font-weight:600;color:#f3ece2}
+.pip .row{display:grid;grid-template-columns:70px 1fr 150px;align-items:center;gap:14px;margin-top:20px;font-size:24px;color:#e6dccd}
+.pip .bar{height:16px;border-radius:8px;background:rgba(255,255,255,.08);position:relative;overflow:hidden}
+.pip .bar i{position:absolute;top:0;bottom:0;border-radius:8px}
+.pip .w{font-size:21px;color:#c9baa9;text-align:right}
+.pip .foot{margin-top:24px;padding-top:18px;border-top:1px solid rgba(239,230,216,.16);font-size:24px;color:#e6dccd}
+.pip .arrow{margin-top:18px;font-family:Maru;font-weight:600;font-size:30px;color:#f3ece2}
+.bub{position:absolute;left:50%;bottom:110px;transform:translateX(-50%);display:flex;align-items:flex-end;gap:16px}
+.bub .face{width:104px;height:78px;border-radius:26px;background:rgba(20,20,20,.93);position:relative;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.bub .face::before,.bub .face::after{content:"";position:absolute;top:24px;width:26px;height:26px;border-radius:50%;background:#f6d44b}
+.bub .face::before{left:20px}.bub .face::after{right:20px}
+.bub .tx{background:rgba(20,20,20,.93);color:#f7f3ea;border-radius:26px;padding:22px 36px;font-size:40px;font-weight:600;line-height:1.42;white-space:pre;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.step{position:absolute;left:96px;bottom:84px;max-width:1500px;padding:20px 34px 22px;border-radius:18px;background:rgba(20,17,24,.78);border:1px solid rgba(240,168,80,.4)}
+.step .n{font-size:22px;color:var(--amber);letter-spacing:.2em;font-weight:600}
+.step .t{margin-top:8px;font-family:Maru;font-weight:600;font-size:40px;line-height:1.35}
+.tag{position:absolute;right:96px;top:72px;padding:12px 24px;border-radius:999px;background:rgba(20,17,24,.72);border:1px solid rgba(239,230,216,.22);font-size:22px;color:#e6dccd;letter-spacing:.04em}
+.line{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.line .big{font-family:Maru;font-weight:600;font-size:64px;line-height:1.4}
+.line .sm{margin-top:28px;font-size:26px;color:var(--dim);letter-spacing:.08em}
+.isl{position:absolute;left:0;right:0;bottom:0;height:420px;padding-top:200px;text-align:center;background:linear-gradient(180deg,transparent 0%,rgba(10,8,12,.55) 45%,rgba(10,8,12,.72) 100%)}
+.isl .big{font-family:Maru;font-weight:600;font-size:60px;text-shadow:0 2px 24px rgba(0,0,0,.55)}
+.isl .sm{margin-top:14px;font-size:26px;color:#efe6d8;text-shadow:0 2px 14px rgba(0,0,0,.6)}
+.tech{position:absolute;inset:0;padding:0 110px;display:flex;flex-direction:column;justify-content:center}
+.tech .kicker{font-size:24px;letter-spacing:.28em;color:var(--amber)}
+.tech h2{font-family:Maru;font-weight:600;font-size:62px;margin:16px 0 44px;line-height:1.25}
+.tech .g{display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px}
+.tech .bx{border:1.5px solid var(--line);border-radius:18px;padding:30px 32px;background:rgba(255,255,255,.025)}
+.tech .bx.w{grid-column:span 2}
+.tech .n{display:inline-block;width:42px;height:42px;border-radius:50%;background:var(--amber);color:#141118;font-weight:700;text-align:center;line-height:42px;font-size:23px;margin-right:10px}
+.tech .t{font-size:32px;font-weight:700;vertical-align:middle}
+.tech p{word-break:keep-all;margin-top:16px;font-size:25px;line-height:1.6;color:#d9d0c3}
+.tech code{font-family:inherit;color:var(--amber)}
+.tech .ft{position:absolute;left:110px;right:110px;bottom:50px;font-size:20px;color:var(--dim)}
+</style></head><body>
+<section class="card" id="title">
+ <div class="bgfog"></div><div class="strata"></div>
+ <div class="ev">2026 AI CREATOR SHOWCASE</div>
+ <div class="center">
+  <img class="logo" src="logo.webp" alt="">
+  <h1>Mine D</h1>
+  <div class="en">Your Mind in Your Mining Data</div>
+  <div class="ko">이미 쌓인 나의 기록을, 지층에서 다시 캐내다</div>
+ </div>
+ <div class="team">TEAM HERIZON</div>
+</section>
+
+<section class="card" id="spec">
+ <div class="bgfog" style="opacity:.08"></div>
+ <div class="spec">
+  <div class="kicker">TECH SPEC · 기술 사용</div>
+  <h2>무엇으로 만들었나</h2>
+  <table>
+   <tr><td class="k">영상 생성</td><td class="t">Google Flow (Veo 3.1) · Seedance 2.0</td><td class="u">민디 이야기 장면, 나의 공간 장면</td></tr>
+   <tr><td class="k">이미지 생성</td><td class="t">Google Flow · GPT 이미지</td><td class="u">민디·관측소·광석·섬 키프레임</td></tr>
+   <tr><td class="k">목소리</td><td class="t">TTS + 음높이 변환</td><td class="u">민디의 외계어 목소리</td></tr>
+   <tr><td class="k">기록 분석</td><td class="t">브라우저 안 로컬 처리</td><td class="u">주 단위 지층·광석 판정, 원문은 기기 밖으로 나가지 않음</td></tr>
+   <tr><td class="k">편집</td><td class="t">Python · FFmpeg 자동 편집</td><td class="u">이 영상의 컷 조립과 자막</td></tr>
+  </table>
+  <div class="note">AI는 마음을 진단하지 않습니다. 기록의 사실만 보여 줍니다.</div>
+ </div>
+</section>
+
+<section class="card cr" id="credit">
+ <div class="bgfog"></div><div class="strata"></div>
+ <div class="center" style="top:-60px">
+  <img class="logo" src="logo.webp" alt="" style="width:200px;margin-bottom:40px">
+  <div class="made">MADE BY</div>
+  <div class="tn">Team HERIZON</div>
+  <div class="ev2">2026 AI CREATOR SHOWCASE · KAIST</div>
+ </div>
+ <div class="fine">시연 화면은 합성 샘플 기록입니다. 실제 개인 기록은 쓰지 않았습니다.<br>영상과 목소리의 일부는 생성형 AI로 만들었습니다.</div>
+</section>
+
+<section class="card" id="ch1"><div class="ch"><span class="n">01</span><span class="t">민디가 태어난 곳</span><span class="s">세계관 영상</span></div></section>
+<section class="card" id="ch2"><div class="ch"><span class="n">02</span><span class="t">기록을 캐다</span><span class="s">실제 작동 화면 · 합성 샘플 기록</span></div></section>
+<section class="card" id="ch3"><div class="ch"><span class="n">03</span><span class="t">나의 공간</span><span class="s">캐낸 말로 짓는 섬</span></div></section>
+<section class="card" id="opt_sea"><div class="opt"><div class="p">바다</div><div class="o">고른 것 · 점심 · 여름·햇살 · 바다 · 오두막</div><div class="x">뺀 단어: 등대</div></div></section>
+<section class="card" id="opt_sky"><div class="opt"><div class="p">하늘산</div><div class="o">고른 것 · 아침 · 가을·햇살 · 구름 위 산 · 오두막</div><div class="x">뺀 단어: 텐트</div></div></section>
+<section class="card" id="opt_jungle"><div class="opt"><div class="p">정글</div><div class="o">고른 것 · 점심 · 여름·비 · 정글 · 방갈로</div><div class="x">뺀 단어: 반딧불이</div></div></section>
+<section class="card" id="opt_onsen"><div class="opt"><div class="p">온천</div><div class="o">고른 것 · 해질녘 · 한겨울·눈 · 산속 · 노천탕</div><div class="x">뺀 단어: 원숭이</div></div></section>
+<section class="card" id="opt_music"><div class="opt"><div class="p">음악방</div><div class="o">고른 것 · 해질녘 · 가을·햇살 · 도시 · 1970년대 · 룸</div><div class="x">뺀 단어: 라디오</div></div></section>
+<section class="card" id="sub01"><div class="subbg"></div><div class="sub">걸음, 사진, 메모 한 줄.
+하루가 끝나면 다 여기로 내려와요.</div></section>
+<section class="card" id="sub02"><div class="subbg"></div><div class="sub">저는 민디예요.
+여기 쌓이는 기록을 지켜요.</div></section>
+<section class="card" id="sub03"><div class="subbg"></div><div class="sub">점심 사진만 천이백 장이에요.
+누구랑 먹었는지는 하나도 안 찍혀 있고요.</div></section>
+<section class="card" id="sub06"><div class="subbg"></div><div class="sub">그렇게 십 년.
+하나도 안 없어졌어요.</div></section>
+<section class="card" id="sub10"><div class="subbg"></div><div class="sub">…그 무렵 이야기,
+들어볼까요?</div></section>
+<section class="card" id="w1"><div class="step"><div class="n">지층</div><div class="t">한 주는 한 층. 최근 12주는 주마다, 그 아래는 해마다 쌓입니다</div></div><div class="tag">실제 작동 화면 · 합성 샘플 기록</div></section>
+<section class="card" id="w2"><div class="step"><div class="n">광석</div><div class="t">평소와 달랐던 주는 검은 돌로 박혀 있다가, 깨면 그 주의 결 색이 드러납니다</div></div><div class="tag">실제 작동 화면 · 합성 샘플 기록</div></section>
+<section class="card" id="w3"><div class="step"><div class="n">민디와 이야기</div><div class="t">물으면 기록 안에서 근거를 찾아 답합니다. 원문은 기기 밖으로 나가지 않습니다</div></div><div class="tag">실제 작동 화면 · 합성 샘플 기록</div></section>
+<section class="card" id="w4"><div class="step"><div class="n">나의 섬</div><div class="t">캐낸 말로 섬을 고릅니다 · 시간 → 날씨·계절 → 장소 → 시대 → 머물 곳 → 소리</div></div><div class="tag">실제 작동 화면 · 합성 샘플 기록</div></section>
+<section class="card" id="m0"><div class="subbg"></div><div class="sub">앞으로만 달려온 날들.
+잠시 쉬어 갈 곳이 있다면.</div></section>
+<section class="card" id="mw1"><div class="step"><div class="n">지층</div><div class="t">흩어진 사진·메모·걸음·수면이 한 주에 한 층씩 쌓입니다</div></div><div class="tag">실제 작동 화면 · 합성 샘플 기록</div></section>
+<section class="card" id="mw2"><div class="step"><div class="n">광석</div><div class="t">평소와 달랐던 주가 광석으로 드러나, 쉬어 갈 때와 나아갈 때를 알아차리게 합니다</div></div><div class="tag">실제 작동 화면 · 합성 샘플 기록</div></section>
+<section class="card" id="mw3"><div class="step"><div class="n">민디와 이야기</div><div class="t">누구와도 공유되지 않는 나만의 챗봇. 내 기록 안에서만 답합니다</div></div><div class="tag">실제 작동 화면 · 합성 샘플 기록</div></section>
+<section class="card" id="mw4"><div class="step"><div class="n">나의 섬</div><div class="t">캐낸 말로 나만의 쉼터, 섬을 짓습니다</div></div><div class="tag">실제 작동 화면 · 합성 샘플 기록</div></section>
+<section class="card" id="m0b"><div class="subbg"></div><div class="sub">앞으로만 달려온 당신,
+잠시 쉬어 가요.</div></section>
+<section class="card" id="mw1b"><div class="step"><div class="n">지층</div><div class="t">흩어진 기록을 한곳에 모아, 지나쳐 온 몸과 마음을 다시 봐요</div></div><div class="tag">실제 작동 화면 · 합성 샘플 기록</div></section>
+<section class="card" id="mw2b"><div class="step"><div class="n">광석</div><div class="t">평소와 달랐던 주가 광석으로 빛나, 나만의 삶의 지표가 됩니다</div></div><div class="tag">실제 작동 화면 · 합성 샘플 기록</div></section>
+<section class="card" id="mw3b"><div class="step"><div class="n">민디와 이야기</div><div class="t">기록을 지키는 민디. 누구와도 나누지 않는 나만의 챗봇</div></div><div class="tag">실제 작동 화면 · 합성 샘플 기록</div></section>
+<section class="card" id="mw4b"><div class="step"><div class="n">나의 섬</div><div class="t">쉬어야 할 때와 나아갈 때를, 스스로 알아차리도록</div></div><div class="tag">실제 작동 화면 · 합성 샘플 기록</div></section>
+<section class="card" id="pip1"><div class="pip"><div class="h">넣은 기록 · 합성 샘플</div><div class="d">2026년 10월 19일 ~ 25일</div>
+<div class="row"><span>수면</span><div class="bar"><i style="left:0;width:34%;background:#263F86"></i></div><span class="w">평소보다 적음</span></div>
+<div class="row"><span>걸음</span><div class="bar"><i style="left:0;width:30%;background:#A2501F"></i></div><span class="w">평소보다 적음</span></div>
+<div class="row"><span>언어</span><div class="bar"><i style="left:0;width:86%;background:#CDB1F0"></i></div><span class="w">평소보다 많음</span></div>
+<div class="row"><span>소통</span><div class="bar"><i style="left:0;width:52%;background:#8C8580"></i></div><span class="w">평소 범위</span></div>
+<div class="arrow">→ 세 가지가 평소와 달라, 세 색의 결</div></div></section>
+<section class="card" id="b01"><div class="bub"><div class="face"></div><div class="tx">걸음, 사진, 메모 한 줄.
+하루가 끝나면 다 여기로 내려와요.</div></div></section>
+<section class="card" id="b02a"><div class="bub"><div class="face"></div><div class="tx">오늘도 한 층.</div></div></section>
+<section class="card" id="b02b"><div class="bub"><div class="face"></div><div class="tx">저는 민디예요.
+여기 쌓이는 기록을 지켜요.</div></div></section>
+<section class="card" id="b03"><div class="bub"><div class="face"></div><div class="tx">점심 사진만 천이백 장이에요.
+누구랑 먹었는지는 하나도 안 찍혀 있고요.</div></div></section>
+<section class="card" id="b06"><div class="bub"><div class="face"></div><div class="tx">그렇게 십 년.
+하나도 안 없어졌어요.</div></div></section>
+<section class="card" id="b10"><div class="bub"><div class="face"></div><div class="tx">…그 무렵 이야기,
+들어볼까요?</div></div></section>
+<section class="card" id="b12"><div class="bub"><div class="face"></div><div class="tx">오늘도 한 층 쌓였습니다.</div></div></section>
+<section class="card" id="s1"><div class="step"><div class="n">관측소</div><div class="t">이번 주와 가장 닮은 지난 주를, 민디가 먼저 찾아 둡니다</div></div><div class="tag">실제 작동 화면 · 합성 샘플 기록</div></section>
+<section class="card" id="s2"><div class="step"><div class="n">지층</div><div class="t">한 주는 한 층, 한 해는 하나의 지층이 됩니다</div></div><div class="tag">실제 작동 화면 · 합성 샘플 기록</div></section>
+<section class="card" id="s3"><div class="step"><div class="n">광석</div><div class="t">평소와 달랐던 주는 광석으로 남습니다. 세 번 캐면 열립니다</div></div><div class="tag">실제 작동 화면 · 합성 샘플 기록</div></section>
+<section class="card" id="s4"><div class="step"><div class="n">그 주</div><div class="t">판단하지 않고, 기록에 남은 사실만 들려줍니다</div></div><div class="tag">실제 작동 화면 · 합성 샘플 기록</div></section>
+<section class="card" id="bridge"><div class="line"><div class="big">이제, 당신의 기록으로.</div><div class="sm">원문은 당신의 기기 밖으로 나가지 않습니다</div></div></section>
+<section class="card" id="tech"><div class="bgfog" style="opacity:.08"></div><div class="tech">
+<div class="kicker">TECH · 실제 구현</div>
+<h2>기록은 기기 밖으로 나가지 않고, 판정은 브라우저 안에서</h2>
+<div class="g">
+<div class="bx"><span class="n">1</span><span class="t">내보내기 파일 그대로</span><p>구글 Takeout·건강·카카오톡·인스타그램·AI 대화 파일을 Web Worker가 스트리밍으로 읽는다. 사진 2만 장 가져오기와 판정까지 <code>6.4초</code>.</p></div>
+<div class="bx"><span class="n">2</span><span class="t">기기 안 사진·메모 필터</span><p>글자 인식(PP-OCRv5)과 얼굴 인식(BlazeFace)으로 얼굴·글자 사진을 거른다. 비밀번호·카드 번호와 위기 표현은 접어 둔다.</p></div>
+<div class="bx"><span class="n">3</span><span class="t">하루 단위 집계</span><p>채널 11개를 지표 <code>28종</code>으로 모아 브라우저 저장소(IndexedDB)에만 둔다. 원문은 기기에만 있다.</p></div>
+<div class="bx w"><span class="n">4</span><span class="t">판정 코어 · Python을 브라우저에서</span><p>Python·numpy 판정 코드를 WebAssembly(Pyodide)로 그대로 돌린다. 직전 52주의 나와 비교한 robust z(중앙값·MAD)로 가장 크게 벗어난 축이 광물, 세 축 이상이면 복합 광석. 난수가 없어 같은 기록이면 언제나 같은 광석이 나온다.</p></div>
+<div class="bx"><span class="n">5</span><span class="t">민디 문장 검사</span><p>숫자·날짜·순위가 바뀌거나 진단·조언 표현이 섞이면 원래 문장으로 되돌린다.</p></div>
+</div>
+<div class="ft">기술 멘토 구현 · 시연은 합성 샘플 기록</div>
+</div></section>
+<section class="card" id="isl2"><div class="isl"><div class="big">기록이 쌓여, 나만의 섬이 됩니다</div><div class="sm">온전히 나를 위해 스스로 디자인하는 공간 · 섬이 늘어나면 서로 이어집니다</div></div></section>
+<section class="card" id="isl"><div class="isl"><div class="big">캐낸 말로, 나의 섬을 짓습니다</div><div class="sm">고른 단어에 따라 섬이 달라집니다</div></div></section>
+<section class="card" id="end1"><div class="line"><div class="big">묻힌 것은 사라진 것이 아닙니다.</div></div></section>
+<section class="card" id="end2"><div class="bgfog"></div><div class="strata"></div><div class="center"><img class="logo" src="logo.webp" alt="" style="width:240px"><div class="big" style="font-family:Maru;font-weight:600;font-size:66px;line-height:1.4">당신의 지층에는,<br>무엇이 묻혀 있나요?</div><div class="en" style="margin-top:34px">Mine D · Your Mind in Your Mining Data</div></div></section>
+<script>const c=location.hash.slice(1)||'title';document.getElementById(c).classList.add('on');if(/^(ch|opt|b0|b1|s[0-9]|isl|sub|w[0-9]|pip|m0|mw)/.test(c))document.documentElement.classList.add('overlay');</script>
+</body></html>
