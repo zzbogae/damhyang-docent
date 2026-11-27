@@ -110,6 +110,8 @@
 .side-screen .talk-log .bubble, .side-screen .ask .talk-log .bubble { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: rgba(246,240,230,.92); color: #1c1820; }
 .side-screen .talk-log .bubble p { margin: 0 0 6px; }
 .talk-log .bubble p:last-child { margin-bottom: 0; }
+/* 11/27: 민디 답의 줄바꿈(되돌림 · 기록 답 · 「평가가 아님」)을 그대로 보인다 */
+.talk-log .bubble p { white-space: pre-line; }
 .side-screen .talk-log .bubble .muted, .side-screen .talk-log .bubble .small { color: #5d5966; }
 .side-screen .talk-log .bubble .btn { color: #1c1820; border-color: rgba(28,24,32,.25); background: rgba(255,255,255,.5); }
 .chat-pair { display: grid; gap: 6px; }

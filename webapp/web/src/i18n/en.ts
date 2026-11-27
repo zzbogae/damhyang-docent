@@ -1,7 +1,7 @@
 // 영어 자막(코엑스 외국인 관객, 팀 9/23 §1-8 「소리는 그대로, 자막만 교체」). 한국어 문장을 번역하지 않고 같은 판정값에서 따로 조립한다.
 // 외부 번역기·모델을 쓰지 않는다. 원문(그때 쓴 글)은 번역하지 않는다(원칙 6).
 import type { Axis, Badge, Episode, Era, MemoRecord, MinedResult, WeekRecord } from '../types';
-import { AXIS_IDS, type QuestionId } from '../mindi/answers';
+import { AXIS_IDS, axisLevel, type QuestionId } from '../mindi/answers';
 import { holdWeeks } from '../mindi/templates';
 
 const MONTH = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -124,3 +124,19 @@ export function answerEn(q: QuestionId, w: WeekRecord, ctx: { result: MinedResul
     case 'rest_low': return axisDirEn('rest', 'down', w, ctx);
   }
 }
+
+// 11/27: 그 주 전체(overviewAnswer) · 축 하나의 그 주 값(axisNowAnswer)
+const LEVEL_EN = { usual: 'within the usual range', low: 'far lower than usual', high: 'far higher than usual', bitLow: 'a little lower than usual', bitHigh: 'a little higher than usual' } as const;
+const AXIS_ORDER: Axis[] = ['rest', 'move', 'lang', 'talk'];
+export function overviewEn(w: WeekRecord): string {
+  const seen = AXIS_ORDER.map((ax) => [ax, axisLevel(w, ax)] as const).filter(([, l]) => l !== 'none');
+  if (!seen.length) return `${rangeEn(w)} doesn't have enough records to compare yet.`;
+  const list = seen.map(([ax, l]) => `${AXIS_EN[ax]}: ${LEVEL_EN[l as keyof typeof LEVEL_EN]}`).join('; ');
+  return `Compared with your own previous year — ${list}. ` + (w.candidate ? 'Some measures were far outside the usual range, so this week left an ore.' : 'Nothing was far outside the usual range.');
+}
+export function axisNowEn(ax: Axis, w: WeekRecord): string {
+  const l = axisLevel(w, ax);
+  if (l === 'none') return `There are no ${AXIS_EN[ax].toLowerCase()} records for ${rangeEn(w)}.`;
+  return `${AXIS_EN[ax]} in ${rangeEn(w)} was ${LEVEL_EN[l]} compared with your own previous year.`;
+}
+export const MORE_EN = 'Shall I look further?';

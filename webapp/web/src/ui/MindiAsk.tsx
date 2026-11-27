@@ -5,14 +5,14 @@ import { rangeLabel } from '../mindi/templates';
 import { playCue } from '../mindi/sound';
 import { mindiTalk } from '../mindi/soundKit';
 import { useStore } from '../state/store';
-import { answer, AXIS_DIR_QUESTION, axisDirAnswer, QUESTIONS, type Answer, type QuestionId } from '../mindi/answers';
-import { FEELING_TEXT, parseIntent, UNCLEAR_TEXT, UNKNOWN_TEXT } from '../mindi/intent';
+import { answer, AXIS_DIR_QUESTION, AXIS_WORD, axisDirAnswer, axisNowAnswer, overviewAnswer, QUESTIONS, type Answer, type QuestionId } from '../mindi/answers';
+import { FEELING_TEXT, MORE_TEXT, parseIntent, UNKNOWN_TEXT } from '../mindi/intent';
 import { useEn } from '../i18n/useEn';
-import { answerEn, axisDirEn, DONT_KNOW_EN, FEELING_EN, UNCLEAR_EN, UNKNOWN_EN } from '../i18n/en';
+import { answerEn, axisDirEn, axisNowEn, DONT_KNOW_EN, FEELING_EN, MORE_EN, overviewEn, UNKNOWN_EN } from '../i18n/en';
 import { DONT_KNOW } from '../mindi/templates';
 import { applyVoice, speakAs, useVoice, type Voice } from '../mindi/voices';
 import { fixedKind, fixedLine, scriptedReply } from '../mindi/talk';
-import { smallTalk } from '../mindi/smalltalk';
+import { feelingWrap, smallTalk } from '../mindi/smalltalk';
 import * as lifebot from '../mindi/lifebot';
 import { MindiMark } from './Icons';
 import { GO_ISLAND_EVENT } from './Intro';
@@ -42,11 +42,13 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
   const [heard, setHeard] = useState<string | null>(null);
   const en = useEn();
   // 영어 자막을 만들 원천(어떤 질문에 답했는지). 답 문장이 아니라 판정값에서 다시 만든다
-  const [src, setSrc] = useState<{ q?: QuestionId; axis?: Axis; dir?: 'up' | 'down'; kind?: 'feeling' | 'unknown' | 'unclear' } | null>(null);
+  const [src, setSrc] = useState<{ q?: QuestionId; axis?: Axis; dir?: 'up' | 'down'; kind?: 'feeling' | 'unknown' | 'overview' | 'now' } | null>(null);
   const [choices, setChoices] = useState<{ axis: Axis; dir: 'up' | 'down'; text: string }[]>([]);
   const [voice, setVoice] = useVoice();
   // 말투를 입히기 전의 답(판정값으로 만든 문장). 말투를 바꾸면 이것을 다시 말한다
   const [base, setBase] = useState<Answer | null>(null);
+  // 11/27: 기록을 물으며 마음을 함께 꺼낸 말(「요즘 기운이 없는데…」). 기록 답 앞뒤에 되돌림·「평가가 아님」 한 줄씩
+  const [wrapQ, setWrapQ] = useState<string | null>(null);
   // 대본집 문장으로 받은 말(공감·돌려 답하기). 말투를 바꾸면 같은 줄의 다른 결로
   const [said, setSaid] = useState<string | null>(null);
   // 라이프로그 챗봇(서버에 연결돼 있을 때만). 정해진 질문으로 못 잇는 말을 챗봇이 받는다
@@ -116,19 +118,22 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
   }
 
   // 고른 말투로: 어미 규칙은 바로, 「말투 다듬기」가 켜져 있으면 외부 모델로 한 번 더(숫자·날짜가 바뀌면 규칙 결과)
-  async function voiced(b: Answer, v: Voice = voice) {
-    if (!settings.tone) { setA({ ...b, text: applyVoice(b.text, v) }); return; }
+  async function voiced(b: Answer, v: Voice = voice, wq: string | null = wrapQ) {
+    const wr = wq ? feelingWrap(wq, v) : null;
+    const wrap = (t: string) => (wr ? `${wr.pre}\n${t}\n${wr.post}` : t);
+    if (!settings.tone) { setA({ ...b, text: wrap(applyVoice(b.text, v)) }); return; }
     setBusy(true);
     const r = await speakAs(b.text, v, { useLlm: true });
     setBusy(false);
-    setA({ ...b, text: r.text, used: r.used });
+    setA({ ...b, text: wrap(r.text), used: r.used });
   }
 
-  function show(b: Answer) {
+  function show(b: Answer, wq: string | null = null) {
     setBase(b);
     setSaid(null);
     setFound([]);
-    return voiced(b);
+    setWrapQ(wq);
+    return voiced(b, voice, wq);
   }
 
   // 챗봇 답은 챗봇이 고른 말투 그대로(앱의 어미 규칙을 다시 입히지 않는다). 실패하면 기기 안 규칙 답으로.
@@ -190,11 +195,11 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
     setA({ text: t, dontKnow: false });
   }
 
-  function askAxis(axis: Axis, dir: 'up' | 'down') {
+  function askAxis(axis: Axis, dir: 'up' | 'down', wq: string | null = null) {
     setChoices([]);
     setSrc({ axis, dir });
     setHeard(AXIS_DIR_QUESTION[axis][dir]);
-    return show(axisDirAnswer(axis, dir, w, { result: result!, memosByWeek }));
+    return show(axisDirAnswer(axis, dir, w, { result: result!, memosByWeek }), wq);
   }
 
   // 자유 질문: 기기 안 규칙으로 정해진 질문에 잇는다. 어떻게 알아들었는지 함께 보여 준다
@@ -211,27 +216,37 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
     const it = parseIntent(q);
     setQ(null);
     setChoices([]);
-    if (it.kind === 'axis') return askAxis(it.axis, it.dir);
-    if (it.kind === 'question') { setHeard(QUESTIONS.find((x) => x.id === it.id)!.text); return ask(it.id, true); }
-    setHeard(null);
-    if (it.kind === 'axis_unclear') {
-      setSrc({ kind: 'unclear' });
-      setChoices((['up', 'down'] as const).map((dir) => ({ axis: it.axis, dir, text: AXIS_DIR_QUESTION[it.axis][dir] })));
-      return show({ text: UNCLEAR_TEXT, dontKnow: false });
+    if (it.kind === 'axis') return askAxis(it.axis, it.dir, q);
+    if (it.kind === 'question') { setHeard(QUESTIONS.find((x) => x.id === it.id)!.text); return ask(it.id, true, q); }
+    // 11/27 보별: 되묻지 않는다. 그 주 기록으로 먼저 답하고, 더 찾을 것은 답 아래에 이어서 고르게 둔다
+    if (it.kind === 'overview') {
+      // 챗봇이 연결된 전시 맥에서는 챗봇이 받고, 못 받으면 아래 규칙 답으로
+      if (bot) return askBot(q, overviewAnswer(w));
+      setSrc({ kind: 'overview' });
+      setHeard('이 주 기록이 평소와 견줘 어땠는지');
+      return show(overviewAnswer(w), q);
     }
+    if (it.kind === 'axis_unclear') {
+      setSrc({ kind: 'now', axis: it.axis });
+      setHeard(`이 주의 ${AXIS_WORD[it.axis]}은 어땠는지`);
+      const r = show(axisNowAnswer(it.axis, w), q);
+      setChoices((['up', 'down'] as const).map((dir) => ({ axis: it.axis, dir, text: AXIS_DIR_QUESTION[it.axis][dir] })));
+      return r;
+    }
+    setHeard(null);
     const fallback = { text: it.kind === 'feeling' ? FEELING_TEXT : UNKNOWN_TEXT, dontKnow: false };
     if (bot) return askBot(q, fallback);
     setSrc({ kind: it.kind === 'feeling' ? 'feeling' : 'unknown' });
     return show(fallback);
   }
 
-  async function ask(id: QuestionId, keepHeard = false) {
+  async function ask(id: QuestionId, keepHeard = false, wq: string | null = null) {
     const base = answer(id, w, { result: result!, byKey, memosByWeek });
     setQ(id);
     setSrc({ q: id });
     if (!keepHeard) setHeard(null);
     setChoices([]);
-    return show(base);
+    return show(base, wq);
   }
 
   const body = a && (
@@ -242,12 +257,14 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
         <p className="sub-en" lang="en">
           {src.q ? answerEn(src.q, w, { result, byKey, memosByWeek })
             : src.axis && src.dir ? axisDirEn(src.axis, src.dir, w, { result, memosByWeek })
-            : src.kind === 'feeling' ? FEELING_EN : src.kind === 'unclear' ? UNCLEAR_EN : UNKNOWN_EN}
+            : src.kind === 'overview' ? overviewEn(w) : src.kind === 'now' && src.axis ? axisNowEn(src.axis, w)
+            : src.kind === 'feeling' ? FEELING_EN : UNKNOWN_EN}
           {a.dontKnow ? ` ${DONT_KNOW_EN}` : ''}
         </p>
       )}
       {choices.length > 0 && (
         <div className="label-row" style={{ marginTop: 8 }}>
+          <span className="small muted">{en ? MORE_EN : MORE_TEXT}</span>
           {choices.map((c) => <button key={c.dir} className="btn" onClick={() => askAxis(c.axis, c.dir)}>{c.text}</button>)}
         </div>
       )}
@@ -387,12 +404,14 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
               <p className="sub-en" lang="en">
                 {src.q ? answerEn(src.q, w, { result, byKey, memosByWeek })
                   : src.axis && src.dir ? axisDirEn(src.axis, src.dir, w, { result, memosByWeek })
-                  : src.kind === 'feeling' ? FEELING_EN : src.kind === 'unclear' ? UNCLEAR_EN : UNKNOWN_EN}
+                  : src.kind === 'overview' ? overviewEn(w) : src.kind === 'now' && src.axis ? axisNowEn(src.axis, w)
+            : src.kind === 'feeling' ? FEELING_EN : UNKNOWN_EN}
                 {a.dontKnow ? ` ${DONT_KNOW_EN}` : ''}
               </p>
             )}
             {choices.length > 0 && (
               <div className="label-row" style={{ marginTop: 8 }}>
+                <span className="small muted">{en ? MORE_EN : MORE_TEXT}</span>
                 {choices.map((c) => <button key={c.dir} className="btn" onClick={() => askAxis(c.axis, c.dir)}>{c.text}</button>)}
               </div>
             )}

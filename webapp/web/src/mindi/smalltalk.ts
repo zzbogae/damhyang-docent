@@ -250,3 +250,38 @@ export function smallTalk(raw: string, voice: Voice, name?: string): string | nu
   if (heavy && level >= 1) parts.push(OFFER[voice]);
   return parts.join('\n');
 }
+
+// 11/27 보별: 「이번 주 기록 어때? 요즘 기운이 없는데…」처럼 기록을 물으며 마음을 함께 꺼낸 말.
+// 기록 답은 그대로 하고, 그 앞에 사용자의 말을 「」로 한 번 되돌리고, 뒤에 「평가가 아니다」를 한 줄 붙인다.
+const MIRROR: ByVoice = {
+  quiet: '「{말}」라고 하셨네요. 그 말 먼저 들었어요.',
+  warm: '「{말}」라고 하셨네요. 말해 주셔서 고마워요.',
+  plain: '「{말}」. 들었어요.',
+  dry: '「{말}」라고요. 들었어요.',
+};
+const NOT_EVAL: ByVoice = {
+  quiet: '기록으로는 평소와 얼마나 달랐는지까지만 보여요. 몸이나 마음을 평가하는 건 아니에요.',
+  warm: '기록이 보여 주는 건 평소와 얼마나 달랐는지까지예요. 몸과 마음을 평가하는 건 아니에요.',
+  plain: '기록은 평소와 달랐는지까지만 봐요. 몸이나 마음을 평가하진 않아요.',
+  dry: '저는 평소와 달랐는지만 봐요. 몸이나 마음을 평가하는 건 제 일이 아니에요.',
+};
+
+/** 기록을 묻는 말 속에 마음을 꺼낸 말이 있으면 그 어절(어절 끝까지), 없으면 null. RECORD_Q는 보지 않는다 */
+export function feelingQuote(raw: string): string | null {
+  const t = raw.normalize('NFC').trim();
+  const hit = CATS.find(([c, re]) => c in FEEL && !['glad', 'okay'].includes(c) && re.test(t));
+  if (!hit) return null;
+  const m = hit[1].exec(t)!;
+  let s = m.index;
+  while (s > 0 && !/\s/.test(t[s - 1])) s--;
+  let e = m.index + m[0].length;
+  while (e < t.length && !/[\s.,!?~…ㅠㅜ]/.test(t[e])) e++;
+  return t.slice(s, e) || null;
+}
+
+/** 기록 답 앞뒤에 붙일 두 줄(마음을 꺼낸 말이 없으면 null) */
+export function feelingWrap(raw: string, voice: Voice): { pre: string; post: string } | null {
+  const q = feelingQuote(raw);
+  if (!q) return null;
+  return { pre: MIRROR[voice].replace('{말}', q), post: NOT_EVAL[voice] };
+}

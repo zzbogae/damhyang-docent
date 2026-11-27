@@ -18,6 +18,10 @@ describe('민디 자유 질문', () => {
     ['그 뒤엔 어떻게 됐어', { kind: 'question', id: 'after' }],
     ['그때 나 많이 힘들었지?', { kind: 'feeling' }],
     ['오늘 날씨 어때', { kind: 'unknown' }],
+    // 11/27 보별: 그 주 전체를 묻는 말은 되묻지 않고 바로 답한다(「기록」만으로는 글 축이 아니다)
+    ['이번주 나의 기록은 니가 보기에 어때? 안정적이야? 요즘 기운이 없는데...', { kind: 'overview' }],
+    ['요즘 내 기록 평소 같아?', { kind: 'overview' }],
+    ['요즘 잠은 어때?', { kind: 'axis_unclear', axis: 'rest' }],
   ];
   for (const [q, want] of cases) it(q, () => expect(parseIntent(q)).toEqual(want));
 });
