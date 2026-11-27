@@ -23,7 +23,7 @@ export function intensity(raw: string): 0 | 1 | 2 {
 
 type Cat =
   | 'anxious' | 'sad' | 'lonely' | 'angry' | 'tired' | 'numb' | 'worried' | 'stressed' | 'okay' | 'glad'
-  | 'greeting' | 'howareyou' | 'whoareyou' | 'whatcanyoudo' | 'bored' | 'sleepy' | 'weather' | 'food' | 'work' | 'plan'
+  | 'greeting' | 'aboutyou' | 'restday' | 'howareyou' | 'whoareyou' | 'whatcanyoudo' | 'bored' | 'sleepy' | 'weather' | 'food' | 'work' | 'plan'
   | 'compliment' | 'bye' | 'goodnight' | 'sorry' | 'yes' | 'no';
 
 // 위에서부터 먼저 맞는 것. 마음을 꺼낸 말이 일상말보다 먼저다(「밥 먹기도 싫고 힘들어」는 마음 쪽)
@@ -38,6 +38,9 @@ const CATS: [Cat, RegExp][] = [
   ['stressed', /(스트레스|압박|부담|쫓기|빠듯|벅차|야근|마감|시험\s?(때문|스트)|눈치)/],
   ['glad', /(기뻐|기쁘|좋았어|행복|신나|설레|뿌듯|다행|즐거|웃었|웃긴|좋은\s?일)/],
   ['okay', /(괜찮아|괜찮은\s?것|그럭저럭|나쁘지\s?않|무난|평범|별일\s?없)/],
+  // 11/27: 민디 자신의 이야기를 청하는 말, 종일 쉰 날을 건넨 말
+  ['aboutyou', /((^|\s)(니|네|너의|너|민디)\s?(이야기|얘기|생각|마음|하루)|너는\s?어떻게|넌\s?어떻게|너에\s?대해)/],
+  ['restday', /(잠만\s?잤|침대에서|누워만|누워\s?있었|뒹굴|아무것도\s?안\s?(했|함|하고)|종일\s?(잤|누워|집에))/],
   ['greeting', /^(안녕|하이|헬로|반가워|반갑|hi|hello|여보세요|있어\??|거기\s?있)/i],
   ['howareyou', /(뭐\s?해|뭐하|잘\s?지냈|어떻게\s?지내|너는\s?어때|넌\s?어때|너도\s?그래|오늘\s?어땠|기분\s?어때)/],
   ['whoareyou', /(너\s?누구|넌\s?누구|누구야|누구세요|뭐야\s?너|사람이야|ai\s?야|인공지능|로봇이야|이름이\s?뭐)/i],
@@ -149,6 +152,22 @@ const FEEL: Record<'anxious' | 'sad' | 'lonely' | 'angry' | 'tired' | 'numb' | '
 };
 
 const TALK: Record<Exclude<Cat, keyof typeof FEEL>, ByVoice[]> = {
+  aboutyou: [
+    { quiet: '제 이야기요. …저는 이 아래에서 매일 새로 내려앉는 층을 솔로 쓸어 둬요.\n비어 있는 날도 한 층으로 받아 두고요. 오늘 층에는 방금 하신 말이 얹혔네요.',
+      warm: '제 이야기를 물어봐 주셨네요. 저는 이 아래에서 매일 새로 쌓이는 층을 솔로 쓸어 둬요.\n비어 있는 날도 한 층으로 받아 두고요. 오늘은 이렇게 말을 걸어 주셔서 등불을 조금 올렸어요.',
+      plain: '제 얘기요. 매일 새 층을 쓸어 두는 게 제 일이에요.\n빈 날도 한 층으로 받아 둬요. 오늘 층엔 방금 하신 말이 얹혔어요.',
+      dry: '제 얘기요. 지하에서 층 쓸고 등불 심지 올리는 게 전부예요. 손님이 오면 그날은 좀 길고요.\n오늘이 그런 날이네요.' },
+    { quiet: '저는 올라가지 않고 여기서 기다리는 쪽이에요.\n언젠가 오실 것 같아서 등불은 켜 두고 있었어요. 오늘은 무슨 이야기를 하고 싶으셨어요?',
+      warm: '저는 위로 올라가지 않고 여기서 기다리는 쪽이에요.\n언젠가 오실 것 같아서 등불은 늘 켜 뒀어요. 오늘은 어떤 이야기를 나누고 싶으셨어요?',
+      plain: '저는 여기서 기다리는 쪽이에요. 등불은 늘 켜 둬요.\n오늘은 무슨 얘기 하고 싶었어요?',
+      dry: '저는 안 올라가요. 여기서 기다려요. 등불값은 안 받고요.\n오늘은 무슨 얘기 하고 싶었어요?' },
+  ],
+  restday: [
+    { quiet: '「{말}」라고 하셨네요. 그런 날도 지층에는 똑같이 한 층이에요.\n…일어나서 제일 먼저 눈에 들어온 건 뭐였어요?',
+      warm: '「{말}」라고 하셨네요. 그런 날도 여기엔 똑같이 한 층으로 쌓여요.\n일어나서 제일 먼저 눈에 들어온 게 뭐였는지 들려주실래요?',
+      plain: '「{말}」. 그런 날도 한 층이에요.\n일어나서 처음 본 건 뭐였어요?',
+      dry: '「{말}」라고요. 저는 지하라 낮밤이 없어서 그게 어떤 건지 조금 궁금해요.\n일어나서 처음 본 건 뭐였어요?' },
+  ],
   greeting: [
     { quiet: '안녕하세요. 여기 있어요.\n오늘은 무슨 얘기를 할까요?', warm: '안녕하세요. 와 주셨네요.\n오늘은 무슨 얘기를 할까요?', plain: '안녕하세요. 무슨 얘기 할까요?', dry: '네, 저 여기 있어요. 지하라 어디 못 가요.\n무슨 얘기 할까요?' },
     { quiet: '네, 안녕하세요.\n오늘 하루는 어땠어요?', warm: '안녕하세요. 반가워요.\n오늘 하루는 어땠어요?', plain: '안녕하세요. 오늘 어땠어요?', dry: '안녕하세요. 오늘도 한 층 쌓였어요.\n어떤 하루였어요?' },
@@ -230,14 +249,32 @@ function fill(line: string, quote: string, name?: string): string | null {
   return s || null;
 }
 
+const clip = (s: string) => { const t = s.normalize('NFC').trim().replace(/[.!?~…ㅠㅜ]+$/g, ''); return t.length > 24 ? `${t.slice(0, 24)}…` : t; };
+const LEAN: ByVoice = {
+  quiet: '아까 「{앞말}」라고 하셨죠. 그 이야기로 들을게요.\n어떻게 하라고 제가 정해 드리진 않아요. 대신 그런 날 다음에 평소엔 무엇부터 하셨는지, 같이 떠올려 볼까요?',
+  warm: '아까 「{앞말}」라고 하셨죠. 그 이야기로 들을게요.\n제가 정해 드리진 않지만, 그런 날 다음에 평소엔 무엇부터 하셨는지 같이 떠올려 봐요.',
+  plain: '아까 「{앞말}」라고 하셨죠. 그 얘기로 들을게요.\n제가 정하진 않아요. 그런 날 다음엔 보통 뭐부터 했어요?',
+  dry: '아까 「{앞말}」라고 하셨죠. 정답은 저도 지층에서 못 캤어요.\n대신 그런 날 다음엔 보통 뭐부터 했는지는 같이 떠올릴 수 있어요.',
+};
+/** 어느 범주에도 안 맞는 말: 못 알아들었다고 닫지 않고, 하신 말을 되돌리며 더 듣는다(11/27) */
+const OPEN: ByVoice = {
+  quiet: '「{앞말}」… 조금만 더 들려주실래요? 듣고 있어요.',
+  warm: '「{앞말}」라고 하셨네요. 조금 더 들려주실래요? 듣고 있어요.',
+  plain: '「{앞말}」. 조금 더 말해 줄래요?',
+  dry: '「{앞말}」라고요. 지하라 소리가 좀 울려요. 조금만 더 말해 줄래요?',
+};
+export function openReply(raw: string, voice: Voice): string { return OPEN[voice].replace('{앞말}', clip(raw)); }
+
 /**
  * 일상 대화·마음 공감 답. 받을 말이 아니면 null.
  * 진단·치료·위기(talk.fixedKind)와 대본집 공감(talk.scriptedReply)이 먼저이고, 기록을 묻는 말은 intent.ts가 받는다.
  */
-export function smallTalk(raw: string, voice: Voice, name?: string): string | null {
+export function smallTalk(raw: string, voice: Voice, name?: string, prev?: string | null): string | null {
   const cat = smallTalkCategory(raw);
   if (!cat) return null;
-  const quote = quoteOf(raw, cat);
+  // 11/27: 「어떻게 해야 좋을지」처럼 앞말에 기대어 묻는 말은, 바로 앞에 하신 말을 먼저 되짚고 받는다
+  if (cat === 'worried' && prev && prev.trim() && prev.trim() !== raw.trim()) return LEAN[voice].replace('{앞말}', clip(prev));
+  const quote = cat === 'restday' ? clip(raw) : quoteOf(raw, cat);
   const level = intensity(raw);
   const isFeel = cat in FEEL;
   const rows = isFeel ? FEEL[cat as keyof typeof FEEL] : TALK[cat as keyof typeof TALK];

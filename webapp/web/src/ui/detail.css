@@ -50,6 +50,25 @@
 .p8-vibe-panel { padding: 16px 18px; border-radius: 14px; border: 1px solid var(--mined-line-strong); background: rgba(26, 21, 31, .7); display: grid; gap: 10px; }
 .p8-ans { margin: 0; color: var(--mined-ink); }
 
+.p8-glance { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.p8-glance-card { padding: 16px 18px; border-radius: 16px; border: 1px solid var(--mined-line-strong); background: rgba(26, 21, 31, .82); display: grid; gap: 8px; min-width: 0; scroll-margin: 80px; transition: border-color .2s; }
+.p8-glance-card.on { border-color: var(--mined-amber); }
+.p8-glance-title { margin: 0; font-size: 14px; font-weight: 600; color: var(--mined-ink-soft); }
+.p8-glance-card .photos { grid-template-columns: repeat(2, 1fr); margin-top: 2px; }
+.p8-glance-scroll { max-height: 340px; overflow-y: auto; padding-right: 4px; }
+.p8-glance-scroll .memo:first-child { margin-top: 0; }
+.p8-glance-scroll .memo .text { font-size: 16px; line-height: 1.65; }
+.p8-talk { display: grid; gap: 10px; }
+.p8-talk-bars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; align-items: end; }
+.p8-talk-day { display: grid; gap: 4px; justify-items: center; }
+.p8-talk-col { width: 100%; height: 110px; display: flex; flex-direction: column; justify-content: flex-end; border-radius: 6px; overflow: hidden; background: var(--mined-line); }
+.p8-talk-col i { display: block; width: 100%; }
+.p8-talk-n { font: 12px/1 var(--mined-mono); color: var(--mined-ink-soft); min-height: 12px; }
+.p8-talk-label { font-size: 13px; color: var(--mined-ink-mute); }
+.p8-talk-facts { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.p8-talk-facts li { padding: 5px 10px; border-radius: 999px; background: var(--mined-btn-bg-hi); font-size: 14px; color: var(--mined-ink); }
+@media (max-width: 900px) { .p8-glance { grid-template-columns: 1fr; } }
+
 .p8-ask {
   position: sticky; bottom: 12px; z-index: 6; display: flex; gap: 8px; padding: 8px 8px 8px 16px;
   border-radius: 14px; border: 1px solid var(--mined-line-strong); background: rgba(20, 16, 24, .92); backdrop-filter: blur(8px);

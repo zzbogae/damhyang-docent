@@ -22,6 +22,9 @@ describe('민디 자유 질문', () => {
     ['이번주 나의 기록은 니가 보기에 어때? 안정적이야? 요즘 기운이 없는데...', { kind: 'overview' }],
     ['요즘 내 기록 평소 같아?', { kind: 'overview' }],
     ['요즘 잠은 어때?', { kind: 'axis_unclear', axis: 'rest' }],
+    // 11/27 보별: 묻지 않고 건넨 말은 기록 질문으로 받지 않고 대화로 넘긴다
+    ['하루종일 침대에서 잠만 잤어', { kind: 'unknown' }],
+    ['오늘 많이 걸었어', { kind: 'unknown' }],
   ];
   for (const [q, want] of cases) it(q, () => expect(parseIntent(q)).toEqual(want));
 });

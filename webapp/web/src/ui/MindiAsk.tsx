@@ -6,13 +6,13 @@ import { playCue } from '../mindi/sound';
 import { mindiTalk } from '../mindi/soundKit';
 import { useStore } from '../state/store';
 import { answer, AXIS_DIR_QUESTION, AXIS_WORD, axisDirAnswer, axisNowAnswer, overviewAnswer, QUESTIONS, type Answer, type QuestionId } from '../mindi/answers';
-import { FEELING_TEXT, MORE_TEXT, parseIntent, UNKNOWN_TEXT } from '../mindi/intent';
+import { axisIn, FEELING_TEXT, MORE_TEXT, parseIntent, UNKNOWN_TEXT } from '../mindi/intent';
 import { useEn } from '../i18n/useEn';
 import { answerEn, axisDirEn, axisNowEn, DONT_KNOW_EN, FEELING_EN, MORE_EN, overviewEn, UNKNOWN_EN } from '../i18n/en';
 import { DONT_KNOW } from '../mindi/templates';
 import { applyVoice, speakAs, useVoice, type Voice } from '../mindi/voices';
 import { fixedKind, fixedLine, scriptedReply } from '../mindi/talk';
-import { feelingWrap, smallTalk } from '../mindi/smalltalk';
+import { feelingWrap, openReply, smallTalk, smallTalkCategory } from '../mindi/smalltalk';
 import * as lifebot from '../mindi/lifebot';
 import { MindiMark } from './Icons';
 import { GO_ISLAND_EVENT } from './Intro';
@@ -33,6 +33,7 @@ const STOPPED_TEXT = '기다리기를 멈췄어요. 다른 걸 물어봐도 돼�
 
 const TALK_KEY = 'mined.talk.v1';
 
+const LEAN_SKIP = new Set(['aboutyou', 'worried', 'greeting', 'howareyou', 'whoareyou', 'whatcanyoudo', 'compliment', 'sorry', 'bye', 'goodnight', 'yes', 'no']);
 export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onAsk }: { w: WeekRecord; voiceChip?: boolean; chat?: boolean; initial?: string; chip?: ReactNode; onAsk?: () => void }) {
   const { result, byKey, memosByWeek, select, settings } = useStore();
   const [q, setQ] = useState<QuestionId | null>(null);
@@ -59,6 +60,7 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
   const [err, setErr] = useState<{ q: string; fallback: Answer; kind: 'offline' | 'timeout'; again?: boolean } | null>(null);
   const [retrying, setRetrying] = useState(false);
   const waitCtl = useRef<AbortController | null>(null);
+  const prevQ = useRef<string | null>(null);
   useEffect(() => () => waitCtl.current?.abort(), []);
   useEffect(() => { void lifebot.available().then(setBot); }, []);
   useEffect(() => {
@@ -204,6 +206,9 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
 
   // 자유 질문: 기기 안 규칙으로 정해진 질문에 잇는다. 어떻게 알아들었는지 함께 보여 준다
   function askFree(q = text) {
+    const before = prevQ.current;
+    // 앞말로 되짚을 것은 사용자가 건넨 이야기만(인사·민디에게 묻는 말·「어떻게 해야」는 건너뛴다)
+    if (!LEAN_SKIP.has(smallTalkCategory(q) ?? '')) prevQ.current = q;
     // 진단·치료·위기는 고정형(대본집 §17): 다른 무엇보다 먼저, 어떤 말투에서도 같은 문장
     onAsk?.();
     const fk = fixedKind(q);
@@ -212,7 +217,7 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
     const sr = scriptedReply(q, voice);
     if (sr) { setQ(null); return sayScripted(sr, q); }
     // 챗봇이 없을 때(공개 시연판·오프라인) 일상 대화·마음은 기기 안 규칙으로 받는다(11/10). 기록을 묻는 말은 아래로
-    if (!bot) { const st = smallTalk(q, voice); if (st) { setQ(null); return sayScripted(st, q); } }
+    if (!bot) { const st = smallTalk(q, voice, undefined, before); if (st) { setQ(null); return sayScripted(st, q); } }
     const it = parseIntent(q);
     setQ(null);
     setChoices([]);
@@ -236,7 +241,12 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
     setHeard(null);
     const fallback = { text: it.kind === 'feeling' ? FEELING_TEXT : UNKNOWN_TEXT, dontKnow: false };
     if (bot) return askBot(q, fallback);
-    setSrc({ kind: it.kind === 'feeling' ? 'feeling' : 'unknown' });
+    // 챗봇이 없을 때 못 받은 말: 「못 알아들었다」로 닫지 않고, 하신 말을 되돌리며 더 듣는다
+    if (it.kind !== 'feeling') {
+      const ax = axisIn(q);
+      return sayScripted(openReply(q, voice) + (ax ? `\n원하면 이 주의 ${AXIS_WORD[ax]} 기록도 같이 볼 수 있어요.` : ''), q);
+    }
+    setSrc({ kind: 'feeling' });
     return show(fallback);
   }
 
