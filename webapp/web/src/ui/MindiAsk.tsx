@@ -12,7 +12,7 @@ import { answerEn, axisDirEn, axisNowEn, DONT_KNOW_EN, FEELING_EN, MORE_EN, over
 import { DONT_KNOW } from '../mindi/templates';
 import { applyVoice, speakAs, useVoice, type Voice } from '../mindi/voices';
 import { fixedKind, fixedLine, scriptedReply } from '../mindi/talk';
-import { feelingWrap, openReply, smallTalk } from '../mindi/smalltalk';
+import { feelingWrap, openReply, smallTalk, smallTalkCategory } from '../mindi/smalltalk';
 import * as lifebot from '../mindi/lifebot';
 import { MindiMark } from './Icons';
 import { GO_ISLAND_EVENT } from './Intro';
@@ -33,6 +33,7 @@ const STOPPED_TEXT = '기다리기를 멈췄어요. 다른 걸 물어봐도 돼�
 
 const TALK_KEY = 'mined.talk.v1';
 
+const LEAN_SKIP = new Set(['aboutyou', 'worried', 'greeting', 'howareyou', 'whoareyou', 'whatcanyoudo', 'compliment', 'sorry', 'bye', 'goodnight', 'yes', 'no']);
 export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onAsk }: { w: WeekRecord; voiceChip?: boolean; chat?: boolean; initial?: string; chip?: ReactNode; onAsk?: () => void }) {
   const { result, byKey, memosByWeek, select, settings } = useStore();
   const [q, setQ] = useState<QuestionId | null>(null);
@@ -206,7 +207,8 @@ export function MindiAsk({ w, voiceChip = true, chat = false, initial, chip, onA
   // 자유 질문: 기기 안 규칙으로 정해진 질문에 잇는다. 어떻게 알아들었는지 함께 보여 준다
   function askFree(q = text) {
     const before = prevQ.current;
-    prevQ.current = q;
+    // 앞말로 되짚을 것은 사용자가 건넨 이야기만(인사·민디에게 묻는 말·「어떻게 해야」는 건너뛴다)
+    if (!LEAN_SKIP.has(smallTalkCategory(q) ?? '')) prevQ.current = q;
     // 진단·치료·위기는 고정형(대본집 §17): 다른 무엇보다 먼저, 어떤 말투에서도 같은 문장
     onAsk?.();
     const fk = fixedKind(q);
