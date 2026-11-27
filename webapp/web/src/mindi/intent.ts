@@ -7,6 +7,7 @@ export type Intent =
   | { kind: 'question'; id: QuestionId }
   | { kind: 'axis'; axis: Axis; dir: 'up' | 'down' }
   | { kind: 'axis_unclear'; axis: Axis }
+  | { kind: 'overview' }
   | { kind: 'feeling' }
   | { kind: 'unknown' };
 
@@ -14,11 +15,16 @@ const AXIS_RE: [Axis, RegExp][] = [
   ['rest', /(잠|수면|잤|자는|잔 주|못 ?잔|잘 ?잔|쉬|쉼|피곤|불면)/],
   ['move', /(걸음|걸었|걷|산책|운동|움직|만보)/],
   ['talk', /(카톡|연락|대화|답장|dm|디엠|주고받|친구)/i],
-  ['lang', /(메모|기록|글|일기|ai|챗지피티|chatgpt|클로드|인스타|남긴|남겼|썼)/i],
+  // 「기록」만으로는 글 축으로 보지 않는다(「나의 기록은 어때?」는 그 주 전체를 묻는 말, 11/27)
+  ['lang', /(메모|글|일기|ai|챗지피티|chatgpt|클로드|인스타|남긴|남겼|썼)/i],
 ];
 const DOWN_RE = /(적[게었은]|짧[게았은]|못|덜|안 ?[잤걸찍썼남]|부족|줄었|없었)/;
 const UP_RE = /(많[이았은]|길[게었]|오래|자주|잘 ?잤|잘 ?잔|더 |늘었|푹)/;
 const FEELING_RE = /(힘들|힘드|우울|슬펐|슬퍼|외로|불안|괜찮|행복|기뻤|화났|지쳤|지쳐|지친|피곤|속상|걱정|마음|기분|감정|스트레스)/;
+
+// 11/27 보별: 「이번주 나의 기록은 어때? 안정적이야?」에 되묻지 말고 그 주 전체를 바로 답한다
+const OVERVIEW_CTX = /(기록|이번\s?주|이\s?주|요즘|최근|한\s?주|지난\s?주|요새)/;
+const OVERVIEW_ASK = /(어때|어땠|어떤\s?(편|가|지|것|거)|어떻|안정|괜찮|평소\s?(같|랑|와|대로|처럼)|무난|별일|문제\s?(없|있))/;
 
 const QUESTION_RE: [QuestionId, RegExp][] = [
   ['similar', /(닮은|비슷한)/],
@@ -41,6 +47,7 @@ export function parseIntent(raw: string): Intent {
   }
   const q = QUESTION_RE.find(([, re]) => re.test(t))?.[0];
   if (q) return { kind: 'question', id: q };
+  if (OVERVIEW_CTX.test(t) && OVERVIEW_ASK.test(t)) return { kind: 'overview' };
   if (FEELING_RE.test(t)) return { kind: 'feeling' };
   return { kind: 'unknown' };
 }
@@ -49,3 +56,5 @@ export function parseIntent(raw: string): Intent {
 export const FEELING_TEXT = '음, 그건 제가 말하면 틀릴 것 같아요. 대신 그 주에 무엇이 평소와 달랐는지는 같이 볼 수 있어요.';
 export const UNKNOWN_TEXT = '음, 그건 제가 잘 못 알아들었어요. 걸음·잠·화면·기록 가운데 하나로 다시 물어봐 주실래요?';
 export const UNCLEAR_TEXT = '어느 쪽을 찾을까요?';
+// 방향이 없는 축 질문은 먼저 그 주의 값으로 답하고, 많았던·적었던 주 찾기는 이어서 고르게 둔다
+export const MORE_TEXT = '더 찾아볼까요?';

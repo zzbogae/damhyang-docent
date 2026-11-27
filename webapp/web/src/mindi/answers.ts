@@ -130,3 +130,48 @@ export function axisDirAnswer(ax: Axis, dir: 'up' | 'down', w: WeekRecord, ctx: 
 }
 
 export { DONT_KNOW };
+
+// 11/27 보별: 자유 질문에 되묻지 않고 그 주의 기록으로 먼저 답한다. 축 이름은 말로(걸음·잠·글·연락), 모두 받침이 있어 「은」
+export const AXIS_WORD: Record<Axis, string> = { move: '걸음', rest: '잠', lang: '글', talk: '연락' };
+const ORDER: Axis[] = ['rest', 'move', 'lang', 'talk'];
+type Level = 'none' | 'usual' | 'bitLow' | 'bitHigh' | 'low' | 'high';
+// 관측소 게이지(WeekDetail Gauges)와 같은 경계
+export function axisLevel(w: WeekRecord, ax: Axis): Level {
+  const a = w.axes?.[ax];
+  if (!a || a.pr == null) return 'none';
+  return a.pr <= 0.1 ? 'low' : a.pr >= 0.9 ? 'high' : a.pr < 0.25 ? 'bitLow' : a.pr > 0.75 ? 'bitHigh' : 'usual';
+}
+const LEVEL_PHRASE: Record<Exclude<Level, 'none' | 'usual'>, string> = {
+  low: '평소보다 크게 적었고', high: '평소보다 크게 많았고', bitLow: '평소보다 조금 적은 편이었고', bitHigh: '평소보다 조금 많은 편이었고',
+};
+
+/** 「이번 주 어때? 평소 같아?」: 그 주의 네 축이 직전 1년의 내 기록과 견줘 어디쯤인지. 좋다·나쁘다는 말하지 않는다 */
+export function overviewAnswer(w: WeekRecord): Answer {
+  const lv = ORDER.map((ax) => [ax, axisLevel(w, ax)] as const);
+  const seen = lv.filter(([, l]) => l !== 'none');
+  if (!seen.length) return { text: `${rangeLabel(w)}은 견줄 기록이 아직 모자랍니다.`, dontKnow: false };
+  const usual = seen.filter(([, l]) => l === 'usual').map(([ax]) => AXIS_WORD[ax]);
+  // 같은 정도끼리 묶는다(「잠·걸음은 평소보다 크게 적었고」)
+  const clauses = (['low', 'high', 'bitLow', 'bitHigh'] as const)
+    .map((lv0) => [lv0, seen.filter(([, l]) => l === lv0).map(([ax]) => AXIS_WORD[ax])] as const)
+    .filter(([, names]) => names.length)
+    .map(([lv0, names]) => `${names.join('·')}은 ${LEVEL_PHRASE[lv0]}`);
+  if (usual.length) clauses.push(`${usual.join('·')}은 평소 범위였고`);
+  const body = clauses.join(', ').replace(/고$/, '습니다.');
+  const parts = [`${rangeLabel(w)}을 직전 1년의 내 기록과 견줘 보면, ${body}`];
+  const none = lv.filter(([, l]) => l === 'none').map(([ax]) => AXIS_WORD[ax]);
+  if (none.length) parts.push(`${none.join('·')}은 이 주에 기록이 없습니다.`);
+  parts.push(w.candidate
+    ? `평소 범위를 크게 벗어난 지표가 ${w.badges.length}개 있어서 광석이 나온 주입니다.`
+    : '크게 벗어난 지표는 없어서, 평소 흐름 안에 있던 주입니다.');
+  return { text: parts.join(' '), dontKnow: false };
+}
+
+/** 방향 없이 축 하나를 물을 때(「요즘 잠은 어때?」): 그 주의 그 축 값부터 답한다 */
+export function axisNowAnswer(ax: Axis, w: WeekRecord): Answer {
+  const l = axisLevel(w, ax);
+  const name = AXIS_WORD[ax];
+  if (l === 'none') return { text: `${rangeLabel(w)}에는 ${name} 기록이 없습니다.`, dontKnow: false };
+  const p = l === 'usual' ? '평소 범위였습니다' : LEVEL_PHRASE[l].replace(/고$/, '습니다');
+  return { text: `${rangeLabel(w)}의 ${name}은 직전 1년의 내 기록과 견줘 ${p}.`, dontKnow: false };
+}
